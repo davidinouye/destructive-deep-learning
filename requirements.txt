@@ -2,3 +2,14 @@
 setuptools
 Cython
 numpy
+pypandoc
+# Required by package
+six
+scipy
+scikit-learn
+matplotlib
+plotly
+seaborn
+nose
+# pot requires Cython already so leave out so documentation compiles
+#pot

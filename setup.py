@@ -43,7 +43,6 @@ if __name__ == '__main__':
         install_requires=['six', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'plotly', 'seaborn',
                           'nose', # See above
                           'pot',
-                          'anytree',
                           ],
         # Cython, numpy and pypandoc needed to install pot package (bug in installing pot from scratch)
         # Should do the following before trying to install
