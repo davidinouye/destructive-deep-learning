@@ -35,6 +35,7 @@ if __name__ == '__main__':
                     'with scikit-learn.',
         url='https://github.com/davidinouye/destructive-deep-learning',
         author='David I. Inouye',
+        author_email='dinouye@cs.cmu.edu',
         license='BSD 3-clause',
         zip_safe=False,
         # Nose needed by 0.19.1 version of scikit-learn for importing testing module

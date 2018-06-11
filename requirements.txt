@@ -1,0 +1,15 @@
+# Required by setup
+setuptools
+Cython
+numpy
+pypandoc
+# Required by package
+six
+scipy
+scikit-learn
+matplotlib
+plotly
+seaborn
+nose
+pot
+anytree
