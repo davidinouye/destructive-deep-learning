@@ -42,7 +42,7 @@ if __name__ == '__main__':
         # I think this was fixed for upcoming version 0.20.X to avoid dependency
         install_requires=['six', 'numpy', 'scipy', 'scikit-learn', 'matplotlib', 'plotly', 'seaborn',
                           'nose', # See above
-                          'pot',
+                          #'pot',
                           ],
         # Cython, numpy and pypandoc needed to install pot package (bug in installing pot from scratch)
         # Should do the following before trying to install

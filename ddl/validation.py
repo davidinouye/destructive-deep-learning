@@ -9,7 +9,10 @@ from sklearn.base import clone
 from sklearn.exceptions import SkipTestWarning, DataConversionWarning
 from sklearn.utils import check_random_state
 from sklearn.utils.estimator_checks import check_estimator
-import ot  # Python optimal transport module (pot)
+try:
+    import ot  # Python optimal transport module (pot)
+except ImportError:
+    warnings.warn('Could not import python optimal transport (pip install pot) (import ot)')
 
 from .base import UniformDensity
 # noinspection PyProtectedMember
