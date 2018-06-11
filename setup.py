@@ -29,6 +29,7 @@ if __name__ == '__main__':
     from numpy.distutils.core import setup
     metadata = dict(
         name='ddl',
+        packages=['ddl'],
         version='0.0.1',
         description='Destructive deep learning estimators and functions. Estimators are compatible '
                     'with scikit-learn.',
