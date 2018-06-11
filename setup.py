@@ -50,7 +50,7 @@ if __name__ == '__main__':
         # $ pip install Cython
         # $ pip install numpy
         # $ pip install pypandoc
-        setup_requires=['setuptools', 'Cython', 'numpy', 'pypandoc'],
+        setup_requires=['numpy'],
         extras_require={
             'test': ['pytest'],  # Testing framework
         },
