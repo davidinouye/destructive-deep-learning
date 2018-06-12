@@ -5,7 +5,6 @@ import logging
 import itertools
 
 import numpy as np
-from sklearn.utils.testing import SkipTest
 from sklearn.exceptions import DataConversionWarning
 
 _INF_SPACE = np.array([-np.inf, np.inf])
