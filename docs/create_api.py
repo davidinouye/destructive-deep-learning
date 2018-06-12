@@ -25,8 +25,8 @@ def create_api_rst(package, generated_dir):
     # Get functions and classes
     def _get_module_data(module_name):
         module = importlib.import_module(module_name)
-        classes = [o for o in getmembers(module) if isclass(o[1]) and o[0][0] != '_' and o[1].__module__ == module_name]
-        functions = [o for o in getmembers(module) if isfunction(o[1]) and o[0][0] != '_' and o[1].__module__ == module_name]
+        classes = [o for o in getmembers(module) if isclass(o[1]) and o[0][0] != '_' and o[1].__module__.startswith(module_name)]
+        functions = [o for o in getmembers(module) if isfunction(o[1]) and o[0][0] != '_' and o[1].__module__.startswith(module_name)]
         return dict(module=module, functions=functions, classes=classes)
     module_data = [
         _get_module_data(module_name)
