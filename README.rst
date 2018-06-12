@@ -6,6 +6,12 @@ Destructive deep learning estimators and functions.
 Estimators are compatible with scikit-learn.
 Source code is distributed under the BSD 3-clause license.
 
+Documentation
+-------------
+Please see the `API reference`_ for basic documentation.
+
+.. _`API reference`: https://destructive-deep-learning.readthedocs.io/en/latest/
+
 Reproduce experiments from ICML 2018 paper
 ------------------------------------------
 
