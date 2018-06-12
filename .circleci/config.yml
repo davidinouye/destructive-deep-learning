@@ -10,7 +10,8 @@ jobs:
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       # mlpack and anaconda docker image
       # previously circleci/python:3.6.1
-        - image: davidinouye/destructive-deep-learning
+      #- image: davidinouye/destructive-deep-learning
+        - image: davidinouye/research
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
