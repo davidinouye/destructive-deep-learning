@@ -21,7 +21,6 @@ from .univariate import _check_univariate_X
 # noinspection PyProtectedMember
 from .utils import _DEFAULT_SUPPORT, make_interior_probability
 
-import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -625,6 +624,7 @@ class AugmentedGaussianDensity(GaussianMixtureDensity):
                     self.n_iter_ += 1
 
         # Plot stuff for debugging
+        #import matplotlib.pyplot as plt
         #plt.semilogx(test_var, scores[ii, :, :].T)
         #plt.xlabel('Mixture var')
         #plt.legend(test_weights)
