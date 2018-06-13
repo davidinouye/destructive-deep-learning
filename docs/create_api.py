@@ -17,16 +17,26 @@ def create_api_rst(package, generated_dir):
         for _, module_name, is_pkg in pkgutil.walk_packages(
                 path=package.__path__, prefix=package.__name__+'.', onerror=lambda x: None)
         if ('._' not in module_name 
-                and module_name[0] != '_'
-                and 'test' not in module_name
-                and not module_name.endswith('setup'))
+            and module_name[0] != '_'
+            and 'test' not in module_name
+            and not module_name.endswith('setup'))
     ]
 
     # Get functions and classes
     def _get_module_data(module_name):
         module = importlib.import_module(module_name)
-        classes = [o for o in getmembers(module) if isclass(o[1]) and o[0][0] != '_' and o[1].__module__.startswith(module_name)]
-        functions = [o for o in getmembers(module) if isfunction(o[1]) and o[0][0] != '_' and o[1].__module__.startswith(module_name)]
+        classes = [
+            o for o in getmembers(module) 
+            if isclass(o[1])
+            and o[0][0] != '_'
+            and o[1].__module__.startswith(module_name)
+        ]
+        functions = [
+            o for o in getmembers(module) 
+            if isfunction(o[1])
+            and o[0][0] != '_'
+            and o[1].__module__.startswith(module_name)
+        ]
         return dict(module=module, functions=functions, classes=classes)
     module_data = [
         _get_module_data(module_name)
@@ -80,11 +90,11 @@ def _show_arr(module_name, arr, generated_dir, kind='class'):
         plural_kind = 'classes'
     else:
         raise ValueError('Invalid kind')
-    this_module = module_name.split('.')[1]
+    this_module = module_name.split('.')[-1]
     arr_str = '%s %s' % (this_module.title(), plural_kind)
     s = arr_str + '\n'
     s += '-' * len(arr_str) + '\n\n'
-    s += '.. currentmodule:: %s\n\n' % module_name.split('.')[0]
+    s += '.. currentmodule:: %s\n\n' % '.'.join(module_name.split('.')[:-1])
     s += ('.. autosummary::\n%s:toctree: %s\n%s:template: %s.rst\n\n' %
           (INDENT, os.path.join('..', generated_dir), INDENT, kind))
     for name, obj in arr:
