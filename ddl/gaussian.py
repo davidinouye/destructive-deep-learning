@@ -20,7 +20,7 @@ from .univariate import UnivariateDensity
 from .utils import make_interior_probability
 
 
-class JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
+class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
     """Defines a joint copula model with marginal density and the copula density."""
     def __init__(self, univariate_estimators=None):
         self.univariate_estimators = univariate_estimators
