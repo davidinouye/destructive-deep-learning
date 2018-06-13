@@ -348,13 +348,13 @@ class BayesianGaussianMixtureUnivariateDensity(MixtureUnivariateMixin,
     """Just a quick class for Gaussian mixture as a univariate density."""
 
 
-class RandomGaussianMixtureDensity(GaussianMixtureDensity):
+class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
     def __init__(self, n_components=1, covariance_type='full', reg_covar=1e-06, alpha=1,
                  random_state=None):
         # Set two specific parameters to ensure warm start and only one em iteration
         max_iter = 1
         warm_start = True
-        super(RandomGaussianMixtureDensity, self).__init__(
+        super(_RandomGaussianMixtureDensity, self).__init__(
             n_components=n_components, covariance_type=covariance_type, reg_covar=reg_covar,
             max_iter=max_iter, random_state=random_state, warm_start=warm_start)
         self.alpha = alpha
@@ -402,7 +402,7 @@ class RandomGaussianMixtureDensity(GaussianMixtureDensity):
                                'warm_start=True')
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', ConvergenceWarning)
-            super(RandomGaussianMixtureDensity, self).fit(X, y)
+            super(_RandomGaussianMixtureDensity, self).fit(X, y)
         logger.debug(self.weights_)
 
         return self
@@ -499,10 +499,10 @@ class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
         self.precisions_cholesky_[0] = cov
 
 
-class RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
+class _RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
     def __init__(self, main_weight=0.5, n_components=1, covariance_type='full'):
         self.main_weight = main_weight
-        super(RegularizedGaussianMixtureDensity, self).__init__(
+        super(_RegularizedGaussianMixtureDensity, self).__init__(
             n_components=n_components, covariance_type=covariance_type,
         )
 
@@ -540,11 +540,11 @@ class RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
         self.precisions_cholesky_ = np.append(self.precisions_cholesky_, cov, axis=0)
 
 
-class AugmentedGaussianDensity(GaussianMixtureDensity):
+class _AugmentedGaussianDensity(GaussianMixtureDensity):
     def __init__(self, reg_covar=1e-06, random_state=None):
         n_components = 2
         covariance_type = 'diag'
-        super(AugmentedGaussianDensity, self).__init__(
+        super(_AugmentedGaussianDensity, self).__init__(
             n_components=n_components, covariance_type=covariance_type,
             reg_covar=reg_covar, random_state=random_state)
 
