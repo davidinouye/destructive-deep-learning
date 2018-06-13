@@ -1,6 +1,7 @@
 # Data folder #
 ###############
 data/
+docs/_build
 
 # Documentation generated #
 ###########################
