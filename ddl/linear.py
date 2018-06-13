@@ -199,7 +199,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
         return lin_est, destructor
 
 
-class BivariateIndependentComponents(BaseEstimator):
+class _BivariateIndependentComponents(BaseEstimator):
     def __init__(self, n_query=100, density_estimator=None, random_state=None):
         self.n_query = n_query
         self.density_estimator = density_estimator
