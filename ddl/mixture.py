@@ -25,7 +25,7 @@ from .utils import _DEFAULT_SUPPORT, make_interior_probability
 logger = logging.getLogger(__name__)
 
 
-class MixtureMixin(ScoreMixin):
+class _MixtureMixin(ScoreMixin):
     def _get_component_densities(self):
         """Should return the density components."""
         return self.component_densities_
@@ -167,7 +167,7 @@ class MixtureMixin(ScoreMixin):
             return np.array([_get_inverse_cdf(x_scalar) for x_scalar in x])
 
 
-class MixtureDensity(BaseEstimator, MixtureMixin):
+class _MixtureDensity(BaseEstimator, _MixtureMixin):
     """Mixture of independent types."""
     def __init__(self, cluster_estimator=None, component_density_estimator=None):
         self.cluster_estimator = cluster_estimator
@@ -211,11 +211,11 @@ class MixtureDensity(BaseEstimator, MixtureMixin):
             return self.cluster_estimator
 
 
-class GaussianMixtureMixin(object):
+class _GaussianMixtureMixin(object):
     """Overrides several methods in GaussianMixture to comply with density specifications and
     adds a few methods. """
     def fit(self, X, y=None):
-        super(GaussianMixtureMixin, self).fit(X, y)
+        super(_GaussianMixtureMixin, self).fit(X, y)
         self.n_dim_ = X.shape[1]
         return self
 
@@ -226,7 +226,7 @@ class GaussianMixtureMixin(object):
         # Set random state of this object before calling sample
         old_random_state = self.random_state
         self.random_state = random_state
-        X, y = super(GaussianMixtureMixin, self).sample(n_samples)
+        X, y = super(_GaussianMixtureMixin, self).sample(n_samples)
         self.random_state = old_random_state
         return X
 
@@ -301,24 +301,24 @@ class GaussianMixtureMixin(object):
         return X
 
 
-class GaussianMixtureDensity(GaussianMixtureMixin, GaussianMixture, MixtureMixin):
+class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMixin):
     """Simple class for Gaussian mixtures.
-    Note that GaussianMixtureMixin must override some things in GaussianMixture
-    but MixtureMixin should not override GaussianMixture.  Thus, the order of multiple
-    inheritance should remain GaussianMixtureMixin, GaussianMixture, MixtureMixin.
+    Note that _GaussianMixtureMixin must override some things in GaussianMixture
+    but _MixtureMixin should not override GaussianMixture.  Thus, the order of multiple
+    inheritance should remain _GaussianMixtureMixin, GaussianMixture, _MixtureMixin.
     """
 
 
-class BayesianGaussianMixtureDensity(GaussianMixtureMixin, BayesianGaussianMixture, MixtureMixin):
+class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture, _MixtureMixin):
     """Simple class for Bayesian Gaussian mixtures.
     See note for GaussianMixtureDensity.
     """
 
 
-class MixtureUnivariateMixin(object):
+class _MixtureUnivariateMixin(object):
     def fit(self, X, y=None, **fit_params):
         X = self._check_X(X)
-        return super(MixtureUnivariateMixin, self).fit(X, y, **fit_params)
+        return super(_MixtureUnivariateMixin, self).fit(X, y, **fit_params)
 
     def cdf(self, X, y=None):
         self._check_is_fitted()
@@ -339,12 +339,12 @@ class MixtureUnivariateMixin(object):
         return _check_univariate_X(X, self.get_support(), inverse=inverse)
 
 
-class GaussianMixtureUnivariateDensity(MixtureUnivariateMixin, GaussianMixtureDensity):
+class _GaussianMixtureUnivariateDensity(_MixtureUnivariateMixin, GaussianMixtureDensity):
     """Just a quick class for Gaussian mixture as a univariate density."""
 
 
-class BayesianGaussianMixtureUnivariateDensity(MixtureUnivariateMixin,
-                                               BayesianGaussianMixtureDensity):
+class _BayesianGaussianMixtureUnivariateDensity(_MixtureUnivariateMixin,
+                                                _BayesianGaussianMixtureDensity):
     """Just a quick class for Gaussian mixture as a univariate density."""
 
 
