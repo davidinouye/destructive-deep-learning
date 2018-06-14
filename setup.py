@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # $ pip install pypandoc
         setup_requires=['numpy', 'Cython'],
         extras_require={
-            'test': ['pytest', 'nose'],  # Testing framework
+            'test': ['pytest', 'nose', 'pot'],  # Testing framework
         },
     )
 
