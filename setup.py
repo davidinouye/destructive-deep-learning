@@ -40,7 +40,9 @@ if __name__ == '__main__':
         zip_safe=False,
         # Nose needed by 0.19.1 version of scikit-learn for importing testing module
         # I think this was fixed for upcoming version 0.20.X to avoid dependency
-        install_requires=['numpy', 'scipy', 'scikit-learn'],
+        install_requires=['numpy', 'scipy', 'scikit-learn',
+                          'pandas' # Currently required by ddl/externals/mlpack/_matrix_utils.py
+                          ],
         #OPTIONAL: ['matplotlib', 'pot', 'seaborn']
         # Cython, numpy and pypandoc needed to install pot package (bug in installing pot from scratch)
         # Should do the following before trying to install
