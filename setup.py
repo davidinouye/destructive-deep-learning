@@ -1,7 +1,20 @@
 #!/usr/bin/env python
 import os
 
+
 def configuration(parent_package='', top_path=None):
+    """Creates `configuration` parameter for setup function.
+
+    Parameters
+    ----------
+    parent_package : str, optional
+    top_path : str or None, optional
+
+    Returns
+    -------
+    config
+        `configuration` parameter for setup function call
+    """
     if os.path.exists('MANIFEST'):
         os.remove('MANIFEST')
 
@@ -25,6 +38,7 @@ def configuration(parent_package='', top_path=None):
 
     return config
 
+
 if __name__ == '__main__':
     from numpy.distutils.core import setup
     metadata = dict(
@@ -43,8 +57,9 @@ if __name__ == '__main__':
         install_requires=['numpy', 'scipy', 'scikit-learn',
                           'pandas' # Currently required by ddl/externals/mlpack/_matrix_utils.py
                           ],
-        #OPTIONAL: ['matplotlib', 'pot', 'seaborn']
-        # Cython, numpy and pypandoc needed to install pot package (bug in installing pot from scratch)
+        # OPTIONAL: ['matplotlib', 'pot', 'seaborn']
+        # Cython, numpy and pypandoc needed to install pot package
+        # (bug in installing pot from scratch)
         # Should do the following before trying to install
         # $ pip install setuptools
         # $ pip install Cython
