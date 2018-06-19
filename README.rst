@@ -51,7 +51,7 @@ Once in the container, download and compile the code to link to `MLPACK`_.
     cd destructive-deep-learning
     make
 
-To run tests (which uses `pytest`), execute:
+To run tests (which uses `pytest <https://docs.pytest.org/en/latest/>`_), execute:
 
 .. code:: console
 
