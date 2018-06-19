@@ -8,6 +8,7 @@ Source code is distributed under the BSD 3-clause license.
 
 Documentation
 -------------
+
 Please see the `API reference`_ for basic documentation.
 
 .. _`API reference`: https://destructive-deep-learning.readthedocs.io/en/latest/
