@@ -174,23 +174,3 @@ For this particular project, please follow these additional guidelines:
        logging.basicConfig(stream=sys.stdout)  # Push towards stdout instead of null handler
        logging.captureWarnings(True)  # Capture warnings in loggers
        logging.getLogger('ddl').setLevel(logging.DEBUG)  # Show everything above DEBUG level for the root ddl module
-
-TODOs
------
-
--  Change most functions to use log probabilities for numerical accuracy
-   whenever possible. We could even operate in the log space all the
-   time for canonical destructors (everything would be strictly
-   negative). For example, node.value and node.threshold in tree
-   densities/destructors. These should be log values if possible.
--  Change all ``n_dim`` and ``n_dim_`` to ``n_features`` and
-   ``n_features_`` to conform with scikit-learn style. Likely this would
-   only take a global replace all but would probably want to test this.
--  Reformat atomic density destructors (i.e. non-composite that inherit
-   from ``BaseDensityDestructor``) to take a density as the main (or
-   only) parameter rather than replicating the density parameters.
--  Add mutability test for ``transform``, ``inverse_transform`` and
-   ``score_samples`` (maybe others) to ``check_destructor``.
--  Setup a test suite to check all common destructors (ideally with
-   continuous testing/integration).
--  Add more documentation.
