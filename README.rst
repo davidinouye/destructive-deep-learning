@@ -82,6 +82,8 @@ than overwriting the existing log file.
     tail data/results/data-mnist_model-deep-copula_n_jobs-1.log 
     # Command for all models and datasets (using commas to separate)
     python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10
+    # Command to run all experiments in parallel using subprocesses
+    python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10 --parallel_subprocesses=True 
 
 
 Contributing
