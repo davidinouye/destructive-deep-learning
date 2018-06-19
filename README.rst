@@ -70,7 +70,7 @@ NOTE: `MLPACK`_ is required to reproduce experiments, please
 see installation instructions. 
 
 To reproduce the 2D experiment in the paper and generate the paper figures
-open and run the notebook `notebooks/demo_toy_experiment.ipynb`_ 
+open and run the notebook `notebooks/demo_toy_experiment.ipynb <notebooks/demo_toy_experiment.ipynb>`_ 
 or run the notebook from the command line.
 Note that this notebook may take a while to run.
 Also, if the command below is interrupted with Ctrl+C, the underlying python process
@@ -82,8 +82,8 @@ may need to be killed manually.
 
 To reproduce the MNIST and CIFAR-10 experiments execute the command below.
 Note that this script will download the MNIST and CIFAR-10 datasets into 
-:file:`data/download_cache` if not downloaded already.
-The results are stored in :doc:`data/results` both the log files and pickle files
+`data/download_cache <data>`_ if not downloaded already.
+The results are stored in `data/results <data/results>`_ both the log files and pickle files
 that include the fitted models.
 Note that the log files will always append to the previous log file rather
 than overwriting the existing log file.
