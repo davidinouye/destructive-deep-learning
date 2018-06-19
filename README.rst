@@ -1,3 +1,10 @@
+.. -*- mode: rst -*-
+
+|CircleCI|_
+
+.. |CircleCI| image:: https://circleci.com/gh/davidinouye/destructive-deep-learning/tree/master.svg?style=shield&circle-token=:circle-token
+.. _CircleCI: https://circleci.com/gh/davidinouye/destructive-deep-learning
+
 ======================================
 Destructive Deep Learning (ddl) README
 ======================================
