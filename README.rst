@@ -17,7 +17,13 @@ Installation
 
 Because `MLPACK`_ is required for the tree density destructors used in the experiments,
 the suggested installation method is to download and start a shell in a `Docker <https://www.docker.com/>`_
-or `Singularity <http://singularity.lbl.gov/>`_ container as below.  For Docker:
+or `Singularity <http://singularity.lbl.gov/>`_ container as below.  
+(If you are using `Docker for Mac`_ or `Docker for Windows`_, you will probably have 
+to increase the available memory to Docker for these experiments. See Docker documentation.)
+For Docker (recommended if available):
+
+.. _`Docker for Mac`: https://docs.docker.com/docker-for-mac/
+.. _`Docker for Windows`: https://docs.docker.com/docker-for-windows/
 
 .. code:: bash
     docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
@@ -25,7 +31,7 @@ or `Singularity <http://singularity.lbl.gov/>`_ container as below.  For Docker:
 
 Or, for Singularity:
 .. code:: bash
-    singularity shell shub://davidinouye/destructive-deep-learning:icml2018
+    singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
 Once in the container, download and compile the code to link to `MLPACK`_.
 .. code:: bash
@@ -64,6 +70,8 @@ Note that this script will download the MNIST and CIFAR-10 datasets into
 `data/download_cache` if not downloaded already.
 The results are stored in `data/results` both the log files and pickle files
 that include the fitted models.
+Note that the log files will always append to the previous log file rather
+than overwriting the existing log file.
 
 .. code:: bash
     # Download data cache directly since mldata.org is sometimes down
@@ -72,7 +80,7 @@ that include the fitted models.
     python scripts/icml_2018_experiment.py --model_names=deep-copula --data_names=mnist
     # View tail of output log files
     tail data/results/data-mnist_model-deep-copula_n_jobs-1.log 
-    # Command for all models and datasets
+    # Command for all models and datasets (using commas to separate)
     python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10
 
 
