@@ -12,32 +12,72 @@ Please see the `API reference`_ for basic documentation.
 
 .. _`API reference`: https://destructive-deep-learning.readthedocs.io/en/latest/
 
+Installation
+------------
+
+Because `MLPACK`_ is required for the tree density destructors used in the experiments,
+the suggested installation method is to download and start a shell in a `Docker <https://www.docker.com/>`_
+or `Singularity <http://singularity.lbl.gov/>`_ container as below.  For Docker:
+
+.. code:: bash
+    docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
+.. _`MLPACK` http://mlpack.org/
+
+Or, for Singularity:
+.. code:: bash
+    singularity shell shub://davidinouye/destructive-deep-learning:icml2018
+
+Once in the container, download and compile the code to link to `MLPACK`_.
+.. code:: bash
+    git clone https://github.com/davidinouye/destructive-deep-learning.git
+    cd destructive-deep-learning
+    make
+
+To run tests (which uses `pytest`), execute:
+.. code:: bash
+    make test
+
 Reproduce experiments from ICML 2018 paper
 ------------------------------------------
 
 Please cite the following paper if you use this code:
 
-    Deep Density Destructors David I. Inouye, Pradeep Ravikumar To
-    appear in *International Conference on Machine Learning* (ICML),
-    2018.
+    Deep Density Destructors
+    David I. Inouye, Pradeep Ravikumar
+    To appear in *International Conference on Machine Learning* (ICML), 2018.
 
-*Prerequisites to reproduce experiments*: MLPACK (mlpack.org) I have a singularity and docker image
-that comes preinstalled with MLPACK and will add instructions soon.
+NOTE: `MLPACK`_ is required to reproduce experiments, please
+see installation instructions. 
 
-To reproduce the 2D experiment in the paper open and run the notebook
-``notebooks/demo_toy_experiment.ipynb``.
-
-To reproduce the MNIST and CIFAR-10 experiments run:
-
-.. code:: bash
-
-    $ python scripts/icml_2018_experiment.py --model_names=MODEL_NAME --data_names=DATA_NAME
-
-To run all the models run
+To reproduce the 2D experiment in the paper and generate the paper figures
+open and run the notebook `notebooks/demo_toy_experiment.ipynb` 
+or run the notebook from the command line.
+Note that this notebook may take a while to run.
+Also, if the command below is interrupted with Ctrl+C, the underlying python process
+may need to be killed manually.
 
 .. code:: bash
+    jupyter nbconvert --ExecutePreprocessor.timeout=-1 --to notebook --execute notebooks/demo_toy_experiment.ipynb
 
-    $ python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10
+To reproduce the MNIST and CIFAR-10 experiments execute the command below.
+Note that this script will download the MNIST and CIFAR-10 datasets into 
+`data/download_cache` if not downloaded already.
+The results are stored in `data/results` both the log files and pickle files
+that include the fitted models.
+
+.. code:: bash
+    # Download data cache directly since mldata.org is sometimes down
+    wget http://www.cs.cmu.edu/~dinouye/data/data-icml2018.tar.gz && tar -xzvf data-icml2018.tar.gz && rm data-icml2018.tar.gz
+    # Example command for deep copula model and MNIST data
+    python scripts/icml_2018_experiment.py --model_names=deep-copula --data_names=mnist
+    # View tail of output log files
+    tail data/results/data-mnist_model-deep-copula_n_jobs-1.log 
+    # Command for all models and datasets
+    python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10
+
+
+Contributing
+============
 
 Coding guidelines
 -----------------
