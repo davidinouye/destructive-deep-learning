@@ -11,6 +11,7 @@ docs/generated
 ###############
 .cache/
 .pytest_cache/
+.coverage
 
 # Python files #
 ################
