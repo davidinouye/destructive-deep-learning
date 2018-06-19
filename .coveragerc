@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = ddl
+include = */ddl/*
+omit =
+    */setup.py
