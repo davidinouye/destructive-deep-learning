@@ -17,9 +17,9 @@ Source code is distributed under the BSD 3-clause license.
 
 Please cite the following paper if you use this code:
 
-    Deep Density Destructors
-    David I. Inouye, Pradeep Ravikumar
-    To appear in *International Conference on Machine Learning* (ICML), 2018.
+    | Deep Density Destructors
+    | David I. Inouye, Pradeep Ravikumar
+    | To appear in *International Conference on Machine Learning* (ICML), 2018.
 
 Documentation
 -------------
