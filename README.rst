@@ -29,20 +29,20 @@ For Docker (recommended if available):
 
 .. _`Docker for Windows`: https://docs.docker.com/docker-for-windows/
 
-.. code:: bash
+.. code:: console
 
     docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
 
 
 Or, for Singularity:
 
-.. code:: bash
+.. code:: console
 
     singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
 Once in the container, download and compile the code to link to `MLPACK`_.
 
-.. code:: bash
+.. code:: console
 
     git clone https://github.com/davidinouye/destructive-deep-learning.git
     cd destructive-deep-learning
@@ -50,7 +50,7 @@ Once in the container, download and compile the code to link to `MLPACK`_.
 
 To run tests (which uses `pytest`), execute:
 
-.. code:: bash
+.. code:: console
 
     make test
 
@@ -73,7 +73,7 @@ Note that this notebook may take a while to run.
 Also, if the command below is interrupted with Ctrl+C, the underlying python process
 may need to be killed manually.
 
-.. code:: bash
+.. code:: console
 
     jupyter nbconvert --ExecutePreprocessor.timeout=-1 --to notebook --execute notebooks/demo_toy_experiment.ipynb
 
@@ -85,7 +85,7 @@ that include the fitted models.
 Note that the log files will always append to the previous log file rather
 than overwriting the existing log file.
 
-.. code:: bash
+.. code:: console
 
     # Download data cache directly since mldata.org is sometimes down
     wget http://www.cs.cmu.edu/~dinouye/data/data-icml2018.tar.gz && tar -xzvf data-icml2018.tar.gz && rm data-icml2018.tar.gz
