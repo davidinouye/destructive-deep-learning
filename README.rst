@@ -23,24 +23,30 @@ to increase the available memory to Docker for these experiments. See Docker doc
 For Docker (recommended if available):
 
 .. _`Docker for Mac`: https://docs.docker.com/docker-for-mac/
+
 .. _`Docker for Windows`: https://docs.docker.com/docker-for-windows/
 
 .. code:: bash
+
     docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
+
 .. _`MLPACK` http://mlpack.org/
 
 Or, for Singularity:
 .. code:: bash
+
     singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
 Once in the container, download and compile the code to link to `MLPACK`_.
 .. code:: bash
+
     git clone https://github.com/davidinouye/destructive-deep-learning.git
     cd destructive-deep-learning
     make
 
 To run tests (which uses `pytest`), execute:
 .. code:: bash
+
     make test
 
 Reproduce experiments from ICML 2018 paper
@@ -63,6 +69,7 @@ Also, if the command below is interrupted with Ctrl+C, the underlying python pro
 may need to be killed manually.
 
 .. code:: bash
+
     jupyter nbconvert --ExecutePreprocessor.timeout=-1 --to notebook --execute notebooks/demo_toy_experiment.ipynb
 
 To reproduce the MNIST and CIFAR-10 experiments execute the command below.
@@ -74,6 +81,7 @@ Note that the log files will always append to the previous log file rather
 than overwriting the existing log file.
 
 .. code:: bash
+
     # Download data cache directly since mldata.org is sometimes down
     wget http://www.cs.cmu.edu/~dinouye/data/data-icml2018.tar.gz && tar -xzvf data-icml2018.tar.gz && rm data-icml2018.tar.gz
     # Example command for deep copula model and MNIST data
