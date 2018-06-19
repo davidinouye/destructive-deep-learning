@@ -6,9 +6,15 @@ import logging
 
 import numpy as np
 from sklearn.base import clone
-from sklearn.exceptions import SkipTestWarning, DataConversionWarning
 from sklearn.utils import check_random_state
-from sklearn.utils.estimator_checks import check_estimator
+try:
+    from sklearn.exceptions import SkipTestWarning, DataConversionWarning
+    from sklearn.utils.estimator_checks import check_estimator
+except:
+    warnings.warn('Could not import sklearn\'s SkipTestWarning, '
+                  'DataConversionWarning or check_estimator '
+                  '(likely because nose is not installed) but continuing '
+                  'so that documentation can be generated without nose.')
 try:
     import ot  # Python optimal transport module (pot)
 except ImportError:
