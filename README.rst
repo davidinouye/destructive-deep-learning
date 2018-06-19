@@ -33,11 +33,13 @@ For Docker (recommended if available):
 .. _`MLPACK` http://mlpack.org/
 
 Or, for Singularity:
+
 .. code:: bash
 
     singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
 Once in the container, download and compile the code to link to `MLPACK`_.
+
 .. code:: bash
 
     git clone https://github.com/davidinouye/destructive-deep-learning.git
@@ -45,6 +47,7 @@ Once in the container, download and compile the code to link to `MLPACK`_.
     make
 
 To run tests (which uses `pytest`), execute:
+
 .. code:: bash
 
     make test
