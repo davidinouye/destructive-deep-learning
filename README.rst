@@ -23,6 +23,8 @@ or `Singularity <http://singularity.lbl.gov/>`_ container as below.
 to increase the available memory to Docker for these experiments. See Docker documentation.)
 For Docker (recommended if available):
 
+.. _`MLPACK`: http://mlpack.org/
+
 .. _`Docker for Mac`: https://docs.docker.com/docker-for-mac/
 
 .. _`Docker for Windows`: https://docs.docker.com/docker-for-windows/
@@ -31,7 +33,6 @@ For Docker (recommended if available):
 
     docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
 
-.. _`MLPACK` http://mlpack.org/
 
 Or, for Singularity:
 
@@ -98,11 +99,12 @@ than overwriting the existing log file.
     python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10 --parallel_subprocesses=True 
 
 
+============
 Contributing
 ============
 
-Coding guidelines
------------------
+General coding guidelines
+-------------------------
 
 Please read through the following high-level guidelines:
 
@@ -112,7 +114,7 @@ Please read through the following high-level guidelines:
    http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines
 
 Project-specific guidelies
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 For this particular project, please follow these additional guidelines:
 
@@ -143,7 +145,7 @@ For this particular project, please follow these additional guidelines:
        import logging
        logger = logging.getLogger(__name__)
        def foo():
-       logger.debug('Checking inside foo')
+            logger.debug('Checking inside foo')
 
 -  To avoid the module from outputing anything unless requested, the
    root module file ``__init__.py`` redirects the logging output to
@@ -174,14 +176,14 @@ TODOs
    time for canonical destructors (everything would be strictly
    negative). For example, node.value and node.threshold in tree
    densities/destructors. These should be log values if possible.
--  Change all ``n_dim`` and ``n_dim_`` to ``n_features`` and
-   ``n_features_`` to conform with scikit-learn style. Likely this would
+-  Change all `n_dim` and `n_dim_` to `n_features` and
+   `n_features_` to conform with scikit-learn style. Likely this would
    only take a global replace all but would probably want to test this.
 -  Reformat atomic density destructors (i.e. non-composite that inherit
-   from ``BaseDensityDestructor``) to take a density as the main (or
+   from `BaseDensityDestructor`) to take a density as the main (or
    only) parameter rather than replicating the density parameters.
--  Add mutability test for ``transform``, ``inverse_transform`` and
-   ``score_samples`` (maybe others) to ``check_destructor``.
+-  Add mutability test for `transform`, `inverse_transform` and
+   `score_samples` (maybe others) to `check_destructor`.
 -  Setup a test suite to check all common destructors (ideally with
    continuous testing/integration).
 -  Add more documentation.
