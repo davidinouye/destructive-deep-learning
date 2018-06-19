@@ -2,6 +2,8 @@
 Destructive Deep Learning (ddl) README
 ======================================
 
+.. default-role:: any
+
 Destructive deep learning estimators and functions.
 Estimators are compatible with scikit-learn.
 Source code is distributed under the BSD 3-clause license.
@@ -15,6 +17,7 @@ Please see the `API reference`_ for basic documentation.
 
 Installation
 ------------
+
 
 Because `MLPACK`_ is required for the tree density destructors used in the experiments,
 the suggested installation method is to download and start a shell in a `Docker <https://www.docker.com/>`_
@@ -89,12 +92,16 @@ than overwriting the existing log file.
 
     # Download data cache directly since mldata.org is sometimes down
     wget http://www.cs.cmu.edu/~dinouye/data/data-icml2018.tar.gz && tar -xzvf data-icml2018.tar.gz && rm data-icml2018.tar.gz
+
     # Example command for deep copula model and MNIST data
     python scripts/icml_2018_experiment.py --model_names=deep-copula --data_names=mnist
+
     # View tail of output log files
     tail data/results/data-mnist_model-deep-copula_n_jobs-1.log 
+
     # Command for all models and datasets (using commas to separate)
     python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10
+
     # Command to run all experiments in parallel using subprocesses
     python scripts/icml_2018_experiment.py --model_names=deep-copula,image-pairs-copula,image-pairs-tree --data_names=mnist,cifar10 --parallel_subprocesses=True 
 
