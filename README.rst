@@ -8,6 +8,12 @@ Destructive deep learning estimators and functions.
 Estimators are compatible with scikit-learn.
 Source code is distributed under the BSD 3-clause license.
 
+Please cite the following paper if you use this code:
+
+    Deep Density Destructors
+    David I. Inouye, Pradeep Ravikumar
+    To appear in *International Conference on Machine Learning* (ICML), 2018.
+
 Documentation
 -------------
 
@@ -59,12 +65,6 @@ To run tests (which uses `pytest <https://docs.pytest.org/en/latest/>`_), execut
 
 Reproduce experiments from ICML 2018 paper
 ------------------------------------------
-
-Please cite the following paper if you use this code:
-
-    Deep Density Destructors
-    David I. Inouye, Pradeep Ravikumar
-    To appear in *International Conference on Machine Learning* (ICML), 2018.
 
 NOTE: `MLPACK`_ is required to reproduce experiments, please
 see installation instructions. 
