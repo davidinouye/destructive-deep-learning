@@ -3,10 +3,11 @@ all:
 	python setup.py build_ext --inplace
 test:
 	pytest --cov=ddl --maxfail=1 --doctest-modules --pyargs ddl
+	codecov
 testmlpack:
-	pytest --cov=ddl --maxfail=1 -k test_mlpack --doctest-modules --pyargs ddl
+	pytest --maxfail=1 -k test_mlpack --doctest-modules --pyargs ddl
 testother:
-	pytest --cov=ddl --maxfail=1 --ignore=ddl/externals/mlpack -k 'not test_mlpack' --pyargs ddl
+	pytest --maxfail=1 --ignore=ddl/externals/mlpack -k 'not test_mlpack' --pyargs ddl
 testspecial:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/maf_cache: scripts/large_experiment.py
