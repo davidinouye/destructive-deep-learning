@@ -130,23 +130,9 @@ def _get_model(data_name, model_name, model_kwargs):
 
     # Setup canonical destructor for various models
     if model_name == 'deep-copula':
-        # MNIST Deep Copula & -1028.00 $\pm$ 0.72 & 5\\
-        # From [dinouye@matrix ~/research/destructive-deep-learning/data/results]$ tail -n 20 data-mnist_model-copula_perc_train-None_n_jobs-1_alpha-1_tree_alpha-0_max_leaf_nodes-100000_min_samples_leaf-1_group_stop_tol-0_001_deep_stop_tol-0_001_n_uniq_dir-8.log 
-        # CIFAR10 Deep Copula & 2625.73 $\pm$ 13.77 & 17\\
-        # From ../data/results/data-cifar10_model-copula_perc_train-None_n_jobs-1_alpha-1_tree_alpha-0_5_max_leaf_nodes-1000_min_samples_leaf-5_group_stop_tol-0_001_deep_stop_tol-0_001_n_uniq_dir-8
-        # Setup init destructor
         deep_stop_tol=0.001
         canonical_destructor = _get_copula_destructor()
     else:
-        # Image Pairs (Copula) & -1043.16 $\pm$ 0.70 & 17 \\
-        # From ../data/results/data-mnist_model-newpairs-copula_perc_train-None_n_jobs-1_alpha-1_tree_alpha-0_max_leaf_nodes-100000_min_samples_leaf-1_group_stop_tol-0_001_deep_stop_tol-0_0001_n_uniq_dir-8
-        # Image Pairs (Copula) & -2517.86 $\pm$ 9.2 & 31 \\
-        # From ../data/results/data-cifar10_model-newpairs-copula_perc_train-None_n_jobs-1_alpha-1_tree_alpha-0_max_leaf_nodes-100000_min_samples_leaf-1_group_stop_tol-0_001_deep_stop_tol-0_0001_n_uniq_dir-8
-
-        # Image Pairs (SingleTree) & -1003.13 $\pm$ 0.67 & \hspace{-1em} 21 $\times$ 392 \\
-        # FROM ../data/results/data-mnist_model-newpairs-singletree_perc_train-None_n_jobs-1_alpha-1_tree_alpha-0_5_max_leaf_nodes-50_min_samples_leaf-100_group_stop_tol-0_001_deep_stop_tol-0_0001_n_uniq_dir-8
-        # Image Pairs (SingleTree) & -2404.43 $\pm$ 8.8 & 31 \\
-        # From ../data/results/data-cifar10_model-newpairs-singletree_perc_train-None_n_jobs-10_alpha-1_tree_alpha-0_5_max_leaf_nodes-50_min_samples_leaf-100_group_stop_tol-0_001_deep_stop_tol-0_0001_n_uniq_dir-8
         deep_stop_tol = 0.0001
         n_jobs = model_kwargs['n_jobs']
 
@@ -357,6 +343,10 @@ if __name__ == '__main__':
         '--data_names', default=','.join(all_data_names),
         help='One or more data names separated by commas from the list %s' % str(all_data_names))
     parser.add_argument(
+        '--parallel_subprocesses', default=False, type=bool,
+        help='Whether to use parallel subprocesses for each (model, data) experiment '
+             'pair or run directly (default is False).')
+    parser.add_argument(
         '--n_jobs', default=1, type=int,
         help='Number of parallel jobs to use for image-pairs models (default is 1).')
     args = parser.parse_args()
@@ -367,40 +357,46 @@ if __name__ == '__main__':
     model_kwargs = vars(args).copy() # Extract model_kwargs as dictionary
     model_names = model_kwargs.pop('model_names').split(',')
     data_names = model_kwargs.pop('data_names').split(',')
+    is_parallel = model_kwargs.pop('parallel_subprocesses')
     processes = []
     for data_name in data_names:
         # Make sure data has already been cached
         get_maf_data(data_name)
         for model_name in model_names:
-            # Generate script to run experiment in parallel in separate subprocesses
             model_kwargs['experiment_filename'], model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
                 data_name, model_name=model_name, model_kwargs=model_kwargs)
-            script_str = (
-                'import os\n'
-                'os.chdir(\'%s\')\n'
-                'from icml_2018_experiment import run_experiment\n'
-                'run_experiment(\'%s\', \'%s\', model_kwargs=%s)\n'
-            ) % (
-                os.path.dirname(os.path.realpath(__file__)), 
-                data_name, model_name, str(model_kwargs)
-            )
-            echo_args = ['echo', '-e', script_str]
+            if not is_parallel:
+                # Just run the experiment directly
+                run_experiment(data_name, model_name, model_kwargs)
+            else:
+                # Generate script to run experiment in parallel in separate subprocesses
+                script_str = (
+                    'import os\n'
+                    'os.chdir(\'%s\')\n'
+                    'from icml_2018_experiment import run_experiment\n'
+                    'run_experiment(\'%s\', \'%s\', model_kwargs=%s)\n'
+                ) % (
+                    os.path.dirname(os.path.realpath(__file__)), 
+                    data_name, model_name, str(model_kwargs)
+                )
+                echo_args = ['echo', '-e', script_str]
 
-            # Launch subprocess which can run in parallel
-            DEVNULL = open(os.devnull, 'w')
-            echo = subprocess.Popen(['echo', '-e', script_str], stdout=subprocess.PIPE, stderr=DEVNULL)
-            python = subprocess.Popen(['python'], stdin=echo.stdout, stdout=DEVNULL, stderr=DEVNULL)
-            processes.append(echo)
-            processes.append(python)
-            print('Started subprocess for experiment %s' % model_kwargs['experiment_label'])
-            print('  Appending to end of log file %s.log' % model_kwargs['experiment_filename'])
+                # Launch subprocess which can run in parallel
+                DEVNULL = open(os.devnull, 'w')
+                echo = subprocess.Popen(['echo', '-e', script_str], stdout=subprocess.PIPE)
+                python = subprocess.Popen(['python'], stdin=echo.stdout, stdout=DEVNULL)
+                processes.append(echo)
+                processes.append(python)
+                print('Started subprocess for experiment %s' % model_kwargs['experiment_label'])
+                print('  Appending to end of log file %s.log' % model_kwargs['experiment_filename'])
 
             # Remove filenames and labels for next round
             model_kwargs.pop('experiment_filename')
             model_kwargs.pop('experiment_label')
 
-    # Wait for all processes to finish
-    print('Waiting for all subprocesses to finish')
-    for p in processes:
-        p.wait()
-    print('All subprocesses finished!')
+    if is_parallel:
+        # Wait for all processes to finish
+        print('Waiting for all subprocesses to finish')
+        for p in processes:
+            p.wait()
+        print('All subprocesses finished!')
