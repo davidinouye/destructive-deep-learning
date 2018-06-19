@@ -4,7 +4,7 @@
 
 .. |CircleCI| image:: https://circleci.com/gh/davidinouye/destructive-deep-learning/tree/master.svg?style=shield&circle-token=:circle-token
 .. _CircleCI: https://circleci.com/gh/davidinouye/destructive-deep-learning
-.. |ReadtheDocs| image::  image:: https://readthedocs.org/projects/destructive-deep-learning/badge/?version=latest
+.. |ReadtheDocs| image:: https://readthedocs.org/projects/destructive-deep-learning/badge/?version=latest
 .. _ReadtheDocs: https://destructive-deep-learning.readthedocs.io/en/latest/?badge=latest
 
 ======================================
