@@ -40,7 +40,7 @@ jobs:
             pip install Cython
             pip install numpy
             pip install pypandoc
-            pip install .[test]
+            pip install -e .[test]
 
 #      - save_cache:
 #          paths:
