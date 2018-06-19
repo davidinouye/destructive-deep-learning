@@ -82,8 +82,8 @@ may need to be killed manually.
 
 To reproduce the MNIST and CIFAR-10 experiments execute the command below.
 Note that this script will download the MNIST and CIFAR-10 datasets into 
-`data/download_cache <data>`_ if not downloaded already.
-The results are stored in `data/results <data/results>`_ both the log files and pickle files
+``data/download_cache`` if not downloaded already.
+The results are stored in ``data/results`` both the log files and pickle files
 that include the fitted models.
 Note that the log files will always append to the previous log file rather
 than overwriting the existing log file.
@@ -183,14 +183,14 @@ TODOs
    time for canonical destructors (everything would be strictly
    negative). For example, node.value and node.threshold in tree
    densities/destructors. These should be log values if possible.
--  Change all `n_dim` and `n_dim_` to `n_features` and
-   `n_features_` to conform with scikit-learn style. Likely this would
+-  Change all ``n_dim`` and ``n_dim_`` to ``n_features`` and
+   ``n_features_`` to conform with scikit-learn style. Likely this would
    only take a global replace all but would probably want to test this.
 -  Reformat atomic density destructors (i.e. non-composite that inherit
-   from `BaseDensityDestructor`) to take a density as the main (or
+   from ``BaseDensityDestructor``) to take a density as the main (or
    only) parameter rather than replicating the density parameters.
--  Add mutability test for `transform`, `inverse_transform` and
-   `score_samples` (maybe others) to `check_destructor`.
+-  Add mutability test for ``transform``, ``inverse_transform`` and
+   ``score_samples`` (maybe others) to ``check_destructor``.
 -  Setup a test suite to check all common destructors (ideally with
    continuous testing/integration).
 -  Add more documentation.
