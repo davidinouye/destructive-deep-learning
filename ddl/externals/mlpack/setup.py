@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 import subprocess
 import tarfile
 import urllib.request
@@ -44,7 +45,19 @@ os.mkdir(build_path)
 
 print('Running cmake')
 os.chdir(build_path)
-subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
+if sys.platform == 'darwin':
+    print('Exporting environment variables needed for cmake in Mac OS')
+    os.environ['CC'] = '/usr/local/opt/llvm/bin/clang'
+    os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
+    os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
+    os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
+    subprocess.call(['cmake', 
+                     '-D', 'BUILD_SHARED_LIBS=OFF', 
+                     '-D', 'FORCE_CXX11=ON',
+                     '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
+                     '../'])
+else:
+    subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
 
 print('Building mlpack')
 subprocess.call(['make', 'mlpack'])
