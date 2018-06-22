@@ -22,13 +22,17 @@
         ],
         "include_dirs": [
             "./ddl/externals/mlpack",
-            "/Users/dinouye/anaconda3/lib/python3.6/site-packages/numpy/core/include"
+            "/Users/dinouye/anaconda3/lib/python3.6/site-packages/numpy/core/include",
+            "/Users/dinouye/research/release-ddl/ddl/externals/mlpack/mlpack-mlpack-3.0.2/build/include"
         ],
         "language": "c++",
         "libraries": [
             "mlpack",
             "boost_serialization",
             "m"
+        ],
+        "library_dirs": [
+            "/Users/dinouye/research/release-ddl/ddl/externals/mlpack/mlpack-mlpack-3.0.2/build/lib"
         ],
         "name": "ddl.externals.mlpack._det",
         "sources": [

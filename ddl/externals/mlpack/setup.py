@@ -11,61 +11,66 @@ from numpy.distutils.core import setup
 from numpy.distutils.misc_util import Configuration
 from Cython.Build import cythonize
 
-# Make mlpack
-orig_cwd = os.getcwd()
-mlpack_path = os.path.dirname(os.path.realpath(__file__))
+def build_mlpack():
+    # Setup mlpack paths
+    version = '3.0.2'
+    package_path = os.path.dirname(os.path.realpath(__file__))
+    tar_file_name = 'mlpack-%s.tar.gz' % version
+    tar_file_path = os.path.join(package_path, tar_file_name)
+    tar_url = 'https://github.com/mlpack/mlpack/archive/%s' % tar_file_name 
+    repo_path = os.path.join(package_path, 'mlpack-mlpack-%s' % version)
+    cmake_file_path = os.path.join(repo_path, 'CMakeLists.txt')
+    build_path = os.path.join(repo_path, 'build')
 
-print('Downloading mlpack source')
-version = '3.0.2'
-file_name = 'mlpack-%s.tar.gz' % version
-url = 'https://github.com/mlpack/mlpack/archive/%s' % file_name 
-file_path = os.path.join(mlpack_path, file_name)
-if not os.path.isfile(file_path):
-    urllib.request.urlretrieve(url, file_path)
+    # Download and extract
+    print('Downloading mlpack source')
+    if not os.path.isfile(tar_file_path):
+        urllib.request.urlretrieve(tar_url, tar_file_path)
 
-print('Extracting tar.gz file')
-tar = tarfile.open(file_path, 'r:gz')
-tar.extractall(mlpack_path)
-tar.close()
-repo_path = os.path.join(mlpack_path, 'mlpack-mlpack-%s' % version)
+    print('Extracting tar.gz file')
+    tar = tarfile.open(tar_file_path, 'r:gz')
+    tar.extractall(package_path)
+    tar.close()
+    #os.remove(tar_file_path)
 
-print('Prepending flag for PIC')
-cmake_file_path = os.path.join(repo_path, 'CMakeLists.txt')
-with open(cmake_file_path, 'r') as f:
-    cmake_file_str = f.read()
-with open(cmake_file_path, 'w') as f:
-    f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
-#with open(os.path.join(repo_path, 'CMakeLists.txt'), 'a') as f:
-#    f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)')
+    # Add flag needed for static library linking
+    print('Prepending flag for PIC')
+    with open(cmake_file_path, 'r') as f:
+        cmake_file_str = f.read()
+    with open(cmake_file_path, 'w') as f:
+        f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
 
-print('Removing old build diretory if necessary and creating new build directory')
-build_path = os.path.join(repo_path, 'build')
-shutil.rmtree(build_path, ignore_errors=True)
-os.mkdir(build_path)
+    # Setup build directory and run cmake
+    print('Removing old build directory if necessary and creating new build directory')
+    shutil.rmtree(build_path, ignore_errors=True)
+    os.mkdir(build_path)
 
-print('Running cmake')
-os.chdir(build_path)
-if sys.platform == 'darwin':
-    print('Exporting environment variables needed for cmake in Mac OS')
-    os.environ['CC'] = '/usr/local/opt/llvm/bin/clang'
-    os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
-    os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
-    os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
-    subprocess.call(['cmake', 
-                     '-D', 'BUILD_SHARED_LIBS=OFF', 
-                     '-D', 'FORCE_CXX11=ON',
-                     '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
-                     '../'])
-else:
-    subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
+    print('Running cmake')
+    orig_cwd = os.getcwd()
+    os.chdir(build_path)
+    if sys.platform == 'darwin':
+        print('Exporting environment variables needed for cmake in Mac OS')
+        os.environ['CC'] = '/usr/local/opt/llvm/bin/clang'
+        os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
+        os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
+        os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
+        subprocess.call(['cmake', 
+                         '-D', 'BUILD_SHARED_LIBS=OFF', 
+                         '-D', 'FORCE_CXX11=ON',
+                         '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
+                         '../'])
+    else:
+        subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
 
-print('Building mlpack')
-subprocess.call(['make', 'mlpack'])
+    # Actually build mlpack
+    print('Building mlpack')
+    subprocess.call(['make', 'mlpack'])
+    os.chdir(orig_cwd)
+    return build_path
 
-# Change back to original working directory
-os.chdir(orig_cwd)
 
 def configuration(parent_package='', top_path=None):
+    build_path = build_mlpack()
     config = Configuration('mlpack', parent_package, top_path)
     libraries = ['mlpack', 'boost_serialization']
     if os.name == 'posix':
@@ -91,6 +96,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('tests')
 
     return config
+
 
 if __name__ == "__main__":
     setup(**configuration(top_path='ddl/externals/').todict())

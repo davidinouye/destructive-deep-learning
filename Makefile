@@ -1,11 +1,13 @@
 SHELL:=/bin/bash
 all:
 	python setup.py build_ext --inplace
+	rm -rf ddl/externals/mlpack/mlpack-mlpack-3.0.2
+	rm ddl/externals/mlpack/mlpack-3.0.2.tar.gz
 test:
 	pytest --cov=ddl --maxfail=1 --doctest-modules --pyargs ddl
 	codecov
 testmlpack:
-	pytest --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ -k test_mlpack --doctest-modules --pyargs ddl
+	pytest --fulltrace --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ -k test_mlpack --doctest-modules --pyargs ddl
 testother:
 	pytest --maxfail=1 --ignore=ddl/externals/mlpack -k 'not test_mlpack' --pyargs ddl
 testspecial:
