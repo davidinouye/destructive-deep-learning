@@ -33,10 +33,16 @@ Please see the `API reference`_ for basic documentation.
 
 .. _`API reference`: https://destructive-deep-learning.readthedocs.io/en/latest/
 
-Installation
-------------
+Environment Setup
+-----------------
 
+Environment setup instructions for:
+#. Docker or Singularity containers (recommended)
+#. Linux Setup (Ubuntu)
+#. Mac OSX (unsupported)
 
+Docker or Singularity Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Because `MLPACK`_ is required for the tree density destructors used in the experiments,
 the suggested installation method is to download and start a shell in a `Docker <https://www.docker.com/>`_
 or `Singularity <http://singularity.lbl.gov/>`_ container as below.  
@@ -61,7 +67,40 @@ Or, for Singularity:
 
     singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
-Once in the container, download and compile the code to link to `MLPACK`_.
+Linux Setup (Ubuntu)
+^^^^^^^^^^^^^^^^^^^^
+Install build essentials and cmake (needed for building mlpack destructors), laplack and blas (for fast linear operations), boost and armadillo libraries (required to build mlpack).
+
+.. code:: console
+
+    apt-get update && apt-get install \
+        build-essential \
+        cmake \
+        liblapack-dev \
+        libblas-dev \
+        libboost-math-dev \
+        libboost-program-options-dev \
+        libboost-test-dev \
+        libboost-serialization-dev \
+        libarmadillo-dev
+
+Mac OSX (unsupported)
+^^^^^^^^^^^^^^^^^^^^^
+Install ``homebrew`` as per `homebrew documentation <https://brew.sh/>`_ (note that this also install the required xcode tools).
+Then, install cmake, armadillo and boost (required to build mlpack) and llvm (required for openmp support for mlpack):
+
+.. code:: console
+    brew update && brew install \
+        cmake \
+        armadillo \
+        boost \
+        llvm
+
+
+Installation
+------------
+
+Once your environment is setup via one of the methods described above, download and compile the code to link to `MLPACK`_.
 
 .. code:: console
 
