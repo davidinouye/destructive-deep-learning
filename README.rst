@@ -102,12 +102,15 @@ Installation
 ------------
 
 Once your environment is setup via one of the methods described above, download and compile the code to link to `MLPACK`_.
+The first pip install is for ``scikit-learn``, ``cython`` is required to compile ``pot`` and ``ddl``, and ``pot`` and ``nose`` are used in ddl tests.
 
 .. code:: console
 
+    pip install numpy scipy scikit-learn
+    pip install setuptools Cython
     git clone https://github.com/davidinouye/destructive-deep-learning.git
     cd destructive-deep-learning
-    make
+    pip install .[test]
 
 To run tests (which uses `pytest <https://docs.pytest.org/en/latest/>`_), execute:
 
