@@ -37,12 +37,12 @@ Environment Setup
 -----------------
 
 Environment setup instructions for:
-#. Docker or Singularity containers (recommended)
-#. Linux Setup (Ubuntu)
-#. Mac OSX (unsupported)
+1. Docker or Singularity containers (recommended)
+2. Linux Setup (Ubuntu)
+3. Mac OSX (unsupported)
 
-Docker or Singularity Setup
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1. Docker or Singularity Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Because `MLPACK`_ is required for the tree density destructors used in the experiments,
 the suggested installation method is to download and start a shell in a `Docker <https://www.docker.com/>`_
 or `Singularity <http://singularity.lbl.gov/>`_ container as below.  
@@ -67,8 +67,8 @@ Or, for Singularity:
 
     singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
 
-Linux Setup (Ubuntu)
-^^^^^^^^^^^^^^^^^^^^
+2. Linux Setup (Ubuntu)
+^^^^^^^^^^^^^^^^^^^^^^^
 Install build essentials and cmake (needed for building mlpack destructors), laplack and blas (for fast linear operations), boost and armadillo libraries (required to build mlpack).
 
 .. code:: console
@@ -84,8 +84,8 @@ Install build essentials and cmake (needed for building mlpack destructors), lap
         libboost-serialization-dev \
         libarmadillo-dev
 
-Mac OSX (unsupported)
-^^^^^^^^^^^^^^^^^^^^^
+3. Mac OSX (unsupported)
+^^^^^^^^^^^^^^^^^^^^^^^^
 Install ``homebrew`` as per `homebrew documentation <https://brew.sh/>`_ (note that this also install the required xcode tools).
 Then, install cmake, armadillo and boost (required to build mlpack) and llvm (required for openmp support for mlpack):
 
