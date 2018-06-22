@@ -37,6 +37,7 @@ Environment Setup
 -----------------
 
 Environment setup instructions for:
+
 1. Docker or Singularity containers (recommended)
 2. Linux Setup (Ubuntu)
 3. Mac OSX (unsupported)
