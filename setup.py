@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 import os
+import sys
 
+# Optional setuptools features
+# We need to import setuptools early, if we want setuptools features,
+# as it monkey-patches the 'setup' function
+# For some commands, use setuptools
+SETUPTOOLS_COMMANDS = set([
+    'develop', 'release', 'bdist_egg', 'bdist_rpm',
+    'bdist_wininst', 'install_egg_info', 'build_sphinx',
+    'egg_info', 'easy_install', 'upload', 'bdist_wheel',
+    '--single-version-externally-managed',
+])
+if SETUPTOOLS_COMMANDS.intersection(sys.argv):
+    import setuptools
 
 def configuration(parent_package='', top_path=None):
     """Creates `configuration` parameter for setup function.
