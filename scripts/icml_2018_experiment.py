@@ -4,6 +4,7 @@ import logging
 import argparse
 import time
 import subprocess
+import warnings
 
 import numpy as np
 import scipy.stats # Needed for standard error of the mean scipy.stats.sem
@@ -367,7 +368,13 @@ if __name__ == '__main__':
                 data_name, model_name=model_name, model_kwargs=model_kwargs)
             if not is_parallel:
                 # Just run the experiment directly
-                run_experiment(data_name, model_name, model_kwargs)
+                try:
+                    run_experiment(data_name, model_name, model_kwargs)
+                except RuntimeError as e:
+                    if 'mlpack' not in str(e).lower():
+                        raise e
+                    else:
+                        warnings.warn('Skipping %s because of error "%s"' % (model_name, str(e)))
             else:
                 # Generate script to run experiment in parallel in separate subprocesses
                 script_str = (
