@@ -275,5 +275,5 @@ def test_toy_destructor(destructor_name):
     expected_test = [-4.440092999888506142e+00, -4.241302023438742630e+00, -4.243528943385095786e+00,
                      -4.188421292899972670e+00, -4.400212807936888737e+00, -4.262652579336936753e+00,
                      -4.296448657246879854e+00, -4.233697219621666896e+00]
-    assert(np.abs(expected_train[ind] - result_dict['train_score']) < 1e-15)
-    assert(np.abs(expected_test[ind] - result_dict['test_score']) < 1e-15)
+    assert(np.abs(expected_train[ind] - result_dict['train_score']) < 1e-14)
+    assert(np.abs(expected_test[ind] - result_dict['test_score']) < 1e-14)
