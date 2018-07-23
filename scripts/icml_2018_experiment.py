@@ -5,6 +5,10 @@ import argparse
 import time
 import subprocess
 import warnings
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 import numpy as np
 import scipy.stats # Needed for standard error of the mean scipy.stats.sem
@@ -115,6 +119,8 @@ def load_experiment_results(data_name, model_name=None, model_kwargs=None, noteb
 
 
 def _get_model(data_name, model_name, model_kwargs):
+    if 'is_test' not in model_kwargs:
+        model_kwargs['is_test'] = False
     # Init destructor is shared with all models
     init_destructor = CompositeDestructor(
         destructors=[
@@ -164,7 +170,8 @@ def _get_model(data_name, model_name, model_kwargs):
         silent=False,
         log_prefix='',
         random_state=0,
-        n_canonical_destructors=None, # We use n_extend instead
+        # Set maximum number of layers (None for infinite)
+        n_canonical_destructors=None if not model_kwargs['is_test'] else 2,
     )
 
 
@@ -330,6 +337,29 @@ def _get_experiment_filename_and_label(data_name, model_name=None, model_kwargs=
     experiment_label = '(data=%s, model=%s%s)' % (data_name, str(model_name), arg_str)
 
     return pickle_filename, experiment_label
+
+# Add fast sanity-check tests for mnist dataset
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    @pytest.mark.parametrize(
+        'model_name', 
+        ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
+    )
+    def test_mnist_experiment(model_name):
+        data_name = 'mnist'
+        model_kwargs = dict(is_test=True, n_jobs=1)
+        model_kwargs['experiment_filename'], model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
+            data_name, model_name=model_name, model_kwargs=model_kwargs)
+        result_dict = run_experiment(data_name, model_name, model_kwargs=model_kwargs)
+
+        # Check if test likelihood/score is as expected
+        model_names = ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
+        expected_test_scores = [-1.060270463188296844e+03, -1.155477974922050180e+03, -1.134326498390250208e+03]
+        ind = model_names.index(model_name)
+        assert(np.abs(expected_test_scores[ind] - result_dict['test_score']) < 1e-14)
 
 
 if __name__ == '__main__':

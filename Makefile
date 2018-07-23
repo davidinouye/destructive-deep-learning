@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-PYTEST_FLAGS=--maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs ddl scripts/test_toy_experiment.py
+PYTEST_FLAGS=--maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs ddl scripts/test_toy_experiment.py scripts/icml_2018_experiment.py
 
 all:
 	python setup.py build_ext --inplace
@@ -15,6 +15,7 @@ testother:
 	pytest --ignore=ddl/externals/mlpack $(PYTEST_FLAGS)
 testexperiments:
 	pytest -k test_toy_experiment $(PYTEST_FLAGS)
+	pytest -k test_mnist_experiment $(PYTEST_FLAGS)
 testspecial:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/maf_cache: scripts/large_experiment.py
