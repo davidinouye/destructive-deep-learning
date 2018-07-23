@@ -13,6 +13,8 @@ testmlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS)
 testother:
 	pytest --ignore=ddl/externals/mlpack $(PYTEST_FLAGS)
+testexperiments:
+	pytest -k test_experiments $(PYTEST_FLAGS)
 testspecial:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/maf_cache: scripts/large_experiment.py
