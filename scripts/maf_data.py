@@ -131,15 +131,24 @@ def _get_maf_cifar10():
 
 
 def _get_mnist_raw():
+    def _download_from_other_source():
+        # Attempt to download mnist data from another source
+        url = 'http://www.cs.cmu.edu/~dinouye/data/mnist-original.mat'
+        warnings.warn('Could not download from mldata.org, attempting '
+                      'to download from <%s>.' % url)
+        file_name = os.path.join(_DOWNLOAD_DIR, 'mldata/mnist-original.mat')
+        urllib.request.urlretrieve(url, file_name)
+
     _make_dir(_DOWNLOAD_DIR)
     n_attempts = 3
-    #print('Attempting to fetch MNIST data using sklearn.datasets.fetch_mldata')
+    print('Attempting to load/fetch MNIST data via sklearn.datasets.fetch_mldata')
     for i in range(n_attempts):
         try:
             data_obj = fetch_mldata('MNIST original', data_home=_DOWNLOAD_DIR)
-        except urllib.error.HTTPError:
+        except (ConnectionResetError, urllib.error.HTTPError):
+            _download_from_other_source()
             if i == n_attempts - 1:
-                warnings.warn('Attempted to retrieve MNIST data from mldata.org %d times '
+                warnings.warn('Attempted to retrieve MNIST data from mldata.org or alternative %d times '
                       'and failed each time, please check internet connection' % n_attempts)
                 raise
         else:
