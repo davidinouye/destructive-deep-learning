@@ -59,14 +59,14 @@ For Docker (recommended if available):
 
 .. code:: console
 
-    docker run -it davidinouye/destructive-deep-learning:icml2018 /bin/bash
+    docker run -it davidinouye/destructive-deep-learning /bin/bash
 
 
 Or, for Singularity:
 
 .. code:: console
 
-    singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning:icml2018
+    singularity shell -s /bin/bash shub://davidinouye/destructive-deep-learning
 
 2. Linux Setup (Ubuntu)
 ^^^^^^^^^^^^^^^^^^^^^^^
