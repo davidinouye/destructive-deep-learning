@@ -74,6 +74,12 @@ jobs:
             - ./data
           key: data-mnist-{{ checksum "scripts/maf_data.py" }}
 
+      - restore_cache:
+          keys:
+          - mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
+          - mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}
+          - mlpack-
+
       - run:
           name: install ddl
           command: |
@@ -82,6 +88,11 @@ jobs:
             # Should be roughly equivalent to the following command
             # python setup.py install
             pip install --verbose --editable .[test]
+
+      - save_cache:
+          paths:
+            - ./ddl/externals/mlpack
+          key: mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
         
       # run tests!
       - run:
