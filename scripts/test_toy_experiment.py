@@ -1,32 +1,32 @@
 # Simple and fast (but not comprehensive) tests 
 # to sanity check that ICML 2018 experiments will run the same
 ##### Mostly copied from demo_toy_experiment.py notebook #####
-from __future__ import division
-from __future__ import print_function
-import sys
-import os
+from __future__ import division, print_function
+
 import logging
+import os
+import sys
 import time
 import warnings
 
 import numpy as np
 import pytest
 from sklearn.base import clone
-from sklearn.utils import check_random_state
-from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.utils import check_random_state
 
+from ddl.autoregressive import AutoregressiveDestructor
 from ddl.base import CompositeDestructor
 from ddl.datasets import make_toy_data
 from ddl.deep import DeepDestructorCV
-from ddl.independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
-from ddl.univariate import ScipyUnivariateDensity, HistogramUnivariateDensity
-from ddl.linear import (LinearProjector, RandomOrthogonalEstimator, 
-                                                BestLinearReconstructionDestructor)
-from ddl.autoregressive import AutoregressiveDestructor
-from ddl.mixture import GaussianMixtureDensity, FirstFixedGaussianMixtureDensity
-from ddl.tree import TreeDestructor, TreeDensity, RandomTreeEstimator
 from ddl.externals.mlpack import MlpackDensityTreeEstimator
+from ddl.independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
+from ddl.linear import (BestLinearReconstructionDestructor, LinearProjector,
+                        RandomOrthogonalEstimator)
+from ddl.mixture import FirstFixedGaussianMixtureDensity, GaussianMixtureDensity
+from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
+from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
 
 logger = logging.getLogger(__name__)
 

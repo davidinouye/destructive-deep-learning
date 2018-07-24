@@ -1,19 +1,19 @@
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
+
 import logging
 import warnings
 
 import numpy as np
-from sklearn.base import clone, BaseEstimator
-from sklearn.utils.validation import check_is_fitted, check_random_state, check_array
+from sklearn.base import BaseEstimator, clone
 from sklearn.exceptions import NotFittedError
 from sklearn.externals.joblib import Parallel, delayed
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
 
 from .base import DestructorMixin, IdentityDestructor
+from .independent import IndependentDensity, IndependentDestructor
+from .univariate import HistogramUnivariateDensity
 # noinspection PyProtectedMember
 from .utils import _UNIT_SPACE
-from .independent import IndependentDestructor, IndependentDensity
-from .univariate import HistogramUnivariateDensity
 
 logger = logging.getLogger(__name__)
 

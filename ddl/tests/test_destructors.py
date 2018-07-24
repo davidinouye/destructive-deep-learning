@@ -1,22 +1,21 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
 import numpy as np
 import pytest
 from sklearn.base import clone
-from sklearn.utils import check_random_state
 from sklearn.decomposition import PCA
+from sklearn.utils import check_random_state
 
 import ddl
-from ddl.validation import check_destructor, check_density
-from ddl.base import IdentityDestructor, CompositeDestructor, get_inverse_canonical_destructor
-from ddl.independent import IndependentDestructor, IndependentDensity
-from ddl.tree import TreeDestructor, TreeDensity, RandomTreeEstimator
-from ddl.deep import DeepDestructor, DeepDestructorCV
-from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
-from ddl.mixture import GaussianMixtureDensity
-from ddl.linear import LinearProjector
 from ddl.autoregressive import AutoregressiveDestructor
+from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canonical_destructor
+from ddl.deep import DeepDestructor, DeepDestructorCV
+from ddl.independent import IndependentDensity, IndependentDestructor
+from ddl.linear import LinearProjector
+from ddl.mixture import GaussianMixtureDensity
+from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
+from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
+from ddl.validation import check_density, check_destructor
 
 
 def test_inverse_canonical_destructor():

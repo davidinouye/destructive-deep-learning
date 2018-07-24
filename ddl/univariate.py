@@ -1,25 +1,22 @@
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
-import warnings
 import logging
+import warnings
 from abc import abstractmethod
 
 import numpy as np
 import scipy.stats
 from scipy.interpolate import interp1d
-from sklearn.base import clone, BaseEstimator, DensityMixin, TransformerMixin
+from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
 from sklearn.exceptions import DataConversionWarning, NotFittedError
-from sklearn.utils.validation import check_array, column_or_1d, check_is_fitted, check_random_state
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
 
-from .base import BoundaryWarning
-from .base import ScoreMixin
+from .base import BoundaryWarning, ScoreMixin
 # noinspection PyProtectedMember
-from .utils import _DEFAULT_SUPPORT
-from .utils import check_X_in_interval
-from .utils import make_positive, make_finite, make_interior_probability
+from .utils import (_DEFAULT_SUPPORT, check_X_in_interval, make_finite, make_interior_probability,
+                    make_positive)
 
 logger = logging.getLogger(__name__)
 

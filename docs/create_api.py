@@ -1,11 +1,10 @@
 # Generate classes.rst file
-import sys
-import os
 import errno
-import pkgutil
-from inspect import getmembers, isfunction, isclass
 import importlib
-
+import os
+import pkgutil
+import sys
+from inspect import getmembers, isclass, isfunction
 
 INDENT = '    '
 
@@ -106,4 +105,3 @@ if __name__ == '__main__':
     sys.path.append('..')
     import ddl
     create_api_rst(ddl, 'generated')
-

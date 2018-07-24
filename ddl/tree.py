@@ -1,21 +1,19 @@
-from __future__ import division
-from __future__ import print_function
-import logging
+from __future__ import division, print_function
+
 import copy
+import logging
 import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, clone
+from sklearn.tree import ExtraTreeRegressor
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_array, check_is_fitted
-from sklearn.tree import ExtraTreeRegressor
 
-from .base import (BaseDensityDestructor, IdentityDestructor, ScoreMixin, 
-                   get_inverse_canonical_destructor, get_n_features, BoundaryWarning)
-from .utils import get_domain_or_default, get_support_or_default, check_X_in_interval
+from .base import (BaseDensityDestructor, BoundaryWarning, IdentityDestructor, ScoreMixin,
+                   get_inverse_canonical_destructor, get_n_features)
 # noinspection PyProtectedMember
-from .utils import _UNIT_SPACE
-
+from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default
 
 logger = logging.getLogger(__name__)
 

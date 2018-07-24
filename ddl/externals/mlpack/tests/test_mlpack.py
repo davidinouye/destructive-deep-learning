@@ -1,15 +1,14 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
 import numpy as np
 import pytest
 from sklearn.utils import check_random_state
 
-from ddl.validation import check_destructor
-from ddl.tree import TreeDestructor, TreeDensity
 from ddl.datasets import make_toy_data
-
 from ddl.externals.mlpack import MlpackDensityTreeEstimator
+from ddl.tree import TreeDensity, TreeDestructor
+from ddl.validation import check_destructor
+
 try:
     from ddl.externals.mlpack import _det as det
 except ImportError:
@@ -106,4 +105,3 @@ def test_mlpack_det_get_arrayed_tree():
     np.testing.assert_allclose(arrayed_tree.threshold, expected_threshold, rtol=1e-16)
     assert np.all(arrayed_tree.children_left == [1, -1,  3,  4,  5, -1, -1, -1, -1])
     assert np.all(arrayed_tree.children_right == [2, -1,  8,  7,  6, -1, -1, -1, -1])
-

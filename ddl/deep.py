@@ -1,25 +1,24 @@
-from __future__ import print_function
-from __future__ import division
-import numbers
-import logging
-import warnings
+from __future__ import division, print_function
+
 import collections
-from itertools import islice, cycle
+import logging
+import numbers
+import warnings
+from itertools import cycle, islice
 
 import numpy as np
 import scipy.stats
-from sklearn.base import clone, BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted, check_random_state
+from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.exceptions import NotFittedError
 from sklearn.externals.joblib import Parallel, delayed
 from sklearn.model_selection import KFold, check_cv
-from sklearn.exceptions import NotFittedError
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, check_X_y
 
-from .base import (DestructorMixin, ScoreMixin, CompositeDestructor, 
-                   get_implicit_density, get_n_features)
+from .base import (CompositeDestructor, DestructorMixin, ScoreMixin, get_implicit_density,
+                   get_n_features)
 from .independent import IndependentDestructor, IndependentInverseCdf
-from .utils import make_interior_probability
 # noinspection PyProtectedMember
-from .utils import _DEFAULT_SUPPORT
+from .utils import _DEFAULT_SUPPORT, make_interior_probability
 
 logger = logging.getLogger(__name__)
 
@@ -271,5 +270,3 @@ def _consume(iterator, n):
         collections.deque(iterator, maxlen=0)
     else:
         next(islice(iterator, n, n), None)
-
-

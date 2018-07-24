@@ -1,24 +1,24 @@
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
+
 import logging
 import warnings
 
 import numpy as np
-from scipy import linalg
 import scipy.stats
-from sklearn.base import clone, BaseEstimator, TransformerMixin
-from sklearn.decomposition import FastICA, PCA
+from scipy import linalg
+from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.decomposition import PCA, FastICA
+from sklearn.exceptions import DataConversionWarning
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.utils import check_random_state
-from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
 from sklearn.utils.extmath import row_norms
-from sklearn.exceptions import DataConversionWarning
+from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
 
-from .base import ScoreMixin, CompositeDestructor, get_implicit_density
-# noinspection PyProtectedMember
-from .utils import _UNIT_SPACE, _INF_SPACE
-from .independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
+from .base import CompositeDestructor, ScoreMixin, get_implicit_density
+from .independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
 from .univariate import ScipyUnivariateDensity
+# noinspection PyProtectedMember
+from .utils import _INF_SPACE, _UNIT_SPACE
 
 logger = logging.getLogger(__name__)
 

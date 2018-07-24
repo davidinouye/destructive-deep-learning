@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import division, print_function
+
 import os
 import sys
 
@@ -80,7 +82,7 @@ if __name__ == '__main__':
         # $ pip install pypandoc
         setup_requires=['numpy', 'Cython'],
         extras_require={
-            'test': ['pytest', 'pytest-cov', 'codecov', 'nose', 'pot'],  # Testing framework
+            'test': ['pytest', 'pytest-cov', 'codecov', 'nose', 'pot', 'isort'],  # Testing framework
         },
     )
 

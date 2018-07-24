@@ -1,7 +1,6 @@
 # Nothing needed in here for now
 import logging
 
-
 try:
     from logging import NullHandler
 except ImportError:

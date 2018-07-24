@@ -1,14 +1,14 @@
-import os
-import sys
-import warnings
-import errno
-import tempfile
-import shutil
-import urllib
-import tarfile
-import time
-import gzip
 import argparse
+import errno
+import gzip
+import os
+import shutil
+import sys
+import tarfile
+import tempfile
+import time
+import urllib
+import warnings
 
 import numpy as np
 from sklearn.datasets import fetch_mldata

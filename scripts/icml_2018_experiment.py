@@ -1,21 +1,32 @@
-import os
-import sys
-import logging
 import argparse
-import time
+import logging
+import os
 import subprocess
+import sys
+import time
 import warnings
+
+import numpy as np
+import scipy.stats  # Needed for standard error of the mean scipy.stats.sem
+from sklearn.base import clone
+from sklearn.decomposition import PCA, FastICA
+from sklearn.model_selection import ShuffleSplit
+from sklearn.tree import DecisionTreeClassifier
+
+from ddl.base import CompositeDestructor
+from ddl.deep import DeepDestructorCV
+from ddl.externals.mlpack import MlpackDensityTreeEstimator
+from ddl.independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
+from ddl.linear import BestLinearReconstructionDestructor
+from ddl.local import FeatureGroupsDestructor, ImageFeaturePairs
+from ddl.tree import TreeDensity, TreeDestructor
+from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
+from maf_data import CIFAR10_ALPHA, MNIST_ALPHA, get_maf_data
+
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-import numpy as np
-import scipy.stats # Needed for standard error of the mean scipy.stats.sem
-from sklearn.base import clone
-from sklearn.model_selection import ShuffleSplit
-from sklearn.decomposition import PCA, FastICA
-from sklearn.tree import DecisionTreeClassifier
 
 
 # Add the directory of this script
@@ -23,16 +34,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 # Add directory for ddl library
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
-from ddl.base import CompositeDestructor
-from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
-from ddl.independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
-from ddl.deep import DeepDestructorCV
-from ddl.linear import BestLinearReconstructionDestructor
-from ddl.local import FeatureGroupsDestructor, ImageFeaturePairs
-from ddl.tree import TreeDestructor, TreeDensity
-from ddl.externals.mlpack import MlpackDensityTreeEstimator
 
-from maf_data import get_maf_data, MNIST_ALPHA, CIFAR10_ALPHA
 
 logger = logging.getLogger(__name__)
 

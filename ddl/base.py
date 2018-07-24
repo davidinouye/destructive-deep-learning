@@ -1,19 +1,17 @@
-from __future__ import print_function
-from __future__ import division
-import warnings
-import logging
+from __future__ import division, print_function
+
 import copy
+import logging
+import warnings
 from abc import abstractmethod
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.utils import check_random_state, check_array
-from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import DataConversionWarning, NotFittedError
+from sklearn.utils import check_array, check_random_state
+from sklearn.utils.validation import check_is_fitted
 
-from .utils import check_X_in_interval, get_domain_or_default
-from .utils import get_support_or_default, _UNIT_SPACE
-
+from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default
 
 logger = logging.getLogger(__name__)
 

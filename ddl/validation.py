@@ -1,12 +1,18 @@
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
+import logging
 import sys
 import warnings
-import logging
 
 import numpy as np
 from sklearn.base import clone
 from sklearn.utils import check_random_state
+
+# noinspection PyProtectedMember
+from .base import BoundaryWarning, ShouldOnlyBeInTestWarning, UniformDensity, _NumDimWarning
+from .utils import (check_domain, check_X_in_interval, get_domain_or_default,
+                    get_support_or_default, has_method)
+
 try:
     from sklearn.exceptions import SkipTestWarning, DataConversionWarning
     from sklearn.utils.estimator_checks import check_estimator
@@ -20,12 +26,6 @@ try:
 except ImportError:
     warnings.warn('Could not import python optimal transport (pip install pot) (import ot)')
 
-from .base import UniformDensity
-# noinspection PyProtectedMember
-from .base import BoundaryWarning, _NumDimWarning, ShouldOnlyBeInTestWarning
-from .utils import has_method
-from .utils import check_domain, check_X_in_interval
-from .utils import get_domain_or_default, get_support_or_default
 
 logger = logging.getLogger(__name__)
 
@@ -852,5 +852,3 @@ def _check_estimator_but_ignore_warnings(est):
     for w in w_arr:
         if isinstance(w.message, SkipTestWarning):
             warnings.warn(w.message)
-
-

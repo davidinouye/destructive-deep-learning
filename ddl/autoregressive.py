@@ -1,24 +1,24 @@
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
+
 from abc import abstractmethod
 
 import numpy as np
-from scipy.interpolate import interp1d
 import scipy.stats
-from sklearn.base import clone, BaseEstimator, TransformerMixin, DensityMixin
+from scipy.interpolate import interp1d
+from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
+from sklearn.exceptions import NotFittedError
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
-from sklearn.utils.validation import check_array, column_or_1d
 from sklearn.utils import check_random_state
-from sklearn.exceptions import NotFittedError
+from sklearn.utils.validation import check_array, column_or_1d
 
-from .base import ScoreMixin
-from .base import BaseDensityDestructor
+from .base import BaseDensityDestructor, ScoreMixin
+from .gaussian import GaussianDensity
 from .independent import IndependentDensity
 # noinspection PyProtectedMember
-from .utils import check_X_in_interval, get_domain_or_default, _UNIT_SPACE, make_interior_probability
-from .gaussian import GaussianDensity
+from .utils import (_UNIT_SPACE, check_X_in_interval, get_domain_or_default,
+                    make_interior_probability)
 
 
 class AutoregressiveDestructor(BaseDensityDestructor):

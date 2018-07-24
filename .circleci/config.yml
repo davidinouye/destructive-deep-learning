@@ -49,6 +49,7 @@ jobs:
             pip install pot
             pip install pandas
             pip install scikit-learn
+            pip install isort
 
       - save_cache:
           name: Save pip dependencies cache

@@ -1,26 +1,25 @@
-from __future__ import division
-from __future__ import print_function
-from abc import abstractmethod
-import warnings
+from __future__ import division, print_function
+
 import logging
+import warnings
+from abc import abstractmethod
 
 import numpy as np
-from scipy.special import logsumexp as scipy_logsumexp
-from sklearn.base import clone, BaseEstimator
-from sklearn.cluster import KMeans
 from scipy.optimize import brentq as scipy_brentq
-from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
-from sklearn.exceptions import NotFittedError, ConvergenceWarning
-from sklearn.utils.validation import check_is_fitted, check_array, column_or_1d, check_random_state
+from scipy.special import logsumexp as scipy_logsumexp
+from sklearn.base import BaseEstimator, clone
+from sklearn.cluster import KMeans
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
+from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
 
+from .base import ScoreMixin
 from .gaussian import GaussianDensity
 from .independent import IndependentDensity
-from .base import ScoreMixin
 # noinspection PyProtectedMember
 from .univariate import _check_univariate_X
 # noinspection PyProtectedMember
 from .utils import _DEFAULT_SUPPORT, make_interior_probability
-
 
 logger = logging.getLogger(__name__)
 

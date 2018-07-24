@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 import os
-import sys
+import shutil
 import subprocess
+import sys
 import tarfile
 import urllib.request
-import shutil
 
 import numpy
+from Cython.Build import cythonize
 from numpy.distutils.core import setup
 from numpy.distutils.misc_util import Configuration
-from Cython.Build import cythonize
+
 
 def build_mlpack():
     # Setup mlpack paths

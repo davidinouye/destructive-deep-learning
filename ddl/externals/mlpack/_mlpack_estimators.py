@@ -1,11 +1,12 @@
-from __future__ import print_function
-from __future__ import division
-import warnings
-import logging
-import numpy as np
+from __future__ import division, print_function
 
+import logging
+import warnings
+
+import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
+
 try:
     from ._det import PyDTree
 except ImportError:

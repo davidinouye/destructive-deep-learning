@@ -1,30 +1,28 @@
-from __future__ import division
-from __future__ import print_function
-import warnings
-import pdb
+from __future__ import division, print_function
+
 import itertools
 import logging
+import pdb
+import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import scipy.stats
 from scipy.interpolate import interp1d
 from scipy.sparse import issparse
-
-from sklearn.base import clone, BaseEstimator, TransformerMixin, DensityMixin
+from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
+from sklearn.exceptions import DataConversionWarning, NotFittedError
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
-from sklearn.utils.validation import check_array, column_or_1d, check_is_fitted, check_random_state
-from sklearn.exceptions import DataConversionWarning, NotFittedError
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
 
-from .base import ScoreMixin, BaseDensityDestructor
-from .base import BoundaryWarning
-from .utils import get_support_or_default, get_domain_or_default, check_X_in_interval
-from .utils import make_positive, make_finite, make_interior_probability
+from .base import BaseDensityDestructor, BoundaryWarning, ScoreMixin
+from .univariate import STANDARD_NORMAL_DENSITY, ScipyUnivariateDensity
 # noinspection PyProtectedMember
-from .utils import _DEFAULT_SUPPORT, _UNIT_SPACE, _INF_SPACE
-from .univariate import ScipyUnivariateDensity, STANDARD_NORMAL_DENSITY
+from .utils import (_DEFAULT_SUPPORT, _INF_SPACE, _UNIT_SPACE, check_X_in_interval,
+                    get_domain_or_default, get_support_or_default, make_finite,
+                    make_interior_probability, make_positive)
 
 logger = logging.getLogger(__name__)
 

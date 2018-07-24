@@ -1,8 +1,8 @@
-from __future__ import print_function
-from __future__ import division
-import warnings
-import logging
+from __future__ import division, print_function
+
 import itertools
+import logging
+import warnings
 
 import numpy as np
 from sklearn.exceptions import DataConversionWarning

@@ -17,13 +17,14 @@
 import os
 import sys
 
+# Import package and create api file in generated 
+import ddl
+from create_api import create_api_rst
+
 # Import needed directories
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
-# Import package and create api file in generated 
-import ddl
-from create_api import create_api_rst
 create_api_rst(ddl, 'generated')
 
 # -- Project information -----------------------------------------------------

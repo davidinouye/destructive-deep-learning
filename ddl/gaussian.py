@@ -1,23 +1,21 @@
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
+
 import warnings
 
 import numpy as np
-from scipy import linalg
 import scipy.stats
-from sklearn.base import clone, BaseEstimator
-from sklearn.utils import check_random_state
-from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
-from sklearn.utils.extmath import row_norms
+from scipy import linalg
+from sklearn.base import BaseEstimator, clone
 from sklearn.exceptions import NotFittedError
+from sklearn.utils import check_random_state
+from sklearn.utils.extmath import row_norms
+from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
 
-from .base import ScoreMixin
-# noinspection PyProtectedMember
-from .utils import _UNIT_SPACE, _INF_SPACE
-from .base import AutoregressiveMixin
-from .independent import IndependentDestructor, IndependentDensity
+from .base import AutoregressiveMixin, ScoreMixin
+from .independent import IndependentDensity, IndependentDestructor
 from .univariate import UnivariateDensity
-from .utils import make_interior_probability
+# noinspection PyProtectedMember
+from .utils import _INF_SPACE, _UNIT_SPACE, make_interior_probability
 
 
 class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):

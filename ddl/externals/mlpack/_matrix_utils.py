@@ -13,6 +13,7 @@ http://www.opensource.org/licenses/BSD-3-Clause for more information.
 """
 import numpy as np
 import pandas as pd
+
 # The CategoricalDtype class has moved multiple times, so this insanity is
 # necessary to import the right version.
 if int(pd.__version__.split('.')[0]) > 0 or \
