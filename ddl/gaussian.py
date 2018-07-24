@@ -189,7 +189,7 @@ class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin
         ])
 
         # Setup fitted copula model
-        cond_copula = JointGaussianCopulaDensity(
+        cond_copula = _JointGaussianCopulaDensity(
             univariate_estimators=_CopulaConditionalUnivariateDensity())
         cond_copula.independent_destructor_ = self._make_destructor(cond_univ_densities)
         cond_copula.gaussian_density_ = cond_gaussian
@@ -226,7 +226,7 @@ class _CopulaConditionalUnivariateDensity(UnivariateDensity):
     def sample(self, n_samples=1, random_state=None):
         self._check_is_fitted()
         rng = check_random_state(random_state)
-        z = scipy.stats.norm.rvs(size=n_samples, loc=self.mean_, scale=self.std_)
+        z = scipy.stats.norm.rvs(size=n_samples, loc=self.mean_, scale=self.std_, random_state=rng)
         u = scipy.stats.norm.cdf(z)
         u = make_interior_probability(u)
         X = self.univariate_density_.inverse_cdf(u.reshape(-1, 1))
