@@ -21,6 +21,8 @@ Changed
 ^^^^^^^
 
 - Changed ``n_dim`` to ``n_features`` everywhere in the source to match with scikit-learn convention.
+- Moved ``ddl.deep.CompositeDestructor`` to ``ddl.base.CompositeDestructor`` since it seemed more like
+  a fundamental building block rather than a deep component.
 - Removed explicit dependency on pre-built mlpack and updated docker/singularity images.
 - Updated build system especially for circleci to make it simpler to build mlpack extension.
 
