@@ -203,7 +203,7 @@ class IdentityDestructor(BaseDensityDestructor):
 
 
 class UniformDensity(BaseEstimator, ScoreMixin):
-    """Uniform density estimator (no estimation necessary except number of dimensions."""
+    """Uniform density estimator (no estimation necessary except number of dimensions)."""
 
     def __init__(self):
         pass
@@ -441,7 +441,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
     def _get_destructor_iterable(self):
         if self.destructors is None:
-            return [IndependentDestructor()]
+            return [IdentityDestructor()]
         elif isinstance(self.destructors, (list, tuple, np.array)):
             return [clone(d) for d in self.destructors]
         else:
