@@ -28,30 +28,22 @@ class DeepDestructor(CompositeDestructor):
     """Add destructors/layers until the validation log-likelihood stops going down."""
 
     # noinspection PyMissingConstructor
-    def __init__(self, canonical_destructors=None, init_destructor=None,
-                 n_canonical_destructors=1, canonical_destructor=None, random_state=None):
-        self.canonical_destructors = canonical_destructors
+    def __init__(self, canonical_destructor=None, init_destructor=None,
+                 n_canonical_destructors=1, random_state=None):
+        """Parameter `canonical_destructor` can be a list of canonical destructors.
+        The list will be cycled through to get as many canonical destructors as needed."""
+        self.canonical_destructor = canonical_destructor
         self.init_destructor = init_destructor
         self.n_canonical_destructors = n_canonical_destructors
         self.random_state = random_state
 
-        # Deprecated
-        self.canonical_destructor = canonical_destructor
-
     def _get_canonical_destructors(self):
-        if self.canonical_destructor is not None and self.canonical_destructors is not None:
-            raise ValueError('`canonical_destructor` (Deprecated) and `canonical_destructors` '
-                             'cannot be usedat the same time')
-        elif self.canonical_destructor is not None:
-            warnings.warn(DeprecationWarning('"canonical_destructor" is deprecated. Please use '
-                                             '"canonical_destructors" (notice "s" at end) instead'))
+        """Get canonical destructors as list and if only a single one then wrap in a list."""
+        if self.canonical_destructor is not None:
             canonical_destructors = self.canonical_destructor
-        elif self.canonical_destructors is not None:
-            canonical_destructors = self.canonical_destructors
         else:
-            canonical_destructors = CompositeDestructor(
-                destructors=[IndependentInverseCdf(), IndependentDestructor()]
-            )
+            canonical_destructors = IdentityDestructor()
+
         # If single, then update to list
         if len(np.array(canonical_destructors).shape) < 1:
             canonical_destructors = [canonical_destructors]
@@ -250,10 +242,12 @@ class DeepCVMixin(object):
 
 class DeepDestructorCV(DeepCVMixin, DeepDestructor):
     # noinspection PyMissingConstructor
-    def __init__(self, canonical_destructors=None, init_destructor=None, cv=None, stop_tol=1e-3,
+    def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
                  n_canonical_destructors=None, n_extend=1, refit=True, silent=False, log_prefix='',
-                 random_state=None, canonical_destructor=None):
-        self.canonical_destructors = canonical_destructors
+                 random_state=None):
+        """Parameter `canonical_destructor` can be a list of canonical destructors.
+        The list will be cycled through to get as many canonical destructors as needed."""
+        self.canonical_destructor = canonical_destructor
         self.init_destructor = init_destructor
         self.cv = cv
         self.stop_tol = stop_tol
@@ -263,9 +257,6 @@ class DeepDestructorCV(DeepCVMixin, DeepDestructor):
         self.log_prefix = log_prefix
         self.refit = refit
         self.random_state = random_state
-
-        # Deprecated
-        self.canonical_destructor = canonical_destructor
 
 
 def _take(iterable, n):

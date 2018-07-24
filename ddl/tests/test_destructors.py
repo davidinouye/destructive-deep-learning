@@ -134,7 +134,7 @@ def test_pca_destructor():
 
 def test_deep_destructor_with_tree_destructor():
     destructor = DeepDestructor(
-        canonical_destructors=TreeDestructor(),
+        canonical_destructor=TreeDestructor(),
         n_canonical_destructors=2,
     )
     assert check_destructor(destructor)
@@ -142,7 +142,7 @@ def test_deep_destructor_with_tree_destructor():
 
 def test_deep_destructor_cv_with_tree_destructor():
     destructor = DeepDestructorCV(
-        canonical_destructors=TreeDestructor(),
+        canonical_destructor=TreeDestructor(),
         n_canonical_destructors=2,
         cv=2,
     )
