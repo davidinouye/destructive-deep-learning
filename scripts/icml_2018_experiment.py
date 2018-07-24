@@ -23,9 +23,10 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 # Add directory for ddl library
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
+from ddl.base import CompositeDestructor
 from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
 from ddl.independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
-from ddl.deep import DeepDestructorCV, CompositeDestructor
+from ddl.deep import DeepDestructorCV
 from ddl.linear import BestLinearReconstructionDestructor
 from ddl.local import FeatureGroupsDestructor, ImageFeaturePairs
 from ddl.tree import TreeDestructor, TreeDensity

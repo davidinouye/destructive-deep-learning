@@ -16,8 +16,9 @@ from sklearn.utils import check_random_state
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 
+from ddl.base import CompositeDestructor
 from ddl.datasets import make_toy_data
-from ddl.deep import DeepDestructorCV, CompositeDestructor
+from ddl.deep import DeepDestructorCV
 from ddl.independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
 from ddl.univariate import ScipyUnivariateDensity, HistogramUnivariateDensity
 from ddl.linear import (LinearProjector, RandomOrthogonalEstimator, 

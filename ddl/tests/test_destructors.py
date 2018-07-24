@@ -9,10 +9,10 @@ from sklearn.decomposition import PCA
 
 import ddl
 from ddl.validation import check_destructor, check_density
-from ddl.base import IdentityDestructor, get_inverse_canonical_destructor
+from ddl.base import IdentityDestructor, CompositeDestructor, get_inverse_canonical_destructor
 from ddl.independent import IndependentDestructor, IndependentDensity
 from ddl.tree import TreeDestructor, TreeDensity, RandomTreeEstimator
-from ddl.deep import CompositeDestructor, DeepDestructor, DeepDestructorCV
+from ddl.deep import DeepDestructor, DeepDestructorCV
 from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
 from ddl.mixture import GaussianMixtureDensity
 from ddl.linear import LinearProjector

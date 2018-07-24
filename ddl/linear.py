@@ -14,13 +14,11 @@ from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
 from sklearn.utils.extmath import row_norms
 from sklearn.exceptions import DataConversionWarning
 
-from .base import ScoreMixin, get_implicit_density
+from .base import ScoreMixin, CompositeDestructor, get_implicit_density
 # noinspection PyProtectedMember
 from .utils import _UNIT_SPACE, _INF_SPACE
 from .independent import IndependentDestructor, IndependentDensity, IndependentInverseCdf
 from .univariate import ScipyUnivariateDensity
-# noinspection PyProtectedMember
-from .deep import CompositeDestructor
 
 logger = logging.getLogger(__name__)
 

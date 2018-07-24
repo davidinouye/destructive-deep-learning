@@ -14,138 +14,14 @@ from sklearn.externals.joblib import Parallel, delayed
 from sklearn.model_selection import KFold, check_cv
 from sklearn.exceptions import NotFittedError
 
-from .base import DestructorMixin, ScoreMixin, get_implicit_density, get_n_features
+from .base import (DestructorMixin, ScoreMixin, CompositeDestructor, 
+                   get_implicit_density, get_n_features)
 from .independent import IndependentDestructor, IndependentInverseCdf
 from .utils import make_interior_probability
 # noinspection PyProtectedMember
 from .utils import _DEFAULT_SUPPORT
 
 logger = logging.getLogger(__name__)
-
-
-class CompositeDestructor(BaseEstimator, DestructorMixin):
-    """Joins multiple destructors (or relative destructors like
-    LinearProjector) into a composite destructor.
-    """
-
-    def __init__(self, destructors=None, random_state=None):
-        """`random_state` is needed if any of the atomic destructors are random-based.
-        By seeding the global np.random via random_state and then resetting to its previous
-        state, we can avoid having to carefully pass around random_states for random atomic
-        destructors.
-        """
-        self.destructors = destructors
-        self.random_state = random_state
-
-    def fit(self, X, y=None, **fit_params):
-        self.fit_transform(X, y, **fit_params)
-        return self
-
-    def fit_transform(self, X, y=None, **fit_params):
-        rng = check_random_state(self.random_state)
-        # Save old random state and seed via internal random number generator
-        # saved_random_state = np.random.get_state()
-        # np.random.seed(rng.randint(2 ** 32, dtype=np.uint32))
-
-        Z = check_array(X, copy=True)
-
-        # Fit and transform all destructors
-        destructors = []
-        for d in self._get_destructor_iterable():
-            Z = self._single_fit_transform(d, Z, y)
-            destructors.append(d)
-            if np.any(np.isnan(Z)):
-                raise RuntimeError('Need to check')
-
-        self.fitted_destructors_ = np.array(destructors)
-        self.density_ = get_implicit_density(self)
-
-        # Reset random state
-        # np.random.set_state(saved_random_state)
-        return Z
-
-    def _single_fit_transform(self, d, Z, y):
-        if y is not None:
-            warnings.warn('y is not None but this is not an adversarial composite/deep destructor. '
-                          'Did you mean to use an adversarial version of this destructor?')
-        return d.fit_transform(Z, y)
-
-    def transform(self, X, y=None, partial_idx=None):
-        self._check_is_fitted()
-        Z = check_array(X, copy=True)
-
-        fitted_destructors = self._get_partial_destructors(partial_idx)
-        for d in fitted_destructors:
-            Z = d.transform(Z, y)
-        return Z
-
-    def inverse_transform(self, X, y=None, partial_idx=None):
-        self._check_is_fitted()
-        Z = check_array(X, copy=True)
-
-        fitted_destructors = self._get_partial_destructors(partial_idx)
-        for d in reversed(fitted_destructors):
-            Z = d.inverse_transform(Z, y)
-        return Z
-
-    def sample(self, n_samples=1, random_state=None):
-        """Nearly the same as `DestructorMixin.sample` but n_features is found from first 
-        fitted destructor to avoid recursion.
-        """
-        self._check_is_fitted()
-        rng = check_random_state(random_state)
-        n_features = get_n_features(self.fitted_destructors_[-1])
-        U = rng.rand(n_samples, n_features)
-        X = self.inverse_transform(U)
-        return X
-
-    def score_samples(self, X, y=None, partial_idx=None):
-        return np.sum(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=1)
-
-    def score_samples_layers(self, X, y=None, partial_idx=None):
-        self._check_is_fitted()
-        X = check_array(X, copy=True)
-
-        fitted_destructors = self._get_partial_destructors(partial_idx)
-        log_likelihood_layers = np.zeros((X.shape[0], len(fitted_destructors) ))
-        for i, d in enumerate(fitted_destructors):
-            log_likelihood_layers[:, i]= d.score_samples(X)
-            # Don't transform for the last destructor
-            if i < len(fitted_destructors) - 1:
-                X = d.transform(X, y)
-        return log_likelihood_layers
-
-    def score(self, X, y=None, partial_idx=None):
-        """Overrides super class to allow for partial_idx"""
-        return np.mean(self.score_samples(X, y, partial_idx=partial_idx))
-
-    def score_layers(self, X, y=None, partial_idx=None):
-        """Overrides super class to allow for partial_idx"""
-        return np.mean(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=0)
-
-    def get_domain(self):
-        # Get the domain of the first destructor (or relative destructor like LinearProjector)
-        return next(iter(self._get_destructor_iterable())).get_domain()
-
-    def _get_partial_destructors(self, partial_idx):
-        if partial_idx is not None:
-            return np.array(self.fitted_destructors_)[partial_idx]
-        else:
-            return self.fitted_destructors_
-
-    def _get_destructor_iterable(self):
-        if self.destructors is None:
-            return [IndependentDestructor()]
-        elif isinstance(self.destructors, (list, tuple, np.array)):
-            return [clone(d) for d in self.destructors]
-        else:
-            raise ValueError('`destructors` must be a list, tuple or numpy array. Sets are not '
-                             'allowed because order is important and general iterators/generators '
-                             'are not allowed because we need the estimator parameters to stay '
-                             'constant after inspecting.')
-
-    def _check_is_fitted(self):
-        check_is_fitted(self, ['fitted_destructors_'])
 
 
 class DeepDestructor(CompositeDestructor):
