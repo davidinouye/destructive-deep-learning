@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-PYTEST_FLAGS=--maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs ddl scripts/test_toy_experiment.py scripts/icml_2018_experiment.py
+PYTEST_FLAGS=--maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
 
 all:
 	python setup.py build_ext --inplace
@@ -7,16 +7,17 @@ cleanmlpack:
 	rm -rf ddl/externals/mlpack/mlpack-mlpack-3.0.2
 	rm ddl/externals/mlpack/mlpack-3.0.2.tar.gz
 test:
-	pytest --cov=ddl $(PYTEST_FLAGS)
+	pytest --cov=ddl $(PYTEST_FLAGS) ddl
 	codecov
-testmlpack:
-	pytest -k test_mlpack $(PYTEST_FLAGS)
-testother:
-	pytest --ignore=ddl/externals/mlpack $(PYTEST_FLAGS)
-testexperiments:
-	pytest -k test_toy_experiment $(PYTEST_FLAGS)
-	pytest -k test_mnist_experiment $(PYTEST_FLAGS)
-testspecial:
+test/mlpack:
+	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
+test/other:
+	pytest --ignore=ddl/externals/mlpack $(PYTEST_FLAGS) ddl
+test/experiments/toy:
+	pytest -k test_toy_experiment $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
+test/experiments/mnist:
+	pytest -k test_mnist_experiment $(PYTEST_FLAGS) ddl scripts/icml_2018_experiment.py
+test/special:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/mnist: scripts/maf_data.py
 	python scripts/maf_data.py mnist
