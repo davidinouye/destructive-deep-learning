@@ -346,7 +346,8 @@ except ImportError:
 else:
     @pytest.mark.parametrize(
         'model_name', 
-        ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
+        # 'image-pairs-tree' not needed since covered by other tests
+        ['deep-copula', 'image-pairs-copula']
     )
     def test_mnist_experiment(model_name):
         data_name = 'mnist'
