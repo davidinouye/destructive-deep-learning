@@ -18,8 +18,10 @@ testexperiments:
 	pytest -k test_mnist_experiment $(PYTEST_FLAGS)
 testspecial:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
-data/maf_cache: scripts/large_experiment.py
-	source activate python2 && cd scripts && python large_experiment.py nomodel create_cache
+data/mnist: scripts/maf_data.py
+	python scripts/maf_data.py mnist
+data/cifar10: scripts/maf_data.py
+	python scripts/maf_data.py cifar10
 clean:
 	python setup.py clean --all
 sing-experiment:

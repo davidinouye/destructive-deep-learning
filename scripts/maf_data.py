@@ -8,6 +8,7 @@ import urllib
 import tarfile
 import time
 import gzip
+import argparse
 
 import numpy as np
 from sklearn.datasets import fetch_mldata
@@ -375,11 +376,16 @@ def _save_mnist_recreation_indices():
 
 
 if __name__ == '__main__':
-    # Load data into cache
-    get_maf_data('mnist')
-    print('Finished caching mnist')
-    get_maf_data('cifar10')
-    print('Finished caching cifar10')
+    all_data_names = ['mnist', 'cifar10']
+    parser = argparse.ArgumentParser(description='Creates cache of datasets.')
+    parser.add_argument(
+        'data_names', default=','.join(all_data_names),
+        help='One or more data names separated by commas from the list %s' % str(all_data_names))
+    args = parser.parse_args()
+    for data_name in args.data_names.split(','):
+        # Load data into cache
+        get_maf_data(data_name)
+        print('Finished caching %s' % data_name)
     # Uncomment to recreate mnist train, validation and test indices from MAF code
     #_save_mnist_recreation_indices()
     # Uncomment to check that data is the same as MAF code
