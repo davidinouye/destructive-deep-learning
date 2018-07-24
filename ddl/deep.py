@@ -23,20 +23,6 @@ from .utils import _DEFAULT_SUPPORT
 logger = logging.getLogger(__name__)
 
 
-def _take(iterable, n):
-    """Return first n items of the iterable as a list"""
-    return list(islice(iterable, n))
-
-
-def _consume(iterator, n):
-    """Advance the iterator n-steps ahead. If n is none, consume entirely."""
-    # Use functions that consume iterators at C speed.
-    if n is None:
-        collections.deque(iterator, maxlen=0)
-    else:
-        next(islice(iterator, n, n), None)
-
-
 class CompositeDestructor(BaseEstimator, DestructorMixin):
     """Joins multiple destructors (or relative destructors like
     LinearProjector) into a composite destructor.
@@ -404,3 +390,19 @@ class DeepDestructorCV(DeepCVMixin, DeepDestructor):
 
         # Deprecated
         self.canonical_destructor = canonical_destructor
+
+
+def _take(iterable, n):
+    """Return first n items of the iterable as a list"""
+    return list(islice(iterable, n))
+
+
+def _consume(iterator, n):
+    """Advance the iterator n-steps ahead. If n is none, consume entirely."""
+    # Use functions that consume iterators at C speed.
+    if n is None:
+        collections.deque(iterator, maxlen=0)
+    else:
+        next(islice(iterator, n, n), None)
+
+
