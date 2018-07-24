@@ -87,7 +87,7 @@ jobs:
             # calls setup.py and downloads necessary packages if needed
             # Should be roughly equivalent to the following command
             # python setup.py install
-            pip install --verbose --editable .[test]
+            pip install --verbose .[test]
 
       - save_cache:
           paths:
