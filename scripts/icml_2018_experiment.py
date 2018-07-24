@@ -84,7 +84,7 @@ def run_experiment(data_name, model_name, model_kwargs=None):
     test_score = np.mean(test_scores)
     test_score_stderr = scipy.stats.sem(test_scores)
     logger.debug('%s: Final test score=%g with std_err=%g computed in %g s'
-                 % (experiment_label, test_score, test_score_stderr, score_time))
+                 % (experiment_label, float(test_score), test_score_stderr, score_time))
     date_time_completed = time.strftime("%Y_%m_%d-%H_%M_%S")
     logger.debug('Date/time completed (just before saving): %s' % date_time_completed)
 
@@ -252,8 +252,7 @@ def _get_pair_estimators(data_name, n_uniq_dir):
     """Returns `n_uniq_dir` pair estimators in a spiral pattern."""
     def _generate_pixel_circle(radius=1):
         cur = radius*np.array([1, 1])  # Start in top right
-        d = []
-        d.append(cur)
+        d = [cur]
         for step in np.array([[0, -1], [-1, 0], [0,1], [1, 0]]):
             for i in range(2*radius):
                 cur = cur + step
