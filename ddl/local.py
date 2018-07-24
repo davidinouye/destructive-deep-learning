@@ -30,9 +30,10 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
 
     def fit_transform(self, X, y=None, **fit_params):
         # Validate parameters
-        groups_estimator = (clone(self.groups_estimator)
-        if self.groups_estimator is not None
-        else RandomFeaturePairs(random_state=0))
+        groups_estimator = (
+            clone(self.groups_estimator) if self.groups_estimator is not None
+            else RandomFeaturePairs(random_state=0)
+        )
         group_canonical_destructor = (
             clone(self.group_canonical_destructor)
             if self.group_canonical_destructor is not None
@@ -176,17 +177,18 @@ class ImageFeaturePairs(BaseEstimator):
     `image_shape` is the shape such that X[0,:].reshape(image_shape) is converted to an image.
         Note that image_shape could have any length depending on the number of image channels.
 
-    `relative_position` is length len(image_shape) and is a relative relative_position to pair with a selected feature.
-        For example, if `relative_position` = (1, 0),
-        then the pixels will be paired horizontally whereas if `relative_position` = (0, 1), then the pixels
-        will be paired vertically.
+    `relative_position` is length len(image_shape) and is a relative relative_position to pair
+    with a selected feature. For example, if `relative_position` = (1, 0), then the pixels will
+    be paired horizontally whereas if `relative_position` = (0, 1), then the pixels will be
+    paired vertically.
 
-    `init_offset` is the amount to init_offset in all directions on the image. For example, one might first do
-    a init_offset of (0, 0) and then a init_offset of (1, 0) to couple the all horizontal pixels.
+    `init_offset` is the amount to init_offset in all directions on the image. For example,
+    one might first do a init_offset of (0, 0) and then a init_offset of (1, 0) to couple the all
+    horizontal pixels.
 
     `wrap` means whether to wrap the pixels to the other side so that all features are paired.
-        For example, if `relative_position = (1,0)` and `init_offset = (1,0)`, the last pixel on the row will match
-        with the first pixel on the row.
+    For example, if `relative_position = (1,0)` and `init_offset = (1,0)`, the last pixel on the
+    row will match with the first pixel on the row.
     """
 
     def __init__(self, image_shape=None, relative_position=None, init_offset=None, step=None,

@@ -1,6 +1,6 @@
 # Simple and fast (but not comprehensive) tests 
 # to sanity check that ICML 2018 experiments will run the same
-##### Mostly copied from demo_toy_experiment.py notebook #####
+# *** Mostly copied from demo_toy_experiment.py notebook ***
 from __future__ import division, print_function
 
 import logging
@@ -202,7 +202,7 @@ def _get_toy_destructors_and_names():
     for d in destructors:
         if 'cv' in d.get_params():
             d.set_params(cv=cv)
-        ############ Change from notebook to make faster ############
+        # **** Change from notebook to make faster ****
         if 'n_canonical_destructors' in d.get_params():
             d.set_params(n_canonical_destructors=2)
 

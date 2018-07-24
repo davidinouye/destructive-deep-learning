@@ -95,10 +95,8 @@ class ScipyUnivariateDensity(UnivariateDensity):
         def _check_scipy_kwargs(kwargs, _scipy_rv):
             if kwargs is None:
                 if self._is_special(SCIPY_RV_UNIT_SUPPORT):
-                    # logger.debug('Fixing floc=0, fscale=1')
                     return dict(floc=0, fscale=1)
                 elif self._is_special(SCIPY_RV_NON_NEGATIVE + SCIPY_RV_STRICLTY_POSITIVE):
-                    # logger.debug('Fixing floc=0')
                     return dict(floc=0)
                 else:
                     return {}
@@ -123,7 +121,8 @@ class ScipyUnivariateDensity(UnivariateDensity):
                               'parameters for the distribution. Original error:\n%s' % str(e))
                 params = self._get_default_params()
             except ValueError as e:
-                # warnings.warn('Trying to use fixed parameters instead. Original error:\n%s' % str(e))
+                # warnings.warn(
+                #     'Trying to use fixed parameters instead. Original error:\n%s' % str(e))
                 # try to extract fixed parameters in a certain order
                 params = []
                 for k in ['fa', 'f0', 'fb', 'f1', 'floc', 'fscale']:
@@ -394,7 +393,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
     def fit(self, X, y=None, **fit_params):
         X = self._check_X(X)
-        # Get perc_extension but do not modify bounds
+        # Get percent extension but do not modify bounds
         bounds = self._check_bounds(X)
         bins = self.bins if self.bins is not None else 'auto'
 

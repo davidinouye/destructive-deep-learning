@@ -80,7 +80,8 @@ def _get_maf_mnist():
 def _get_maf_cifar10():
     # Download cifar10 data if needed
     def _report_hook(count, block_size, total_size):
-        # Copied from https://blog.shichao.io/2012/10/04/progress_speed_indicator_for_urlretrieve_in_python.html
+        # Copied from
+        # https://blog.shichao.io/2012/10/04/progress_speed_indicator_for_urlretrieve_in_python.html
         global start_time
         if count == 0:
             start_time = time.time()
@@ -107,21 +108,21 @@ def _get_maf_cifar10():
         tar.close()
 
     # Load cifar10 and create splits
-    # Mostly copied from MAF source except for Python 3 compatability
+    # Mostly copied from MAF source except for Python 3 compatibility
     # print('Loading cifar10 from previously downloaded pickle files')
     x = []
-    l = []
+    labels = []
     for i in range(1, 6):
         data, labels = _get_cifar10_data_and_labels(os.path.join(path, 'data_batch_' + str(i)))
         x.append(data)
-        l.append(labels)
+        labels.append(labels)
     x = np.concatenate(x, axis=0)
-    l = np.concatenate(l, axis=0)
+    labels = np.concatenate(labels, axis=0)
 
     # use part of the train batches for validation
     split = int(0.9 * x.shape[0])
-    maf_train = (x[:split], l[:split])
-    maf_validation = (x[split:], l[split:])
+    maf_train = (x[:split], labels[:split])
+    maf_validation = (x[split:], labels[split:])
 
     # load test batch
     data, labels = _get_cifar10_data_and_labels(os.path.join(path, 'test_batch'))
@@ -197,10 +198,10 @@ def _preprocess_cifar10(X, y, flip, rng):
 def _flip_augmentation(X):
     """Slight modification for Pythone 3 of static method from maf/datasets/cifar10.py."""
     D = int(X.shape[1] / 3)
-    I = int(np.sqrt(D))
-    r = X[:, :D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
-    g = X[:, D:2 * D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
-    b = X[:, 2 * D:].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
+    sz = int(np.sqrt(D))
+    r = X[:, :D].reshape([-1, sz, sz])[:, :, ::-1].reshape([-1, D])
+    g = X[:, D:2 * D].reshape([-1, sz, sz])[:, :, ::-1].reshape([-1, D])
+    b = X[:, 2 * D:].reshape([-1, sz, sz])[:, :, ::-1].reshape([-1, D])
     X_flip = np.hstack([r, g, b])
     return np.vstack([X, X_flip])
 
@@ -252,7 +253,8 @@ def _data_dict_to_arr(data_dict):
 #############################################################
 def _check_maf_data():
     warnings.warn('This function should generally not be called because it '
-                  'requires special setup but is kept here in order to reproduce functions if needed.')
+                  'requires special setup but is kept here in order to reproduce functions if '
+                  'needed.')
     for _data_name in ['mnist', 'cifar10']:
         print('Loading %s data directly and via maf code' % _data_name)
         direct = _data_dict_to_arr(get_maf_data(_data_name))
@@ -271,7 +273,8 @@ def _check_maf_data():
 # noinspection PyShadowingNames
 def _get_maf_original(data_name):
     warnings.warn('This function should generally not be called because it '
-                  'requires special setup but is kept here in order to reproduce functions if needed.')
+                  'requires special setup but is kept here in order to reproduce functions if '
+                  'needed.')
     if sys.version_info < (3,):
         # Load MNIST from MAF code
         maf_path = os.path.join(
@@ -332,7 +335,8 @@ def _save_mnist_recreation_indices():
     MNIST MAF dataset.
     Note this should not be called directly.  This is only here for reproducibility."""
     warnings.warn('This function should generally not be called because it '
-                  'requires special setup but is kept here in order to reproduce functions if needed.')
+                  'requires special setup but is kept here in order to reproduce functions if '
+                  'needed.')
     # Import maf data
     datasets_root = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),

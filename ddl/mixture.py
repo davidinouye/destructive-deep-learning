@@ -369,9 +369,8 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
         n_components = self.n_components
         covariance_type = self.covariance_type
 
-        # Randomly initialize centers by picking from X
-        self.means_ = X[rng.permutation(n_samples)[:n_components],
-                      :].copy()  # (n_components, n_features)
+        # Randomly initialize centers by picking from X (n_components, n_features)
+        self.means_ = X[rng.permutation(n_samples)[:n_components], :].copy()
         # Randomly initialize weights via dirichlet
         self.weights_ = rng.dirichlet(self.alpha * np.ones(n_components))
         # self.weights_ = np.ones(n_components)/n_components

@@ -27,14 +27,14 @@ def create_api_rst(package, generated_dir):
         classes = [
             o for o in getmembers(module)
             if isclass(o[1])
-               and o[0][0] != '_'
-               and o[1].__module__.startswith(module_name)
+            and o[0][0] != '_'
+            and o[1].__module__.startswith(module_name)
         ]
         functions = [
             o for o in getmembers(module)
             if isfunction(o[1])
-               and o[0][0] != '_'
-               and o[1].__module__.startswith(module_name)
+            and o[0][0] != '_'
+            and o[1].__module__.startswith(module_name)
         ]
         return dict(module=module, functions=functions, classes=classes)
 

@@ -63,6 +63,7 @@ def test_mlpack_det(test):
             print(tree.get_tree_str(show_leaves=True))
 
 
+# noinspection SpellCheckingInspection
 def test_mlpack_det_get_arrayed_tree():
     # Setup dataset
     D = make_toy_data('uniform_grid', n_samples=1000, random_state=0)
@@ -87,14 +88,14 @@ def test_mlpack_det_get_arrayed_tree():
     #    prefix = 'Left' if is_left else 'Right'
     #
     #    if arrayed_tree.feature[node_i] >= 0:
-    #        print('%s dim=%3d, threshold=%.3f' % (prefix, arrayed_tree.feature[node_i], arrayed_tree.threshold[node_i]))
+    #        print('%s dim=%3d, threshold=%.3f'
+    #              % (prefix, arrayed_tree.feature[node_i], arrayed_tree.threshold[node_i]))
     #        stack.append((arrayed_tree.children_right[node_i], False))
     #        stack.append((arrayed_tree.children_left[node_i], True))
     #    else:
     #        print('%s' % prefix)
 
     # print(arrayed_tree)
-    ##np.set_printoptions(precision=17)
     # print(repr(arrayed_tree.feature))
     # print(repr(arrayed_tree.threshold))
     # print(repr(arrayed_tree.children_left))

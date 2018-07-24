@@ -51,7 +51,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
             raise ValueError('Parameter `orthogonal` should be a boolean value either ``True`` or '
                              '``False``.')
         lin_est = (self.linear_estimator if self.linear_estimator is not None
-        else IdentityLinearEstimator())
+                   else IdentityLinearEstimator())
         # noinspection PyArgumentList
         try:
             lin_est.fit(X, y, **lin_est_fit_params)
@@ -112,7 +112,8 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
                 if logdet > 1e-12:
                     warnings.warn(
                         'Provided matrix does not seem to be orthogonal but orthogonal=True. '
-                        'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g' % logdet)
+                        'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g'
+                        % logdet)
             A = _SimpleMatrix(coef)
         self.A_ = A
         self.A_inv_ = A.inv(copy=False)
@@ -341,7 +342,8 @@ class _IdentityWithScaling(object):
             return np.log(np.abs(self.scale))
 
     def inv(self, copy=True):
-        inv_scale = 1.0 / self.scale if self.scale != 1 else 1  # Just in case there is rounding error
+        # Just in case there is rounding error
+        inv_scale = 1.0 / self.scale if self.scale != 1 else 1
         return _IdentityWithScaling(scale=inv_scale)
 
     def toarray(self):
@@ -378,7 +380,8 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         return super(_HouseholderWithScaling, self).logabsdet()
 
     def inv(self, copy=True):
-        inv_scale = 1.0 / self.scale if self.scale != 1 else 1  # Just in case there is rounding error
+        # Just in case there is rounding error
+        inv_scale = 1.0 / self.scale if self.scale != 1 else 1
         return _HouseholderWithScaling(self.u, scale=inv_scale, copy=copy)
 
     def toarray(self):

@@ -47,6 +47,7 @@ def build_mlpack():
         # Setup build directory and run cmake
         # print('Removing old build directory if necessary and creating new build directory')
         print('Attempting to create build directory if it does not exist')
+
         # shutil.rmtree(build_path, ignore_errors=True)
         os.mkdir(build_path)
 
@@ -84,14 +85,13 @@ def configuration(parent_package='', top_path=None):
             pyx.split('.')[0],
             sources=[pyx],
             language='c++',
-            # include_dirs=[np.get_include(), os.path.join(*package_list)], # Needed for arma_numpy.pyx
             include_dirs=[numpy.get_include(), os.path.join(build_path, 'include')],
             # Needed for arma_numpy.pyx
             library_dirs=[os.path.join(build_path, 'lib')],
             libraries=libraries,
             extra_compile_args=('-DBINDING_TYPE=BINDING_TYPE_PYX '
-                                '-std=c++11 -Wall -Wextra -ftemplate-depth=1000 -O3 -fopenmp').split(
-                ' '),
+                                '-std=c++11 -Wall -Wextra -ftemplate-depth=1000 '
+                                '-O3 -fopenmp').split(' '),
             extra_link_args=['-fopenmp'],
             undef_macros=[] if len("") == 0 else ''.split(';')
 

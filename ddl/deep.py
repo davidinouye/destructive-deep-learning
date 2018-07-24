@@ -124,8 +124,8 @@ class DeepCVMixin(object):
                 Z = d.transform(Z)
                 destructors.append(d)
                 if not self.silent:
-                    logger.debug(self.log_prefix + '(Final fit layer=%d) local layer score=%g' % (
-                    i + 1, score))
+                    logger.debug(self.log_prefix + '(Final fit layer=%d) local layer score=%g'
+                                 % (i + 1, score))
         else:
             # Use already fitted destructor from CV array
             if len(cv_destructors_arr) > 1:
@@ -167,8 +167,8 @@ class DeepCVMixin(object):
                 continue
             elif len(cv_destructors) > 0:
                 if not self.silent:
-                    logger.debug(
-                        self.log_prefix + 'Re-fitting extra destructors for cv=%i deep destructor' % i)
+                    logger.debug(self.log_prefix
+                                 + 'Re-fitting extra destructors for cv=%i deep destructor' % i)
                 # Pop off destructors that were already fit from the destructor iterator
                 _consume(destructor_iterator, len(cv_destructors))
                 for d in cv_destructors:

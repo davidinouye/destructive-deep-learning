@@ -64,12 +64,13 @@ class DestructorMixin(ScoreMixin, TransformerMixin):
 
 
 def get_n_features(destructor, try_destructor_sample=False):
-    """Attempt to find n_features either from `destructor.n_features_`, `destructor.density_.n_features_`, or
+    """Attempt to find n_features either from `destructor.n_features_`,
+    `destructor.density_.n_features_`, or
     via density sampling `destructor.density_.sample(1, random_state=0).shape[1]`.
     If `try_destructor_sample=True`, additionally attempt 
     `destructor.sample(1, random_state=0).shape[1]`. This option could cause infinite recursion
-    since `DestructorMixin` uses `get_n_features(destructor)` in order to sample but this can be avoided
-    if the destructor reimplements sample without `get_n_features()` such as in the
+    since `DestructorMixin` uses `get_n_features(destructor)` in order to sample but this can be
+    avoided if the destructor reimplements sample without `get_n_features()` such as in the
     `CompositeDestructor`.
     """
     n_features = np.nan
@@ -90,8 +91,9 @@ def get_n_features(destructor, try_destructor_sample=False):
             # Attempt to sample from destructor
             if hasattr(destructor, 'sample'):
                 try:
-                    n_features = \
-                    np.array(fitted_destructor.sample(n_samples=1, random_state=0)).shape[1]
+                    n_features = np.array(
+                        fitted_destructor.sample(n_samples=1, random_state=0)
+                    ).shape[1]
                 except RuntimeError:
                     err = True
                 else:
@@ -100,12 +102,15 @@ def get_n_features(destructor, try_destructor_sample=False):
                 err = True
             if err:
                 raise RuntimeError(
-                    'Could not find n_features in fitted_destructor.n_features_, fitted_destructor.density_.n_features_, '
-                    'fitted_destructor.density_.sample(1).shape[1], or fitted_destructor.sample(1).shape[1]. '
+                    'Could not find n_features in fitted_destructor.n_features_, '
+                    'fitted_destructor.density_.n_features_, '
+                    'fitted_destructor.density_.sample(1).shape[1], or fitted_destructor.sample('
+                    '1).shape[1]. '
                 )
         else:
             raise RuntimeError('Could not find n_features in destructor or density.'
-                               ' Checked destructor.n_features_, destructor.density_.n_features_, and'
+                               'Checked destructor.n_features_, destructor.density_.n_features_, '
+                               'and '
                                ' attempted to sample from destructor.density_ to determine'
                                ' n_features but failed in all cases.')
     return n_features
@@ -236,10 +241,10 @@ class UniformDensity(BaseEstimator, ScoreMixin):
 
 def get_implicit_density(fitted_destructor, copy=False):
     """Returns an implicit density based on a fitted destructor.
-    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests that
-    require n_features to be available.
-    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than just 
-    copying a reference to it.
+    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests
+    that require n_features to be available.
+    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than
+    just copying a reference to it.
     """
     return _ImplicitDensity(
         destructor=fitted_destructor
@@ -248,10 +253,10 @@ def get_implicit_density(fitted_destructor, copy=False):
 
 def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
     """Returns the inverse of a fitted canonical destructor.
-    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests that
-    require n_features to be available.
-    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than just 
-    copying a reference to it.
+    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests
+    that require n_features to be available.
+    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than
+    just copying a reference to it.
     """
     return _InverseCanonicalDestructor(
         canonical_destructor=fitted_canonical_destructor
@@ -285,8 +290,8 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
             self.fitted_canonical_destructor_ = clone(self.canonical_destructor).fit(X, y)
 
         self.n_features_ = get_n_features(self.fitted_canonical_destructor_)
-        self.density_ = get_implicit_density(self,
-                                             copy=False)  # Copy has already occurred above if needed
+        self.density_ = get_implicit_density(
+            self, copy=False)  # Copy has already occurred above if needed
         return self
 
     def get_domain(self):

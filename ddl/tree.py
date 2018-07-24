@@ -152,7 +152,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
     def sample(self, n_samples=1, random_state=None, shuffle=True):
         # Randomly sample leaf nodes based on their node_value
-        # NOTE: This is slightly inefficent because there are 
+        # NOTE: This is slightly inefficient because there are
         #  binomial samples of O(n_samples) at each level of the
         #  tree.  Thus the complexity is O(n_levels*n_samples).
         #  However, this is a simple implementation that does not
@@ -214,7 +214,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
                     width = node.domain[:, 1] - node.domain[:, 0]
                     log_volume = np.sum(np.log(width))
                     log_weight = log_prob - log_volume
-                    # Get node destructor density scor
+                    # Get node destructor density score
                     if node.destructor is not None:
                         U_sel = _to_unit(X[sel, :], node.domain)
                         log_node_score = node.destructor.score_samples(U_sel)
@@ -452,7 +452,8 @@ class _SklearnNode:
             x = 1e-15
         elif x >= 1:
             if x == 1 and len(self._node_values) == 1:
-                pass  # Handles the case where there are no splits (i.e. just root node as leaf node)
+                # Handles the case where there are no splits (i.e. just root node as leaf node)
+                pass
             else:
                 warnings.warn(BoundaryWarning(
                     'Numerical imprecision or faulty algorithm because `value` '
@@ -477,13 +478,15 @@ class _SklearnNode:
         if x <= self.domain[self.feature, 0]:
             warnings.warn(BoundaryWarning(
                 'Numerical imprecision or faulty algorithm because `threshold` should '
-                'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.'
+                'never be the same as the edge of the domain which is %g, changing from %g to '
+                '%g+1e-15. '
                 % (self.domain[self.feature, 0], x, self.domain[self.feature, 0])))
             x += 1e-15
         elif x >= self.domain[self.feature, 1]:
             warnings.warn(BoundaryWarning(
                 'Numerical imprecision or faulty algorithm because `threshold` should '
-                'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.'
+                'never be the same as the edge of the domain which is %g, changing from %g to '
+                '%g+1e-15. '
                 % (self.domain[self.feature, 1], x, self.domain[self.feature, 1])))
             x -= 1e-15
         self._tree.threshold[self._node_i] = x
@@ -589,7 +592,7 @@ def _tree_transform(tree, X, y=None):
             t = node.threshold
             t_out = node.threshold_out
 
-            # Add children with approriate scale, shift and filtered selection
+            # Add children with appropriate scale, shift and filtered selection
             _update_stack('right')
             _update_stack('left')
 
@@ -602,8 +605,8 @@ def _tree_transform(tree, X, y=None):
 def _get_inverse_tree(tree):
     """Computes the tree corresponding to the inverse of the transformation."""
     tree_out = deepcopy(tree)
-    for node_in, node_out in zip(tree,
-                                 tree_out):  # Iterator starting at root (can be depth-first or breadth-first)
+    # Iterator starting at root (can be depth-first or breadth-first)
+    for node_in, node_out in zip(tree, tree_out):
         # Implicitly changes a and b for children since bounds computed when traversing
         # Need to extract values before setting them since they are used internally
         if node_in.is_leaf():

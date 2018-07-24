@@ -257,7 +257,8 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
     U_sample_copy = U_sample.copy()
     trans.inverse_transform(U_sample)
     np.testing.assert_array_equal(U_sample, U_sample_copy,
-                                  'inverse_transform() function should not mutate input data matrix `X`')
+                                  'inverse_transform() function should not mutate input data '
+                                  'matrix `X`')
 
     # # Check primary methods
     if has_method(trans, 'sample'):
@@ -270,7 +271,8 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
     if has_method(trans, 'score_samples'):
         score_vec = trans.score_samples(X_test)
         np.testing.assert_array_equal(X_test, X_test_copy,
-                                      'score_samples() function should not mutate input data matrix `X`')
+                                      'score_samples() function should not mutate input data '
+                                      'matrix `X`')
         if len(score_vec) != n:
             raise RuntimeError('Output of score_samples is not of length n')
 
