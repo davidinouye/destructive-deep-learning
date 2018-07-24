@@ -21,6 +21,7 @@ def build_mlpack():
     repo_path = os.path.join(package_path, 'mlpack-mlpack-%s' % version)
     cmake_file_path = os.path.join(repo_path, 'CMakeLists.txt')
     build_path = os.path.join(repo_path, 'build')
+    orig_cwd = os.getcwd()
 
     # Download and extract
     if not os.path.isdir(repo_path):
@@ -49,7 +50,6 @@ def build_mlpack():
         os.mkdir(build_path)
 
         print('Running cmake')
-        orig_cwd = os.getcwd()
         os.chdir(build_path)
         if sys.platform == 'darwin':
             print('Exporting environment variables needed for cmake in Mac OS')
