@@ -9,13 +9,14 @@ def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
     try:
         maker = _makers_dict['_make_%s' % data_name]
     except KeyError:
-        raise ValueError('Invalid data_name of "%s"' % data_name) 
+        raise ValueError('Invalid data_name of "%s"' % data_name)
     X, y, is_canonical_domain = maker(n_samples, random_state=random_state, **maker_kwargs)
     return _Data(X=X, y=y, data_name=data_name, is_canonical_domain=is_canonical_domain)
 
 
 class _Data(object):
     """Simple class to hold data values and attributes"""
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -64,24 +65,24 @@ def _make_sin_wave(n_samples, x_scale=2 * np.pi, y_std=0.2, **kwargs):
     if 'func' in kwargs:
         raise ValueError('func is overridden by _make_sin_wave')
     return _make_autoregressive(n_samples, func=lambda x: np.sin(x),
-                               x_scale=x_scale, y_std=y_std, **kwargs)
+                                x_scale=x_scale, y_std=y_std, **kwargs)
 
 
 def _make_rbig_sin_wave(n_samples, random_state=0):
     # Example from [Laparra et al. 2011]
     # Code at https://www.uv.es/vista/vistavalencia/RBIG.htm
     return _make_sin_wave(n_samples, x_scale=2, y_std=0.25,
-                         x_distribution='abs-gaussian', random_state=random_state)
+                          x_distribution='abs-gaussian', random_state=random_state)
 
 
 def _make_quadratic(n_samples, random_state=0):
     # Example from [Papamakarios et al. 2017]
     return _make_autoregressive(n_samples, func=lambda x: (1 / 4) * x ** 2,
-                               x_distribution='gaussian', x_scale=2, y_std=1, flip_x_y=True)
+                                x_distribution='gaussian', x_scale=2, y_std=1, flip_x_y=True)
 
 
 def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_state=0,
-              kind='gaussian'):
+               kind='gaussian'):
     rng = check_random_state(random_state)
     n_features = 2
 
@@ -172,5 +173,6 @@ def _get_y_and_shuffle(X, n_per_component):
     # Shuffle
     X, y = shuffle(X, y, random_state=0)
     return X, y
+
 
 _makers_dict = {key: val for key, val in locals().items() if '_make_' in key}

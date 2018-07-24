@@ -30,9 +30,9 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
 
     def fit_transform(self, X, y=None, **fit_params):
         # Validate parameters
-        groups_estimator = (clone(self.groups_estimator) 
-                            if self.groups_estimator is not None
-                            else RandomFeaturePairs(random_state=0))
+        groups_estimator = (clone(self.groups_estimator)
+        if self.groups_estimator is not None
+        else RandomFeaturePairs(random_state=0))
         group_canonical_destructor = (
             clone(self.group_canonical_destructor)
             if self.group_canonical_destructor is not None
@@ -63,9 +63,9 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         )
 
         # Old code
-        #for group, (Z_group, _) in zip(groups, Z_groups_and_destructors):
+        # for group, (Z_group, _) in zip(groups, Z_groups_and_destructors):
         #    Z[:, group] = Z_group
-        #group_destructors = [d for _, d in Z_groups_and_destructors]
+        # group_destructors = [d for _, d in Z_groups_and_destructors]
 
         # Filter out destructors that do not make any changes (i.e. that are identity destructors)
         filtered_results = (
@@ -97,7 +97,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
             delayed(_transform)(Z[:, group], destructor)
             for group, destructor in zip(self.groups_, self.group_destructors_)
         )
-        for group, Z_group in zip(self.groups_, Z_groups):    
+        for group, Z_group in zip(self.groups_, Z_groups):
             Z[:, group] = Z_group
         Z = np.ascontiguousarray(Z)  # Convert back to row-major
         return Z
@@ -111,7 +111,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
             delayed(_inverse_transform)(Z[:, group], destructor)
             for group, destructor in zip(self.groups_, self.group_destructors_)
         )
-        for group, Z_group in zip(self.groups_, Z_groups):    
+        for group, Z_group in zip(self.groups_, Z_groups):
             Z[:, group] = Z_group
         Z = np.ascontiguousarray(Z)  # Convert back to row-major
         return Z
@@ -137,12 +137,19 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
 def _fit_transform(Z_group, d):
     Z_group = d.fit_transform(Z_group)
     return Z_group, d
+
+
 def _transform(Z_group, d):
     return d.transform(Z_group)
+
+
 def _inverse_transform(Z_group, d):
     return d.inverse_transform(Z_group)
+
+
 def _score_samples(X_group, d):
     return d.score_samples(X_group)
+
 
 class RandomFeaturePairs(BaseEstimator):
     def __init__(self, random_state=None):
@@ -181,6 +188,7 @@ class ImageFeaturePairs(BaseEstimator):
         For example, if `relative_position = (1,0)` and `init_offset = (1,0)`, the last pixel on the row will match
         with the first pixel on the row.
     """
+
     def __init__(self, image_shape=None, relative_position=None, init_offset=None, step=None,
                  wrap=True):
         self.image_shape = image_shape
@@ -277,7 +285,7 @@ class ImageFeaturePairs(BaseEstimator):
                     # If invalid pair, then step
                     cur_I += step
                     pair_I = _wrap(cur_I + relative_position)
-                    if np.all(cur_I/image_shape < 1):
+                    if np.all(cur_I / image_shape < 1):
                         continue
                     else:
                         unpaired_idx = 0

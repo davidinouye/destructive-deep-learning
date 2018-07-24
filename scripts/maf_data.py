@@ -16,6 +16,8 @@ from sklearn.datasets import fetch_mldata
 # Handle pickled data for python 2 and python 3
 try:
     import cPickle
+
+
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
             dict_obj = cPickle.load(f)
@@ -23,6 +25,8 @@ try:
 
 except ImportError:
     import pickle
+
+
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
             dict_obj = pickle.load(f, encoding='bytes')
@@ -34,7 +38,7 @@ CIFAR10_ALPHA = 0.05
 
 # Gets data path wherever the script is executed
 _DOWNLOAD_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), 
+    os.path.dirname(os.path.realpath(__file__)),
     '..', 'data', 'download-cache'
 )
 
@@ -54,18 +58,18 @@ def _get_maf_mnist():
     # This splits file was created by comparing MNIST downloaded to the 
     #  MAF MNIST dataset splits
     splits_file = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 
+        os.path.dirname(os.path.realpath(__file__)),
         'maf_mnist_splits.txt.gz'
     )
     with gzip.open(splits_file, 'r') as f:
         ind_arr = [
             # Decode is needed to be compatible with Python 2 and 3
             np.array(line.decode('utf-8').split(', '), dtype=np.int)
-            for i, line in enumerate(f) if i > 0 # Skip first line
+            for i, line in enumerate(f) if i > 0  # Skip first line
         ]
 
     # Ensure dequantization is the same as MAF paper
-    #print('Preprocessing MNIST data')
+    # print('Preprocessing MNIST data')
     rng = np.random.RandomState(42)
     return _data_arr_to_dict([
         _preprocess_mnist(X[ind, :], y[ind], rng)
@@ -86,8 +90,9 @@ def _get_maf_cifar10():
         speed = int(progress_size / (1024 * duration))
         percent = min(int(count * block_size * 100 / total_size), 100)
         sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                        (percent, progress_size / (1024 * 1024), speed, duration))
+                         (percent, progress_size / (1024 * 1024), speed, duration))
         sys.stdout.flush()
+
     _make_dir(_DOWNLOAD_DIR)
     path = os.path.join(_DOWNLOAD_DIR, 'cifar-10-batches-py')
     file_name = path + '.tar.gz'
@@ -100,10 +105,10 @@ def _get_maf_cifar10():
         tar = tarfile.open(file_name, 'r:gz')
         tar.extractall(_DOWNLOAD_DIR)
         tar.close()
-    
+
     # Load cifar10 and create splits
     # Mostly copied from MAF source except for Python 3 compatability
-    #print('Loading cifar10 from previously downloaded pickle files')
+    # print('Loading cifar10 from previously downloaded pickle files')
     x = []
     l = []
     for i in range(1, 6):
@@ -123,7 +128,7 @@ def _get_maf_cifar10():
     maf_test = (data, np.array(labels))
 
     # Preprocess the dataset
-    #print('Preprocessing cifar10 dataset')
+    # print('Preprocessing cifar10 dataset')
     rng = np.random.RandomState(42)
     return _data_arr_to_dict([
         _preprocess_cifar10(maf[0], maf[1], flip, rng)
@@ -150,11 +155,12 @@ def _get_mnist_raw():
         except (ConnectionResetError, urllib.error.HTTPError):
             _download_from_other_source()
             if i == n_attempts - 1:
-                warnings.warn('Attempted to retrieve MNIST data from mldata.org or alternative %d times '
-                      'and failed each time, please check internet connection' % n_attempts)
+                warnings.warn(
+                    'Attempted to retrieve MNIST data from mldata.org or alternative %d times '
+                    'and failed each time, please check internet connection' % n_attempts)
                 raise
         else:
-            #print('Successfully fetched MNIST data')
+            # print('Successfully fetched MNIST data')
             break
     return data_obj.data, data_obj.target
 
@@ -167,7 +173,7 @@ def _preprocess_mnist(X, y, rng):
     # Logit transform
     X = _logit_transform(X, MNIST_ALPHA)
     # One hot encode labels
-    #y = _one_hot_encode(y, 10).astype(np.int64)
+    # y = _one_hot_encode(y, 10).astype(np.int64)
     return X, y.astype(np.int64)
 
 
@@ -181,7 +187,7 @@ def _preprocess_cifar10(X, y, flip, rng):
         X = _flip_augmentation(X)
         y = np.hstack([y, y])
     # One hot encode
-    #y = _one_hot_encode(y, 10)
+    # y = _one_hot_encode(y, 10)
     return X, y.astype(np.int64)
 
 
@@ -192,9 +198,9 @@ def _flip_augmentation(X):
     """Slight modification for Pythone 3 of static method from maf/datasets/cifar10.py."""
     D = int(X.shape[1] / 3)
     I = int(np.sqrt(D))
-    r = X[:,    :D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
-    g = X[:, D:2*D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
-    b = X[:,  2*D:].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
+    r = X[:, :D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
+    g = X[:, D:2 * D].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
+    b = X[:, 2 * D:].reshape([-1, I, I])[:, :, ::-1].reshape([-1, D])
     X_flip = np.hstack([r, g, b])
     return np.vstack([X, X_flip])
 
@@ -202,6 +208,7 @@ def _flip_augmentation(X):
 def _logit_transform(X, alpha):
     def _logit(_X):
         return np.log(_X / (1.0 - _X))
+
     return _logit(alpha + (1 - 2 * alpha) * X)
 
 
@@ -222,6 +229,7 @@ def _make_dir(path):
         else:
             raise
 
+
 def _data_arr_to_dict(data_arr):
     d = {}
     for data, name in zip(data_arr, ['train', 'validation', 'test']):
@@ -231,7 +239,7 @@ def _data_arr_to_dict(data_arr):
 
 
 def _data_dict_to_arr(data_dict):
-    d = data_dict # Short alias
+    d = data_dict  # Short alias
     return [
         (d['X_train'], d['y_train']),
         (d['X_validation'], d['y_validation']),
@@ -250,7 +258,8 @@ def _check_maf_data():
         direct = _data_dict_to_arr(get_maf_data(_data_name))
         original = _data_dict_to_arr(_get_maf_original(_data_name))
         print('Comparing dtypes and values of returned arrays for %s' % _data_name)
-        for i, (x_direct, x_original) in enumerate(zip(np.array(direct).ravel(), np.array(original).ravel())):
+        for i, (x_direct, x_original) in enumerate(
+                zip(np.array(direct).ravel(), np.array(original).ravel())):
             # Check that they have the same dtype
             assert x_direct.dtype == x_original.dtype, 'dtypes not equal for index %d' % i
             # Check that they are equal
@@ -266,7 +275,7 @@ def _get_maf_original(data_name):
     if sys.version_info < (3,):
         # Load MNIST from MAF code
         maf_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 
+            os.path.dirname(os.path.realpath(__file__)),
             '..', '..', 'maf'
         )
         sys.path.append(maf_path)
@@ -326,7 +335,7 @@ def _save_mnist_recreation_indices():
                   'requires special setup but is kept here in order to reproduce functions if needed.')
     # Import maf data
     datasets_root = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 
+        os.path.dirname(os.path.realpath(__file__)),
         '..', '..', 'maf', 'data',
     )
     mnist_path = os.path.join(datasets_root, 'mnist', 'mnist.pkl.gz')
@@ -334,10 +343,10 @@ def _save_mnist_recreation_indices():
         maf_train, maf_val, maf_test = pickle.load(f)
 
     # Import raw mnist data
-    data_obj = fetch_mldata('MNIST original')#, data_home=custom_data_home)
+    data_obj = fetch_mldata('MNIST original')  # , data_home=custom_data_home)
 
     # Prepare comparison matrices
-    X_all = data_obj.data/256.0
+    X_all = data_obj.data / 256.0
     y_all = data_obj.target
 
     maf_data_tuple = (maf_train[0], maf_val[0], maf_test[0])
@@ -346,22 +355,26 @@ def _save_mnist_recreation_indices():
     y_maf = np.concatenate((maf_train[1], maf_val[1], maf_test[1]))
 
     # Sort maf using all columns
-    mnist_ind = np.lexsort(np.hstack((X_all, y_all.reshape(-1,1))).T)
-    maf_ind = np.lexsort(np.hstack((X_maf, y_maf.reshape(-1,1))).T)
+    mnist_ind = np.lexsort(np.hstack((X_all, y_all.reshape(-1, 1))).T)
+    maf_ind = np.lexsort(np.hstack((X_maf, y_maf.reshape(-1, 1))).T)
     rev_maf_ind = np.argsort(maf_ind)
 
     # Show that matrices match when sorted by indices
     print('Checking if the datasets are the same (should all be 0)')
+
     def n_diff(X, Y):
         return np.count_nonzero(X - Y)
+
     def print_n_diff(X, Y):
         print('Number different = %d' % n_diff(X, Y))
+
     print_n_diff(X_all[mnist_ind], X_maf[maf_ind])
     print_n_diff(y_all[mnist_ind], y_maf[maf_ind])
 
     # Retrieve indices and show that they are the same
     train_idx, val_idx, test_idx = (
-        mnist_ind[rev_maf_ind[np.sum(n_maf[:i], dtype=np.int):np.sum(n_maf[:(i+1)], dtype=np.int)]]
+        mnist_ind[
+            rev_maf_ind[np.sum(n_maf[:i], dtype=np.int):np.sum(n_maf[:(i + 1)], dtype=np.int)]]
         for i in range(3)
     )
     for idx, maf in zip((train_idx, val_idx, test_idx), (maf_train, maf_val, maf_test)):
@@ -369,7 +382,7 @@ def _save_mnist_recreation_indices():
         print_n_diff(y_all[idx], maf[1])
 
     gzip_file = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 
+        os.path.dirname(os.path.realpath(__file__)),
         'maf_mnist_splits.txt.gz'
     )
     with gzip.open(gzip_file, 'w+') as f:
@@ -378,7 +391,7 @@ def _save_mnist_recreation_indices():
                 'validation and test sets of the MAF paper (one line each).\n')
         for i, idx in enumerate([train_idx, val_idx, test_idx]):
             s = str(idx.tolist())
-            s = s[1:-1] # Trim off ends
+            s = s[1:-1]  # Trim off ends
             f.write(s)
             if i < 2:
                 f.write('\n')
@@ -396,6 +409,6 @@ if __name__ == '__main__':
         get_maf_data(data_name)
         print('Finished caching %s' % data_name)
     # Uncomment to recreate mnist train, validation and test indices from MAF code
-    #_save_mnist_recreation_indices()
+    # _save_mnist_recreation_indices()
     # Uncomment to check that data is the same as MAF code
-    #_check_maf_data()
+    # _check_maf_data()

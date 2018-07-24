@@ -50,13 +50,15 @@ class TreeDestructor(BaseDensityDestructor):
         X = check_X_in_interval(X, domain)
         return X
 
+
 class TreeDensity(BaseEstimator, ScoreMixin):
-    def __init__(self, tree_estimator=None, get_tree=None, node_destructor=None, uniform_weight=1e-6):
+    def __init__(self, tree_estimator=None, get_tree=None, node_destructor=None,
+                 uniform_weight=1e-6):
         self.tree_estimator = tree_estimator
         self.get_tree = get_tree
         self.node_destructor = node_destructor
         self.uniform_weight = uniform_weight
-        
+
     def fit(self, X, y=None, fitted_tree_estimator=None):
         """Should fit and assign attribute `self.root_node_`."""
         # Should have internal checks for X
@@ -67,11 +69,11 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         if fitted_tree_estimator is None:
             fitted_tree_estimator = self._get_tree_estimator()
             fitted_tree_estimator.fit(X, y)
-        
+
         # Given the tree structure, fit the actual density
         tree = get_tree(fitted_tree_estimator)
         self._fit_tree_density(tree, X, y)
-        
+
         self.fitted_tree_estimator_ = fitted_tree_estimator
         self.tree_ = tree
         self.n_features_ = X.shape[1]
@@ -79,11 +81,13 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
     def _get_tree_estimator(self):
         """Supplies default tree, can be overriden in subclasses."""
-        return clone(self.tree_estimator) if self.tree_estimator is not None else RandomTreeEstimator(random_state=0)
+        return clone(
+            self.tree_estimator) if self.tree_estimator is not None else RandomTreeEstimator(
+            random_state=0)
 
     def _fit_tree_density(self, tree, X, y):
         """Fits the probability values for each leaf and each leaf destructor."""
-        node_destructor=self.node_destructor
+        node_destructor = self.node_destructor
 
         def _update_stack(child):
             """Add left or right child to stack"""
@@ -94,12 +98,12 @@ class TreeDensity(BaseEstimator, ScoreMixin):
                 sel_new[sel] = X[sel, node.feature] >= node.threshold
             stack.append(sel_new)
             return sel_new
-            
+
         # Initialize
         X = check_array(X, copy=True)
         n_samples, n_features = X.shape
         tree.set_node_destructor(node_destructor)
-            
+
         # Setup root node
         sel = np.ones(n_samples, dtype=np.bool)
         stack = [sel]
@@ -108,7 +112,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
             if node.is_leaf():
                 # Just simple empirical probability (uniform mixture component added later)
                 node.value = np.sum(sel) / n_samples
-                
+
                 # Fit node destructors at leaves
                 if node.destructor is not None:
                     node.destructor.fit(_to_unit(X[sel, :], node.domain))
@@ -116,7 +120,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
                 # Add children to stack with appropriate selections
                 _update_stack('right')
                 sel_left = _update_stack('left')
-                
+
                 # Don't know relative probability yet (must compute below) 
                 node.value = np.nan
 
@@ -173,7 +177,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
                 right_n = cur_n - left_n
                 stack.append(right_n)
                 stack.append(left_n)
-                
+
         # Return permuted X
         X = np.vstack(X_arr)
         if shuffle:
@@ -222,7 +226,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
                 # Set selection and add absolute probabilities to stack
                 _update_stack('right')
                 _update_stack('left')
-                
+
         if np.any(np.isnan(log_pdf)):
             warnings.warn('score_samples contains NaN values')
         return log_pdf
@@ -288,7 +292,7 @@ def _absolute_to_relative_probability(tree_depth_iter):
         right_absolute_prob = _absolute_to_relative_probability(tree_depth_iter)
 
         # Set relative probability of left child
-        node.value = left_absolute_prob/(left_absolute_prob + right_absolute_prob)
+        node.value = left_absolute_prob / (left_absolute_prob + right_absolute_prob)
 
         # Return total absolute probability up to caller
         return left_absolute_prob + right_absolute_prob
@@ -313,27 +317,30 @@ class _ArrayedTreeWrapper:
     Note this is not an estimator but just a good wrapper object to expose iterators etc.
     Fitting will need to take this object or iterator as input.
     """
+
     def __init__(self, tree):
         if not all(hasattr(tree, a) for a in [
             'n_features',
-            'feature', 'threshold', 
+            'feature', 'threshold',
             'children_left', 'children_right',
-            ]):
+        ]):
             raise ValueError('tree does not seem to be an arrayed tree (e.g. sklearn tree)')
         self.wrapped_tree = tree
         self.node_destructors = [None for _ in range(len(tree.feature))]
         self.node_values = [None for _ in range(len(tree.feature))]
-    
+
     def set_node_destructor(self, node_destructor):
         if node_destructor is None:
             self.node_destructors = [None for _ in range(len(self.wrapped_tree.feature))]
         else:
-            self.node_destructors = [clone(node_destructor) for _ in range(len(self.wrapped_tree.feature))]
+            self.node_destructors = [clone(node_destructor) for _ in
+                                     range(len(self.wrapped_tree.feature))]
 
     def __str__(self):
         def _domain_str():
             dom = node.domain
             return ','.join('[' + ','.join('%.3g' % a for a in dom) + ']' for dom in node.domain)
+
         s_arr = []
         stack = [(True, '')]
         for node in self:
@@ -341,26 +348,31 @@ class _ArrayedTreeWrapper:
 
             pos_str = 'Left' if is_left else 'Right'
             if node.is_leaf():
-                s_arr.append('%s%s leaf domain=%s, value=%g, left_child_index=%g\n' 
+                s_arr.append('%s%s leaf domain=%s, value=%g, left_child_index=%g\n'
                              % (indent, pos_str, _domain_str(), node.value, node.left_child_index))
             else:
                 s_arr.append(
                     '%s%s feat=%4d, prob_left=%.3g, thresh=%.3g, thresh_out=%.3g, domain=%s\n'
-                    % (indent, pos_str, node.feature, node.value, node.threshold, node.threshold_out, _domain_str()))
+                    % (
+                        indent, pos_str, node.feature, node.value, node.threshold,
+                        node.threshold_out,
+                        _domain_str()))
                 stack.append((False, '  ' + indent))
                 stack.append((True, '  ' + indent))
 
         return ''.join(s_arr)
-               
+
     def __iter__(self):
-        init_domain = np.array([[0,1] for _ in range(self.wrapped_tree.n_features)], dtype=np.float)
-        node_stack = [(0, init_domain)] 
+        init_domain = np.array([[0, 1] for _ in range(self.wrapped_tree.n_features)],
+                               dtype=np.float)
+        node_stack = [(0, init_domain)]
         while len(node_stack) > 0:
             # Construct and yield node
             node_i, domain = node_stack.pop()
-            cur_node = _SklearnNode(self.wrapped_tree, self.node_values, self.node_destructors, node_i, domain)
+            cur_node = _SklearnNode(self.wrapped_tree, self.node_values, self.node_destructors,
+                                    node_i, domain)
             yield cur_node
-            
+
             # Push children onto stack
             if not cur_node.is_leaf():
                 left_domain = domain.copy()
@@ -384,7 +396,7 @@ class _SklearnNode:
 
     def __str__(self):
         return 'node_i = %d, value = %g' % (self.node_i, self.value)
-    
+
     def is_leaf(self):
         if np.isnan(self.left_child_index):
             return True
@@ -401,28 +413,28 @@ class _SklearnNode:
     @property
     def feature(self):
         return self._tree.feature[self._node_i]
-    
+
     @property
     def left_child_index(self):
         return self._tree.children_left[self._node_i]
-    
+
     @property
     def right_child_index(self):
         return self._tree.children_right[self._node_i]
-    
+
     # Read/write properties
     @property
     def node_i(self):
         return self._node_i
-    
+
     @node_i.setter
     def node_i(self, x):
         self._node_i = x
-        
+
     @property
     def domain(self):
         return self._domain
-    
+
     @domain.setter
     def domain(self, x):
         self._domain = x
@@ -440,21 +452,21 @@ class _SklearnNode:
             x = 1e-15
         elif x >= 1:
             if x == 1 and len(self._node_values) == 1:
-                pass # Handles the case where there are no splits (i.e. just root node as leaf node)
+                pass  # Handles the case where there are no splits (i.e. just root node as leaf node)
             else:
                 warnings.warn(BoundaryWarning(
                     'Numerical imprecision or faulty algorithm because `value` '
                     'should never be 1 or greater than 1, changing from %g to 1-1e-15.' % x))
-                x = 1-1e-15
+                x = 1 - 1e-15
         self._node_values[self._node_i] = x
-        
+
     @property
     def value_out(self):
         # Extract necessary variables
         (a, b) = self.domain[self.feature]
         p = self.value
         t = self.threshold
-        return (t - a)/(b - a)
+        return (t - a) / (b - a)
 
     @property
     def threshold(self):
@@ -463,28 +475,30 @@ class _SklearnNode:
     @threshold.setter
     def threshold(self, x):
         if x <= self.domain[self.feature, 0]:
-            warnings.warn(BoundaryWarning('Numerical imprecision or faulty algorithm because `threshold` should '
-                          'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.' 
-                          % (self.domain[self.feature, 0], x, self.domain[self.feature, 0])))
+            warnings.warn(BoundaryWarning(
+                'Numerical imprecision or faulty algorithm because `threshold` should '
+                'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.'
+                % (self.domain[self.feature, 0], x, self.domain[self.feature, 0])))
             x += 1e-15
         elif x >= self.domain[self.feature, 1]:
-            warnings.warn(BoundaryWarning('Numerical imprecision or faulty algorithm because `threshold` should '
-                          'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.' 
-                          % (self.domain[self.feature, 1], x, self.domain[self.feature, 1])))
+            warnings.warn(BoundaryWarning(
+                'Numerical imprecision or faulty algorithm because `threshold` should '
+                'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.'
+                % (self.domain[self.feature, 1], x, self.domain[self.feature, 1])))
             x -= 1e-15
-        self._tree.threshold[self._node_i] = x 
-        
+        self._tree.threshold[self._node_i] = x
+
     @property
     def threshold_out(self):
         # Extract necessary variables
         (a, b) = self.domain[self.feature]
         p = self.value
         return (b - a) * p + a
-        
+
     @property
     def destructor(self):
         return self._node_destructors[self._node_i]
-    
+
     @destructor.setter
     def destructor(self, x):
         self._node_destructors[self._node_i] = x
@@ -510,16 +524,17 @@ def _from_unit(U, bounding_box):
     return X
 
 
-def _tree_transform(tree, X, y=None): 
+def _tree_transform(tree, X, y=None):
     """Transforms X based on generic tree object."""
+
     def _compose_linear(scale_shift_inner, scale_shift_outer):
-        scale_inner, shift_inner  = scale_shift_inner
-        scale_outer, shift_outer  = scale_shift_outer
+        scale_inner, shift_inner = scale_shift_inner
+        scale_outer, shift_outer = scale_shift_outer
         shift_new = scale_outer * shift_inner + shift_outer
         scale_new = scale_outer * scale_inner
-        scale_shift_new =  np.array([scale_new, shift_new])
+        scale_shift_new = np.array([scale_new, shift_new])
         return scale_shift_new
-    
+
     def _update_stack(child):
         """Add left or right child by computing scale, shift and selection.
         Note this is late binding for outer variables so it should only be called
@@ -530,11 +545,11 @@ def _tree_transform(tree, X, y=None):
         sel_new = sel.copy()
         if child == 'left':
             sel_new[sel] = X[sel, node.feature] < t
-            scale_new_local = (t_out - a)/(t - a)
+            scale_new_local = (t_out - a) / (t - a)
             shift_new_local = a - a * scale_new_local
         else:
             sel_new[sel] = X[sel, node.feature] >= t
-            scale_new_local = (b - t_out)/(b - t)
+            scale_new_local = (b - t_out) / (b - t)
             shift_new_local = t_out - t * scale_new_local
 
         # Update full scale, shift array
@@ -546,11 +561,11 @@ def _tree_transform(tree, X, y=None):
 
         # Push onto stack
         stack.append((sel_new, scale_shift_arr_new))
-        
+
     # Initialize
     X = check_array(X, copy=True, dtype=np.float)
     n_samples, n_features = X.shape
-        
+
     # Setup root node
     sel = np.ones(n_samples, dtype=np.bool)
     scale_shift_arr = np.array([(1, 0) for _ in range(n_features)], dtype=np.float)
@@ -563,7 +578,7 @@ def _tree_transform(tree, X, y=None):
                 X[sel, :] = _to_unit(X[sel, :], node.domain)
                 X[sel, :] = node.destructor.transform(X[sel, :])
                 X[sel, :] = _from_unit(X[sel, :], node.domain)
-            
+
             # Apply linear transformation
             X[sel, :] *= scale_shift_arr[:, 0]
             X[sel, :] += scale_shift_arr[:, 1]
@@ -572,8 +587,8 @@ def _tree_transform(tree, X, y=None):
             (a, b) = node.domain[node.feature]
             p = node.value
             t = node.threshold
-            t_out = node.threshold_out 
-            
+            t_out = node.threshold_out
+
             # Add children with approriate scale, shift and filtered selection
             _update_stack('right')
             _update_stack('left')
@@ -587,7 +602,8 @@ def _tree_transform(tree, X, y=None):
 def _get_inverse_tree(tree):
     """Computes the tree corresponding to the inverse of the transformation."""
     tree_out = deepcopy(tree)
-    for node_in, node_out in zip(tree, tree_out):  # Iterator starting at root (can be depth-first or breadth-first)
+    for node_in, node_out in zip(tree,
+                                 tree_out):  # Iterator starting at root (can be depth-first or breadth-first)
         # Implicitly changes a and b for children since bounds computed when traversing
         # Need to extract values before setting them since they are used internally
         if node_in.is_leaf():
@@ -596,7 +612,7 @@ def _get_inverse_tree(tree):
                 node_out.destructor = get_inverse_canonical_destructor(
                     node_out.destructor, copy=False)  # Destructor already deep copied
         else:
-            
+
             (a, b) = node_in.domain[node_in.feature]
             (a_tilde, b_tilde) = node_out.domain[node_in.feature]
             p = node_in.value
@@ -609,8 +625,6 @@ def _get_inverse_tree(tree):
             #  (i.e. such that alpha = 1/alpha)
             node_out.value = (t - a) / ((t - a) + (b - t))
     return tree_out
-
-
 
 
 def _get_arrayed_tree(tree_estimator):

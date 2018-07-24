@@ -39,7 +39,6 @@ version = ''
 # The full version, including alpha/beta/rc tags
 release = ''
 
-
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -52,7 +51,6 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    #'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
@@ -96,13 +94,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'nature'#'alabaster'
+html_theme = 'nature'  # 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -130,7 +127,6 @@ html_theme = 'nature'#'alabaster'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'destructive-deep-learning-doc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -160,7 +156,6 @@ latex_documents = [
      'David I. Inouye', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -169,7 +164,6 @@ man_pages = [
     (master_doc, 'destructive-deep-learning', 'Destructive Deep Learning (ddl) Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -181,7 +175,6 @@ texinfo_documents = [
      author, 'destructive-deep-learning', 'One line description of project.',
      'Miscellaneous'),
 ]
-
 
 # -- Extension configuration -------------------------------------------------
 

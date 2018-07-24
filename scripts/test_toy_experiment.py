@@ -37,6 +37,7 @@ n_train = 1000
 cv = 3  # Number of cv splits
 random_state = 0
 
+
 def _get_toy_destructors_and_names():
     # BASELINE SHALLOW DESTRUCTORS
     gaussian_full = CompositeDestructor(
@@ -63,7 +64,7 @@ def _get_toy_destructors_and_names():
                     node_destructor=IndependentDestructor(
                         independent_density=IndependentDensity(
                             univariate_estimators=HistogramUnivariateDensity(
-                                bins=10, alpha=10, bounds=[0,1]
+                                bins=10, alpha=10, bounds=[0, 1]
                             )
                         )
                     )
@@ -86,7 +87,7 @@ def _get_toy_destructors_and_names():
     baseline_names = ['Gaussian', 'Mixture', 'SingleRandTree', 'SingleDensityTree']
 
     # LINEAR DESTRUCTORS
-    alpha_histogram = [10] #[1, 10, 100]
+    alpha_histogram = [10]  # [1, 10, 100]
     random_linear_projector = LinearProjector(
         linear_estimator=RandomOrthogonalEstimator(), orthogonal=True
     )
@@ -114,7 +115,7 @@ def _get_toy_destructors_and_names():
     linear_names = ['RandLin (%g)' % a for a in alpha_histogram]
 
     # MIXTURE DESTRUCTORS
-    fixed_weight = [0.5] #[0.1, 0.5, 0.9]
+    fixed_weight = [0.5]  # [0.1, 0.5, 0.9]
     mixture_destructors = [
         CompositeDestructor(destructors=[
             IndependentInverseCdf(),
@@ -126,14 +127,14 @@ def _get_toy_destructors_and_names():
                 )
             )
         ])
-        for w in fixed_weight 
+        for w in fixed_weight
     ]
     # Make deep destructors
     mixture_destructors = [
         DeepDestructorCV(
             init_destructor=IndependentDestructor(),
             canonical_destructor=destructor,
-            n_extend=5, 
+            n_extend=5,
         )
         for destructor in mixture_destructors
     ]
@@ -141,7 +142,7 @@ def _get_toy_destructors_and_names():
 
     # TREE DESTRUCTORS
     # Random trees
-    histogram_alpha = [10] #[1, 10, 100]
+    histogram_alpha = [10]  # [1, 10, 100]
     tree_destructors = [
         TreeDestructor(
             tree_density=TreeDensity(
@@ -151,7 +152,7 @@ def _get_toy_destructors_and_names():
                 node_destructor=IndependentDestructor(
                     independent_density=IndependentDensity(
                         univariate_estimators=HistogramUnivariateDensity(
-                            alpha=a, bins=10, bounds=[0,1]
+                            alpha=a, bins=10, bounds=[0, 1]
                         )
                     )
                 ),
@@ -162,7 +163,7 @@ def _get_toy_destructors_and_names():
     tree_names = ['RandTree (%g)' % a for a in histogram_alpha]
 
     # Density trees using mlpack
-    tree_uniform_weight = [0.5] #[0.1, 0.5, 0.9]
+    tree_uniform_weight = [0.5]  # [0.1, 0.5, 0.9]
     tree_destructors.extend([
         TreeDestructor(
             tree_density=TreeDensity(
@@ -191,7 +192,7 @@ def _get_toy_destructors_and_names():
             init_destructor=IndependentDestructor(),
             canonical_destructor=destructor,
             # Density trees don't need to extend as much as random trees
-            n_extend=50 if 'Rand' in name else 5, 
+            n_extend=50 if 'Rand' in name else 5,
         )
         for destructor, name in zip(tree_destructors, tree_names)
     ]
@@ -208,10 +209,9 @@ def _get_toy_destructors_and_names():
     return destructors, destructor_names
 
 
-
 @pytest.mark.parametrize(
-    'destructor_name', 
-    ['Gaussian', 'Mixture', 'SingleRandTree', 'SingleDensityTree', 'RandLin (10)', 
+    'destructor_name',
+    ['Gaussian', 'Mixture', 'SingleRandTree', 'SingleDensityTree', 'RandLin (10)',
      'GausMix (0.5)', 'RandTree (10)', 'DensityTree (0.5)']
 )
 def test_toy_destructor(destructor_name):
@@ -230,7 +230,7 @@ def test_toy_destructor(destructor_name):
         rng = check_random_state(random_state)
         old_random_state = np.random.get_state()
         np.random.seed(rng.randint(2 ** 32, dtype=np.uint32))
-        
+
         try:
             # Fit destructor
             start_time = time.time()
@@ -246,16 +246,17 @@ def test_toy_destructor(destructor_name):
             train_time = 0
             train_score = -np.inf
             test_score = -np.inf
-            score_time = 0 
+            score_time = 0
         else:
             # Get scores
             start_time = time.time()
             train_score = destructor.score(X_train)
             test_score = destructor.score(X_test)
             score_time = time.time() - start_time
-            
-        logger.debug('train=%.3f, test=%.3f, train_time=%.3f, score_time=%.3f, destructor=%s, data_name=%s' 
-                     % (train_score, test_score, train_time, score_time, destructor_name, data_name))
+
+        logger.debug(
+            'train=%.3f, test=%.3f, train_time=%.3f, score_time=%.3f, destructor=%s, data_name=%s'
+            % (train_score, test_score, train_time, score_time, destructor_name, data_name))
 
         # Reset random state
         np.random.set_state(old_random_state)
@@ -269,14 +270,19 @@ def test_toy_destructor(destructor_name):
     ind = destructor_names.index(destructor_name)
 
     # Fit and score destructor
-    result_dict = _fit_and_score(data_name, destructors[ind], destructor_names[ind], n_train, random_state=random_state)
+    result_dict = _fit_and_score(data_name, destructors[ind], destructor_names[ind], n_train,
+                                 random_state=random_state)
 
     # Check that scores match expected values
-    expected_train = [-4.436517571477812893e+00, -4.139799591807839185e+00, -4.135013171965160161e+00, 
-                      -3.973179020102820758e+00, -4.367216508184048607e+00, -4.152734964599357426e+00,
+    expected_train = [-4.436517571477812893e+00, -4.139799591807839185e+00,
+                      -4.135013171965160161e+00,
+                      -3.973179020102820758e+00, -4.367216508184048607e+00,
+                      -4.152734964599357426e+00,
                       -4.266537128263181877e+00, -4.058489689601575634e+00]
-    expected_test = [-4.440092999888506142e+00, -4.241302023438742630e+00, -4.243528943385095786e+00,
-                     -4.188421292899972670e+00, -4.400212807936888737e+00, -4.262652579336936753e+00,
+    expected_test = [-4.440092999888506142e+00, -4.241302023438742630e+00,
+                     -4.243528943385095786e+00,
+                     -4.188421292899972670e+00, -4.400212807936888737e+00,
+                     -4.262652579336936753e+00,
                      -4.296448657246879854e+00, -4.233697219621666896e+00]
-    assert(np.abs(expected_train[ind] - result_dict['train_score']) < 1e-14)
-    assert(np.abs(expected_test[ind] - result_dict['test_score']) < 1e-14)
+    assert (np.abs(expected_train[ind] - result_dict['train_score']) < 1e-14)
+    assert (np.abs(expected_test[ind] - result_dict['test_score']) < 1e-14)

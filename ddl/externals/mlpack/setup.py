@@ -18,7 +18,7 @@ def build_mlpack():
     package_path = os.path.dirname(os.path.realpath(__file__))
     tar_file_name = 'mlpack-%s.tar.gz' % version
     tar_file_path = os.path.join(package_path, tar_file_name)
-    tar_url = 'https://github.com/mlpack/mlpack/archive/%s' % tar_file_name 
+    tar_url = 'https://github.com/mlpack/mlpack/archive/%s' % tar_file_name
     repo_path = os.path.join(package_path, 'mlpack-mlpack-%s' % version)
     cmake_file_path = os.path.join(repo_path, 'CMakeLists.txt')
     build_path = os.path.join(repo_path, 'build')
@@ -45,9 +45,9 @@ def build_mlpack():
             f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
 
         # Setup build directory and run cmake
-        #print('Removing old build directory if necessary and creating new build directory')
+        # print('Removing old build directory if necessary and creating new build directory')
         print('Attempting to create build directory if it does not exist')
-        #shutil.rmtree(build_path, ignore_errors=True)
+        # shutil.rmtree(build_path, ignore_errors=True)
         os.mkdir(build_path)
 
         print('Running cmake')
@@ -58,8 +58,8 @@ def build_mlpack():
             os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
             os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
             os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
-            subprocess.call(['cmake', 
-                             '-D', 'BUILD_SHARED_LIBS=OFF', 
+            subprocess.call(['cmake',
+                             '-D', 'BUILD_SHARED_LIBS=OFF',
                              '-D', 'FORCE_CXX11=ON',
                              '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
                              '../'])
@@ -84,12 +84,14 @@ def configuration(parent_package='', top_path=None):
             pyx.split('.')[0],
             sources=[pyx],
             language='c++',
-            #include_dirs=[np.get_include(), os.path.join(*package_list)], # Needed for arma_numpy.pyx
-            include_dirs=[numpy.get_include(), os.path.join(build_path, 'include')], # Needed for arma_numpy.pyx
+            # include_dirs=[np.get_include(), os.path.join(*package_list)], # Needed for arma_numpy.pyx
+            include_dirs=[numpy.get_include(), os.path.join(build_path, 'include')],
+            # Needed for arma_numpy.pyx
             library_dirs=[os.path.join(build_path, 'lib')],
             libraries=libraries,
-            extra_compile_args=('-DBINDING_TYPE=BINDING_TYPE_PYX ' 
-                                '-std=c++11 -Wall -Wextra -ftemplate-depth=1000 -O3 -fopenmp').split(' '),
+            extra_compile_args=('-DBINDING_TYPE=BINDING_TYPE_PYX '
+                                '-std=c++11 -Wall -Wextra -ftemplate-depth=1000 -O3 -fopenmp').split(
+                ' '),
             extra_link_args=['-fopenmp'],
             undef_macros=[] if len("") == 0 else ''.split(';')
 

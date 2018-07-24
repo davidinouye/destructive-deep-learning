@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class AutoregressiveMixin(object):
     """Core methods that autoregressive densities need to handle."""
+
     @abstractmethod
     def conditional_densities(self, X, cond_idx_arr, not_cond_idx_arr):
         raise NotImplementedError()
@@ -89,11 +90,12 @@ def get_n_features(destructor, try_destructor_sample=False):
             # Attempt to sample from destructor
             if hasattr(destructor, 'sample'):
                 try:
-                    n_features = np.array(fitted_destructor.sample(n_samples=1, random_state=0)).shape[1]
+                    n_features = \
+                    np.array(fitted_destructor.sample(n_samples=1, random_state=0)).shape[1]
                 except RuntimeError:
                     err = True
                 else:
-                    err = False 
+                    err = False
             else:
                 err = True
             if err:
@@ -266,9 +268,10 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
     map every point of the unit hypercube (or similarly that the associated density
     has support everywhere in the hypercube).
     """
+
     def __init__(self, canonical_destructor=None):
         self.canonical_destructor = canonical_destructor
-        
+
     def _get_destructor(self):
         check_is_fitted(self, ['fitted_canonical_destructor_'])
         return self.fitted_canonical_destructor_
@@ -282,18 +285,19 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
             self.fitted_canonical_destructor_ = clone(self.canonical_destructor).fit(X, y)
 
         self.n_features_ = get_n_features(self.fitted_canonical_destructor_)
-        self.density_ = get_implicit_density(self, copy=False)  # Copy has already occurred above if needed
+        self.density_ = get_implicit_density(self,
+                                             copy=False)  # Copy has already occurred above if needed
         return self
 
     def get_domain(self):
         return _UNIT_SPACE
-    
+
     def transform(self, X, y=None):
         return self._get_destructor().inverse_transform(X, y)
-        
+
     def inverse_transform(self, X, y=None):
         return self._get_destructor().transform(X, y)
-    
+
     def score_samples(self, X, y=None):
         d = self._get_destructor()
         return -d.score_samples(d.inverse_transform(X, y))
@@ -304,7 +308,7 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
 
     def __init__(self, destructor=None):
         self.destructor = destructor
-        
+
     def _get_destructor(self):
         check_is_fitted(self, ['fitted_destructor_'])
         return self.fitted_destructor_
@@ -413,9 +417,9 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         X = check_array(X, copy=True)
 
         fitted_destructors = self._get_partial_destructors(partial_idx)
-        log_likelihood_layers = np.zeros((X.shape[0], len(fitted_destructors) ))
+        log_likelihood_layers = np.zeros((X.shape[0], len(fitted_destructors)))
         for i, d in enumerate(fitted_destructors):
-            log_likelihood_layers[:, i]= d.score_samples(X)
+            log_likelihood_layers[:, i] = d.score_samples(X)
             # Don't transform for the last destructor
             if i < len(fitted_destructors) - 1:
                 X = d.transform(X, y)

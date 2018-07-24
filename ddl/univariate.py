@@ -78,6 +78,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
     """Density estimator based on random variables defined by
     `scipy.stats`.
     """
+
     def __init__(self, scipy_rv=None, scipy_fit_kwargs=None):
         """Default random variable is a Gaussian (i.e.
         `scipy.stats.norm`) if `scipy_rv=None`.
@@ -113,7 +114,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
 
         # MLE fit based on scipy implementation
         if scipy_rv.numargs == 0 and 'floc' in scipy_fit_kwargs and 'fscale' in scipy_fit_kwargs:
-            params=(scipy_fit_kwargs['floc'], scipy_fit_kwargs['fscale'])
+            params = (scipy_fit_kwargs['floc'], scipy_fit_kwargs['fscale'])
         else:
             try:
                 params = scipy_rv.fit(X.ravel(), **scipy_fit_kwargs)
@@ -122,7 +123,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
                               'parameters for the distribution. Original error:\n%s' % str(e))
                 params = self._get_default_params()
             except ValueError as e:
-                #warnings.warn('Trying to use fixed parameters instead. Original error:\n%s' % str(e))
+                # warnings.warn('Trying to use fixed parameters instead. Original error:\n%s' % str(e))
                 # try to extract fixed parameters in a certain order
                 params = []
                 for k in ['fa', 'f0', 'fb', 'f1', 'floc', 'fscale']:
@@ -254,7 +255,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
     def _is_special(self, scipy_str_set):
         scipy_rv = self._get_scipy_rv_or_default()
         return np.any([
-            '.'+dstr+'_gen' in str(scipy_rv)
+            '.' + dstr + '_gen' in str(scipy_rv)
             for dstr in scipy_str_set
         ])
 
@@ -365,7 +366,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
 
     def _normalize_f_query(self, f_query, query_width):
         # noinspection PyAugmentAssignment
-        f_query = f_query/np.sum(f_query)  # Normalize to 1
+        f_query = f_query / np.sum(f_query)  # Normalize to 1
         f_query /= query_width  # Adjust by bin width to make valid pdf
         return f_query
 
@@ -385,6 +386,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
     """Bounds can be percentage extension or a specified interval [a,b].
     Parameter `bins` can take any value as the same parameter of `numpy.histogram`
     """
+
     def __init__(self, bins=None, bounds=0.1, alpha=1e-6):
         self.bins = bins
         self.bounds = bounds
@@ -402,7 +404,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         hist += self.alpha  # Smooth histogram by alpha so no areas have 0 probability
 
         return self._fit(hist, bin_edges)
-    
+
     def fit_from_probabilities(self, prob):
         bounds = self._check_bounds()
         bins = self.bins if self.bins is not None else 'auto'
@@ -410,7 +412,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
         # Fit numpy histogram
         n_features = prob.shape[0]
-        X_temp = np.mean(self.bounds)*np.ones((1, n_features))
+        X_temp = np.mean(self.bounds) * np.ones((1, n_features))
         hist, bin_edges = np.histogram(X_temp, bins=bins, range=bounds)
         hist = prob
 
@@ -420,12 +422,12 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         """Fit given probabilities for histogram and bin edges."""
         bounds = np.array([bin_edges[0], bin_edges[-1]])
         bin_width = bin_edges[1] - bin_edges[0]
-        x_query = bin_edges[:-1] + bin_width/2.0
+        x_query = bin_edges[:-1] + bin_width / 2.0
 
         # Add endpoints fixed at 0
-        x_query = np.concatenate(([bin_edges[0] - bin_width/2.0],
+        x_query = np.concatenate(([bin_edges[0] - bin_width / 2.0],
                                   x_query,
-                                  [bin_edges[-1] + bin_width/2.0]))
+                                  [bin_edges[-1] + bin_width / 2.0]))
         hist = np.concatenate(([0], hist, [0]))
 
         f_query = self._normalize_f_query(hist, bin_width)
@@ -441,6 +443,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
 class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
     """Bounds can be percentage extension or a specified interval [a,b]."""
+
     def __init__(self, univariate_density=None, n_query=1000, bounds=0.1):
         self.univariate_density = univariate_density
         self.n_query = n_query

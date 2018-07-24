@@ -20,6 +20,7 @@ from .utils import _INF_SPACE, _UNIT_SPACE, make_interior_probability
 
 class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
     """Defines a joint copula model with marginal density and the copula density."""
+
     def __init__(self, univariate_estimators=None):
         self.univariate_estimators = univariate_estimators
 
@@ -42,7 +43,7 @@ class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin
                     rho = np.array([[1, rho], [rho, 1]])  # Fix for only two features
             if np.any(rho.shape != np.array([n_features, n_features])):
                 raise RuntimeError('Rho should have shape (n_features, n_features)')
-            R_spearman = 2*np.sin((np.pi/6)*rho)
+            R_spearman = 2 * np.sin((np.pi / 6) * rho)
 
         gaussian_density = GaussianDensity()._fit_direct(
             mean=np.zeros(n_features),
@@ -113,7 +114,8 @@ class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin
             Z, cond_idx, not_cond_idx)
 
         # Map each conditional Gaussian to a new JointGaussianCopulaDensity
-        cond_univ_densities = self.independent_destructor_.density_.univariate_densities_[not_cond_idx]
+        cond_univ_densities = self.independent_destructor_.density_.univariate_densities_[
+            not_cond_idx]
         conditional_densities = np.array([
             self._get_conditional_copula(cg, cond_univ_densities)
             for cg in cond_gaussians
@@ -239,9 +241,9 @@ class _CopulaConditionalUnivariateDensity(UnivariateDensity):
         u = self.univariate_density_.cdf(X).ravel()
         z = scipy.stats.norm.ppf(u)
         copula_log_likelihood = (
-            scipy.stats.norm.logpdf(z, loc=self.mean_, scale=self.std_)
-            - scipy.stats.norm.logpdf(z)
-            - np.log(self.std_)
+                scipy.stats.norm.logpdf(z, loc=self.mean_, scale=self.std_)
+                - scipy.stats.norm.logpdf(z)
+                - np.log(self.std_)
         )
         return marginal_log_likelihood + copula_log_likelihood
 
@@ -251,7 +253,7 @@ class _CopulaConditionalUnivariateDensity(UnivariateDensity):
 
         U_X = self.univariate_density_.cdf(X)
         Z_X = scipy.stats.norm.ppf(U_X)
-        Z = (Z_X - self.mean_)/self.std_
+        Z = (Z_X - self.mean_) / self.std_
         return scipy.stats.norm.cdf(Z)
 
     def inverse_cdf(self, X, y=None):
@@ -275,6 +277,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
     """Allow for conditioning that will return a new proxy density.
     Also allows for marginal density computation.
     """
+
     def __init__(self, covariance_type='full', reg_covar=1e-06):
         self.reg_covar = reg_covar
         self.covariance_type = covariance_type
@@ -329,6 +332,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
 
     def marginal_density(self, marginal_idx):
         """Return a single marginal density based on `marginal_idx`."""
+
         def _get_covariance():
             if self.covariance_type == 'full' or self.covariance_type == 'tied':
                 return self.covariance_[np.ix_(marginal_idx, marginal_idx)]
@@ -338,6 +342,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
                 return self.covariance_
             else:
                 raise ValueError('Invalid `covariance_type`')
+
         self._fit_auxiliary()
         dens = GaussianDensity(covariance_type=self.covariance_type)
         dens._fit_direct(
@@ -437,6 +442,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         """Should directly fit the estimator with the given parameters.
         Note that some parameters do not need to be set.
         """
+
         def _copy(X):
             if X is not None:
                 return X.copy()

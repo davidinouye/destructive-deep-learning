@@ -23,7 +23,7 @@ class MlpackDensityTreeEstimator(BaseEstimator):
         self.min_samples_leaf = min_samples_leaf
 
     def fit(self, X, y=None):
-        fit_params = dict() # Leave as defaults unless overriden
+        fit_params = dict()  # Leave as defaults unless overriden
         if self.max_leaf_nodes is not None:
             fit_params['max_leaf_nodes'] = self.max_leaf_nodes
         if self.max_depth is not None:
@@ -36,7 +36,8 @@ class MlpackDensityTreeEstimator(BaseEstimator):
         X = check_array(X)
         n_samples, n_features = X.shape
         try:
-            py_dtree = PyDTree(min_vals=np.zeros(n_features), max_vals=np.ones(n_features), total_points=n_samples)
+            py_dtree = PyDTree(min_vals=np.zeros(n_features), max_vals=np.ones(n_features),
+                               total_points=n_samples)
             # Make a copy so original data is not mutated when passed to fit below
             py_dtree.fit(X.copy(), **fit_params)
         except NameError:

@@ -28,12 +28,10 @@ try:
 except ImportError:
     import pickle
 
-
 # Add the directory of this script
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 # Add directory for ddl library
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +44,8 @@ def run_experiment(data_name, model_name, model_kwargs=None):
     experiment_label = model_kwargs['experiment_label']
     _setup_loggers(experiment_filename)
     try:
-        git_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii')[:-1]
+        git_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']
+                                           ).decode('ascii')[:-1]
     except subprocess.CalledProcessError:
         git_hash = 'unknown'
     logger.debug('Current git hash = %s' % git_hash)
@@ -58,7 +57,7 @@ def run_experiment(data_name, model_name, model_kwargs=None):
         data_dict['X_train'], data_dict['X_validation'], data_dict['X_test'])
     if 'perc_train' in model_kwargs:
         X_train, X_validation = _perc_resample(model_kwargs['perc_train'])
-    n_train, n_validation, n_test= (_X.shape[0] for _X in (X_train, X_validation, X_test))
+    n_train, n_validation, n_test = (_X.shape[0] for _X in (X_train, X_validation, X_test))
 
     # Setup cv and refit parameters
     X_train_val = np.vstack((X_train, X_validation))
@@ -75,7 +74,7 @@ def run_experiment(data_name, model_name, model_kwargs=None):
     train_time = time.time() - start_time
     logger.debug('Finished training for %s' % experiment_label)
     logger.debug('%s: Time to train = %g s or %g minutes or %g hours'
-                 % (experiment_label, train_time, train_time/60, train_time/60/60))
+                 % (experiment_label, train_time, train_time / 60, train_time / 60 / 60))
 
     # Get test score
     start_time = time.time()
@@ -111,7 +110,7 @@ def run_experiment(data_name, model_name, model_kwargs=None):
 
 def load_experiment_results(data_name, model_name=None, model_kwargs=None, notebook=False):
     experiment_filename, _ = _get_experiment_filename_and_label(data_name, model_name=model_name,
-                                              model_kwargs=model_kwargs)
+                                                                model_kwargs=model_kwargs)
     if notebook:
         experiment_filename = os.path.join('..', experiment_filename)
 
@@ -140,7 +139,7 @@ def _get_model(data_name, model_name, model_kwargs):
 
     # Setup canonical destructor for various models
     if model_name == 'deep-copula':
-        deep_stop_tol=0.001
+        deep_stop_tol = 0.001
         canonical_destructor = _get_copula_destructor()
     else:
         deep_stop_tol = 0.0001
@@ -245,27 +244,32 @@ def _get_pair_canonical_destructor(model_name):
     elif model_name == 'image-pairs-copula':
         return _get_copula_destructor()
     else:
-        raise ValueError('Invalid model name "%s"') 
+        raise ValueError('Invalid model name "%s"')
 
 
 def _get_pair_estimators(data_name, n_uniq_dir):
     """Returns `n_uniq_dir` pair estimators in a spiral pattern."""
+
     def _generate_pixel_circle(radius=1):
-        cur = radius*np.array([1, 1])  # Start in top right
+        cur = radius * np.array([1, 1])  # Start in top right
         d = [cur]
-        for step in np.array([[0, -1], [-1, 0], [0,1], [1, 0]]):
-            for i in range(2*radius):
+        for step in np.array([[0, -1], [-1, 0], [0, 1], [1, 0]]):
+            for i in range(2 * radius):
                 cur = cur + step
                 d.append(cur)
-        d.pop(-1) # remove last that is a repeat
+        d.pop(-1)  # remove last that is a repeat
+
         def _rotate(a, n):
             return a[n:] + a[:n]
-        return _rotate(d, radius) # Rotate to make directly east the first direction
+
+        return _rotate(d, radius)  # Rotate to make directly east the first direction
+
     def _generate_pixel_spiral(n_spirals=2):
         d = []
         for i in range(n_spirals):
-            d.extend(_generate_pixel_circle(radius=i+1))
+            d.extend(_generate_pixel_circle(radius=i + 1))
             return d
+
     directions = np.array(_generate_pixel_spiral(n_spirals=10))
 
     if data_name == 'mnist':
@@ -273,21 +277,21 @@ def _get_pair_estimators(data_name, n_uniq_dir):
         return [
             ImageFeaturePairs(
                 image_shape=(28, 28), relative_position=r,
-                init_offset=(0,0), step=(1,0), wrap=True
+                init_offset=(0, 0), step=(1, 0), wrap=True
             )
             for r in directions
         ]
     elif data_name == 'cifar10':
         # Make 3d coordinates
         directions = [(d2[0], d2[1], 0) for d2 in directions[:n_uniq_dir]]
-        init_offset = [(0,0,0) for _ in directions]
+        init_offset = [(0, 0, 0) for _ in directions]
         # Handle color channels
         directions.extend([(0, 0, 1), (0, 0, 1), (0, 0, 1)])
         init_offset.extend([(0, 0, 0), (0, 0, 1), (0, 0, 2)])
         return [
             ImageFeaturePairs(
                 image_shape=(32, 32, 3), relative_position=r,
-                init_offset=io, step=(1,0,0), wrap=True
+                init_offset=io, step=(1, 0, 0), wrap=True
             )
             for r, io in zip(directions, init_offset)
         ]
@@ -332,13 +336,14 @@ def _get_experiment_filename_and_label(data_name, model_name=None, model_kwargs=
     filename = ('data-%s_model-%s%s'
                 % (str(data_name), str(model_name), arg_str))
     pickle_filename = os.path.join(data_dir, filename)
-    
+
     arg_str = ', '.join(['%s=%s' % (k, str(v)) for k, v in model_kwargs.items()])
     if len(arg_str) > 0:
         arg_str = ', ' + arg_str
     experiment_label = '(data=%s, model=%s%s)' % (data_name, str(model_name), arg_str)
 
     return pickle_filename, experiment_label
+
 
 # Add fast sanity-check tests for mnist dataset
 try:
@@ -348,23 +353,24 @@ except ImportError:
     pass
 else:
     @pytest.mark.parametrize(
-        'model_name', 
+        'model_name',
         # 'image-pairs-tree' not needed since covered by other tests
         ['deep-copula', 'image-pairs-copula']
     )
     def test_mnist_experiment(model_name):
         data_name = 'mnist'
         model_kwargs = dict(is_test=True, n_jobs=1)
-        model_kwargs['experiment_filename'], model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
+        model_kwargs['experiment_filename'], model_kwargs[
+            'experiment_label'] = _get_experiment_filename_and_label(
             data_name, model_name=model_name, model_kwargs=model_kwargs)
         result_dict = run_experiment(data_name, model_name, model_kwargs=model_kwargs)
 
         # Check if test likelihood/score is as expected
         _model_names = ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
-        expected_test_scores = [-1.060270463188296844e+03, -1.155477974922050180e+03, -1.134326498390250208e+03]
+        expected_test_scores = [-1.060270463188296844e+03, -1.155477974922050180e+03,
+                                -1.134326498390250208e+03]
         ind = _model_names.index(model_name)
-        assert(np.abs(expected_test_scores[ind] - result_dict['test_score']) < 1e-12)
-
+        assert (np.abs(expected_test_scores[ind] - result_dict['test_score']) < 1e-12)
 
 if __name__ == '__main__':
     # Parse args
@@ -389,7 +395,7 @@ if __name__ == '__main__':
     print('----------------------')
 
     # Run experiments
-    _model_kwargs = vars(args).copy() # Extract model_kwargs as dictionary
+    _model_kwargs = vars(args).copy()  # Extract model_kwargs as dictionary
     model_names = _model_kwargs.pop('model_names').split(',')
     data_names = _model_kwargs.pop('data_names').split(',')
     is_parallel = _model_kwargs.pop('parallel_subprocesses')
@@ -398,7 +404,8 @@ if __name__ == '__main__':
         # Make sure data has already been cached
         get_maf_data(_data_name)
         for _model_name in model_names:
-            _model_kwargs['experiment_filename'], _model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
+            _model_kwargs['experiment_filename'], _model_kwargs[
+                'experiment_label'] = _get_experiment_filename_and_label(
                 _data_name, model_name=_model_name, model_kwargs=_model_kwargs)
             if not is_parallel:
                 # Just run the experiment directly
@@ -412,14 +419,14 @@ if __name__ == '__main__':
             else:
                 # Generate script to run experiment in parallel in separate subprocesses
                 script_str = (
-                    'import os\n'
-                    'os.chdir(\'%s\')\n'
-                    'from icml_2018_experiment import run_experiment\n'
-                    'run_experiment(\'%s\', \'%s\', model_kwargs=%s)\n'
-                ) % (
+                                 'import os\n'
+                                 'os.chdir(\'%s\')\n'
+                                 'from icml_2018_experiment import run_experiment\n'
+                                 'run_experiment(\'%s\', \'%s\', model_kwargs=%s)\n'
+                             ) % (
                                  os.path.dirname(os.path.realpath(__file__)),
                                  _data_name, _model_name, str(_model_kwargs)
-                )
+                             )
                 echo_args = ['echo', '-e', script_str]
 
                 # Launch subprocess which can run in parallel
@@ -429,7 +436,8 @@ if __name__ == '__main__':
                 processes.append(echo)
                 processes.append(python)
                 print('Started subprocess for experiment %s' % _model_kwargs['experiment_label'])
-                print('  Appending to end of log file %s.log' % _model_kwargs['experiment_filename'])
+                print(
+                    '  Appending to end of log file %s.log' % _model_kwargs['experiment_filename'])
 
             # Remove filenames and labels for next round
             _model_kwargs.pop('experiment_filename')

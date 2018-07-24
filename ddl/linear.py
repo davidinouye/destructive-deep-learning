@@ -38,6 +38,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         3. Thus, `LinearProjector` can be seen as a *relative*
         destructor that requires a base density to be useful.
     """
+
     def __init__(self, linear_estimator=None, orthogonal=False):
         self.linear_estimator = linear_estimator
         self.orthogonal = orthogonal
@@ -50,7 +51,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
             raise ValueError('Parameter `orthogonal` should be a boolean value either ``True`` or '
                              '``False``.')
         lin_est = (self.linear_estimator if self.linear_estimator is not None
-                   else IdentityLinearEstimator())
+        else IdentityLinearEstimator())
         # noinspection PyArgumentList
         try:
             lin_est.fit(X, y, **lin_est_fit_params)
@@ -100,16 +101,18 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
                     scale = w_norm
                 A = _HouseholderWithScaling(u, scale=scale, copy=False)
         elif coef.shape[0] != coef.shape[1]:
-            raise NotImplementedError('Projectors not implemented for 1 < n_components < n_features. '
-                                      'Probably a series of Householder reflectors would be '
-                                      'computationally the best.')
+            raise NotImplementedError(
+                'Projectors not implemented for 1 < n_components < n_features. '
+                'Probably a series of Householder reflectors would be '
+                'computationally the best.')
         else:
             if self.orthogonal:
                 # Check to make sure provided matrix is orthogonal
                 _, logdet = np.linalg.slogdet(coef)
                 if logdet > 1e-12:
-                    warnings.warn('Provided matrix does not seem to be orthogonal but orthogonal=True. '
-                                  'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g' % logdet)
+                    warnings.warn(
+                        'Provided matrix does not seem to be orthogonal but orthogonal=True. '
+                        'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g' % logdet)
             A = _SimpleMatrix(coef)
         self.A_ = A
         self.A_inv_ = A.inv(copy=False)
@@ -141,6 +144,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
     def _check_is_fitted(self):
         check_is_fitted(self, ['A_', 'A_inv_'])
 
+
 class BestLinearReconstructionDestructor(CompositeDestructor):
     """Class that converts a linear -> destructor combination 
     into a combination that returns the data to as close to
@@ -148,6 +152,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
     For example, if the linear projector was PCA and the destructor
     was a independent Gaussian, then this would correspond to ZCA
     whitening."""
+
     def __init__(self, linear_estimator=None, destructor=None):
         super(BestLinearReconstructionDestructor, self).__init__()
         self.linear_estimator = linear_estimator
@@ -194,7 +199,8 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
 
     def _get_estimators_or_default(self):
         lin_est = clone(self.linear_estimator) if self.linear_estimator is not None else PCA()
-        destructor = clone(self.destructor) if self.destructor is not None else IndependentDestructor()
+        destructor = clone(
+            self.destructor) if self.destructor is not None else IndependentDestructor()
         return lin_est, destructor
 
 
@@ -278,10 +284,10 @@ class RandomOrthogonalEstimator(BaseEstimator):
         n_components = self.n_components if self.n_components is not None else X.shape[1]
         if n_components == 1:
             z = rng.randn(n_components)
-            self.components_ = z/np.linalg.norm(z)
+            self.components_ = z / np.linalg.norm(z)
         else:
             components = np.linalg.qr(rng.randn(X.shape[1], X.shape[1]))[0]
-            self.components_ = components[:n_components,:]
+            self.components_ = components[:n_components, :]
         return self
 
 
@@ -289,6 +295,7 @@ class _SimpleMatrix(object):
     """Thin wrapper around np.array that provides `dot(X)`,
     `logabsdet()`, and `inv()`.
     """
+
     def __init__(self, A, copy=True):
         A = np.array(A)
         if copy:
@@ -314,6 +321,7 @@ class _IdentityWithScaling(object):
     """Thin wrapper around np.array that provides `dot(X)`,
     `logabsdet()`, and `inv()`.
     """
+
     def __init__(self, scale=1):
         if not np.isscalar(scale):
             raise ValueError('Parameter `scale` should be a scalar value.')
@@ -333,7 +341,7 @@ class _IdentityWithScaling(object):
             return np.log(np.abs(self.scale))
 
     def inv(self, copy=True):
-        inv_scale = 1.0/self.scale if self.scale != 1 else 1  # Just in case there is rounding error
+        inv_scale = 1.0 / self.scale if self.scale != 1 else 1  # Just in case there is rounding error
         return _IdentityWithScaling(scale=inv_scale)
 
     def toarray(self):
@@ -345,11 +353,12 @@ class _HouseholderWithScaling(_IdentityWithScaling):
     """Interface to a Householder reflector providing the important
     methods.
     """
+
     def __init__(self, u, scale=1, copy=True):
         super(_HouseholderWithScaling, self).__init__(scale)
 
         u = np.array(u, dtype=np.float)
-        if np.abs(u.dot(u) - 1) > u.shape[0]*np.finfo(u.dtype).eps:
+        if np.abs(u.dot(u) - 1) > u.shape[0] * np.finfo(u.dtype).eps:
             raise ValueError('u should be a unit vector such that u.dot(u) == 1')
         if copy:
             self.u = u.copy()
@@ -359,7 +368,7 @@ class _HouseholderWithScaling(_IdentityWithScaling):
     def dot(self, X):
         # NOTE: X.shape = (d, n), NOT (d, n)
         # u has shape (d,)
-        Z = X - np.outer(2*self.u, np.dot(self.u, X))
+        Z = X - np.outer(2 * self.u, np.dot(self.u, X))
         # Only scale the first dimension (leave others alone)
         if self.scale != 1:
             Z[0, :] *= self.scale
@@ -369,10 +378,10 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         return super(_HouseholderWithScaling, self).logabsdet()
 
     def inv(self, copy=True):
-        inv_scale = 1.0/self.scale if self.scale != 1 else 1  # Just in case there is rounding error
+        inv_scale = 1.0 / self.scale if self.scale != 1 else 1  # Just in case there is rounding error
         return _HouseholderWithScaling(self.u, scale=inv_scale, copy=copy)
 
     def toarray(self):
-        A = np.eye(len(self.u)) - np.outer(2*self.u, self.u)
+        A = np.eye(len(self.u)) - np.outer(2 * self.u, self.u)
         A[0, :] *= self.scale
         return A

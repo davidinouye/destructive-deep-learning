@@ -15,7 +15,9 @@ try:
     from ddl.externals.mlpack import _det as det
 except ImportError:
     import warnings
+
     warnings.warn('In test script, could not import necessary mlpack wrappers.')
+
 
 def test_mlpack_density_tree_destructor():
     destructor = TreeDestructor(
@@ -24,6 +26,7 @@ def test_mlpack_density_tree_destructor():
         )
     )
     assert check_destructor(destructor)
+
 
 @pytest.mark.parametrize('test', ['canonical', 'complex', 'default'])
 def test_mlpack_det(test):
@@ -76,9 +79,9 @@ def test_mlpack_det_get_arrayed_tree():
     tree.fit(X, max_leaf_nodes=5, min_leaf_size=5)
     arrayed_tree = tree.get_arrayed_tree()
 
-    #print(tree.get_tree_str(show_leaves=True))
-    #stack = [(0, None)]
-    #while len(stack) > 0:
+    # print(tree.get_tree_str(show_leaves=True))
+    # stack = [(0, None)]
+    # while len(stack) > 0:
     #    print(stack)
     #    node_i, is_left = stack.pop()
     #    prefix = 'Left' if is_left else 'Right'
@@ -90,15 +93,15 @@ def test_mlpack_det_get_arrayed_tree():
     #    else:
     #        print('%s' % prefix)
 
-    #print(arrayed_tree)
+    # print(arrayed_tree)
     ##np.set_printoptions(precision=17)
-    #print(repr(arrayed_tree.feature))
-    #print(repr(arrayed_tree.threshold))
-    #print(repr(arrayed_tree.children_left))
-    #print(repr(arrayed_tree.children_right))
+    # print(repr(arrayed_tree.feature))
+    # print(repr(arrayed_tree.threshold))
+    # print(repr(arrayed_tree.children_left))
+    # print(repr(arrayed_tree.children_right))
 
     # Test based on known values
-    assert np.all(arrayed_tree.feature == np.array([0, -1,  1,  1,  1, -1, -1, -1, -1]))
+    assert np.all(arrayed_tree.feature == np.array([0, -1, 1, 1, 1, -1, -1, -1, -1]))
     nan = np.nan
     expected_threshold = np.array(
         [0.5631866381580427, nan, 0.7914520226478026,
@@ -106,5 +109,5 @@ def test_mlpack_det_get_arrayed_tree():
          nan, nan, nan]
     )
     np.testing.assert_allclose(arrayed_tree.threshold, expected_threshold, rtol=1e-16)
-    assert np.all(arrayed_tree.children_left == [1, -1,  3,  4,  5, -1, -1, -1, -1])
-    assert np.all(arrayed_tree.children_right == [2, -1,  8,  7,  6, -1, -1, -1, -1])
+    assert np.all(arrayed_tree.children_left == [1, -1, 3, 4, 5, -1, -1, -1, -1])
+    assert np.all(arrayed_tree.children_right == [2, -1, 8, 7, 6, -1, -1, -1, -1])

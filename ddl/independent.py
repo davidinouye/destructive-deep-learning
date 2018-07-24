@@ -102,6 +102,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
                                      'estimator, or an array-like of estimators.')
                 else:
                     return list(itertools.islice(temp, n_features))
+
         X = check_array(X)
         est_arr = _check_univariate(self.univariate_estimators, X.shape[1])
 
@@ -146,16 +147,19 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return marginal_density
 
     def marginal_cdf(self, x, target_idx):
-        return self.univariate_densities_[target_idx].cdf(np.array(x).reshape(-1, 1)).reshape(np.array(x).shape)
+        return self.univariate_densities_[target_idx].cdf(np.array(x).reshape(-1, 1)).reshape(
+            np.array(x).shape)
 
     def marginal_inverse_cdf(self, x, target_idx):
-        return self.univariate_densities_[target_idx].inverse_cdf(np.array(x).reshape(-1, 1)).reshape(np.array(x).shape)
+        return self.univariate_densities_[target_idx].inverse_cdf(
+            np.array(x).reshape(-1, 1)).reshape(np.array(x).shape)
 
     def get_support(self):
         def _unwrap_support(est):
             # Univariate density estimators should return [[a,b]] because there is only one
             # dimension, thus this unwraps this even if the default is returned of [a,b]
             return np.array(get_support_or_default(est)).ravel()
+
         # Check if fitted first
         try:
             self._check_is_fitted()
@@ -187,6 +191,7 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
     is useful to make linear projection destructors canonical (i.e. unit
     domain and correspondingly the identity element property).
     """
+
     def fit(self, X, y=None, fitted_densities=None, **fit_params):
         """
         X is only used to get the number of features.
@@ -259,6 +264,7 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
                                    'number of dimensions is fixed at 1 but the following shape '
                                    'was given: %s.' % str(shape))
             return support.ravel()
+
         self._check_is_fitted()
         return np.array([
             _check_univariate_support(get_support_or_default(d))

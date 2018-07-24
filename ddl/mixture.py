@@ -140,8 +140,8 @@ class _MixtureMixin(ScoreMixin):
 
         # Scale bounds by 10% to ensure they will produce positive and negative values
         # because there may be numerical error
-        bound_center = (bound_right + bound_left)/2
-        bound_left, bound_right = (1.1*(np.array([bound_left, bound_right]) - bound_center)
+        bound_center = (bound_right + bound_left) / 2
+        bound_left, bound_right = (1.1 * (np.array([bound_left, bound_right]) - bound_center)
                                    + bound_center)
         weights = np.array(self.weights_, copy=False)
 
@@ -155,8 +155,9 @@ class _MixtureMixin(ScoreMixin):
                     [comp.marginal_cdf(a, target_idx) for comp in components]
                 )
                 return marginal_cdf - _x_scalar
+
             # If requesting an inverse_cdf for 1 - eps, just return inverse_cdf
-            if (1 - _x_scalar) < 2*np.finfo(float).eps:
+            if (1 - _x_scalar) < 2 * np.finfo(float).eps:
                 return _bound_marginal_cdf(bound_right)
             return scipy_brentq(_bound_marginal_cdf, bound_left, bound_right)
 
@@ -168,6 +169,7 @@ class _MixtureMixin(ScoreMixin):
 
 class _MixtureDensity(BaseEstimator, _MixtureMixin):
     """Mixture of independent types."""
+
     def __init__(self, cluster_estimator=None, component_density_estimator=None):
         self.cluster_estimator = cluster_estimator
         self.component_density_estimator = component_density_estimator
@@ -187,7 +189,7 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
             warnings.warn('y was given so not clustering.  If you want to cluster the data, '
                           'then set y=None when fitting.')
         y = column_or_1d(y)
-        self.weights_ = np.array([np.sum(y == label) for label in np.unique(y)])/len(y)
+        self.weights_ = np.array([np.sum(y == label) for label in np.unique(y)]) / len(y)
 
         # Fit component densities using cluster labels
         self.component_densities_ = np.array([
@@ -213,6 +215,7 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
 class _GaussianMixtureMixin(object):
     """Overrides several methods in GaussianMixture to comply with density specifications and
     adds a few methods. """
+
     def fit(self, X, y=None):
         super(_GaussianMixtureMixin, self).fit(X, y)
         self.n_features_ = X.shape[1]
@@ -256,6 +259,7 @@ class _GaussianMixtureMixin(object):
                 return getattr(c_arr[0], attr)
             else:
                 return np.array([getattr(gaussian, attr) for gaussian in c_arr])
+
         mixture.weights_ = w
         mixture.means_ = np.array([gaussian.mean_ for gaussian in c_arr], copy=False)
         mixture.covariances_ = _check_tied('covariance_')
@@ -308,7 +312,8 @@ class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMix
     """
 
 
-class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture, _MixtureMixin):
+class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture,
+                                      _MixtureMixin):
     """Simple class for Bayesian Gaussian mixtures.
     See note for GaussianMixtureDensity.
     """
@@ -365,14 +370,15 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
         covariance_type = self.covariance_type
 
         # Randomly initialize centers by picking from X
-        self.means_ = X[rng.permutation(n_samples)[:n_components], :].copy()  # (n_components, n_features)
+        self.means_ = X[rng.permutation(n_samples)[:n_components],
+                      :].copy()  # (n_components, n_features)
         # Randomly initialize weights via dirichlet
         self.weights_ = rng.dirichlet(self.alpha * np.ones(n_components))
         # self.weights_ = np.ones(n_components)/n_components
 
         # Set covariances to unity
         covariances = rng.gamma(shape=self.alpha, size=n_components)
-        precisions = 1/covariances
+        precisions = 1 / covariances
         logger.debug(precisions)
         if covariance_type == 'full':
             self.precisions_ = np.array([
@@ -380,17 +386,17 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
                 for prec in precisions
             ])
             self.covariances_ = np.array([
-                1/prec * np.eye(n_features, n_features)
+                1 / prec * np.eye(n_features, n_features)
                 for prec in precisions
             ])
         elif covariance_type == 'tied':
             self.precisions_ = np.eye(n_features, n_features)
         elif covariance_type == 'diag':
             self.precisions_ = (np.ones((n_components, n_features)).T * precisions).T
-            self.covariances_ = (np.ones((n_components, n_features)).T * (1/precisions)).T
+            self.covariances_ = (np.ones((n_components, n_features)).T * (1 / precisions)).T
         elif covariance_type == 'spherical':
             self.precisions_ = precisions
-            self.covariances_ = 1/precisions
+            self.covariances_ = 1 / precisions
         else:
             raise RuntimeError('Incorrect covariance type of %s' % covariance_type)
         self.precisions_cholesky_ = np.sqrt(self.precisions_)
@@ -528,7 +534,7 @@ class _RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
         # Rescale weights
         if self.main_weight < 0 or self.main_weight > 1:
             raise ValueError('main_weight should be between 0 and 1')
-        self.weights_ *= (1-self.main_weight)
+        self.weights_ *= (1 - self.main_weight)
         self.weights_ = np.append(self.weights_, np.array([self.main_weight]))
 
         return self
@@ -548,12 +554,12 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
             reg_covar=reg_covar, random_state=random_state)
 
     def _set_weights(self, w):
-        self.weights_ = np.array([1.0-w, w])
+        self.weights_ = np.array([1.0 - w, w])
 
     def _set_variance(self, v, idx=1):
         self.covariances_[idx, :] = v
-        self.precisions_[idx, :] = 1.0/v
-        self.precisions_cholesky_[idx, :] = np.sqrt(1.0/v)
+        self.precisions_[idx, :] = 1.0 / v
+        self.precisions_cholesky_[idx, :] = np.sqrt(1.0 / v)
 
     def _set_mean(self, m):
         self.means_[1, :] = m
@@ -577,14 +583,14 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
         self.weights_ = np.array([0.5, 0.5])
         self.means_ = np.array([main_mean, main_mean])
         self.covariances_ = np.array([main_variance, main_variance])
-        self.precisions_ = 1.0/self.covariances_
+        self.precisions_ = 1.0 / self.covariances_
         self.precisions_cholesky_ = np.sqrt(self.precisions_)
         score_orig = self.score(X)
 
         # Grid search weight and mean
         # Setup test parameters
         test_weights = np.logspace(-3, -1, 20)
-        #test_var = np.array([0.05])  # np.logspace(-1, 0, 20)
+        # test_var = np.array([0.05])  # np.logspace(-1, 0, 20)
         test_var = np.linspace(0.01, 0.1, 10)
         if np.max(test_weights) > 1 or np.min(test_weights) < 0:
             raise RuntimeError('Weight should be between 0 and 1')
@@ -624,11 +630,11 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
                     self.n_iter_ += 1
 
         # Plot stuff for debugging
-        #import matplotlib.pyplot as plt
-        #plt.semilogx(test_var, scores[ii, :, :].T)
-        #plt.xlabel('Mixture var')
-        #plt.legend(test_weights)
-        #plt.show()
+        # import matplotlib.pyplot as plt
+        # plt.semilogx(test_var, scores[ii, :, :].T)
+        # plt.xlabel('Mixture var')
+        # plt.legend(test_weights)
+        # plt.show()
 
         # Reset weight and variance based on best
         if best_log_likelihood != np.max(scores):
@@ -644,7 +650,7 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
             self.means_ = np.array([main_mean])
             self.weights_ = np.array([1])
             self.covariances_ = np.array([main_variance])
-            self.precisions_ = 1/self.covariances_
+            self.precisions_ = 1 / self.covariances_
             self.precisions_cholesky_ = np.sqrt(self.precisions_)
             # logger.debug('Just using single Gaussian fit %g (after) and %g (before)'
             #              % (score_after, score_orig))

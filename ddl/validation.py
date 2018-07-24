@@ -26,8 +26,8 @@ try:
 except ImportError:
     warnings.warn('Could not import python optimal transport (pip install pot) (import ot)')
 
-
 logger = logging.getLogger(__name__)
+
 
 # TODO What about self-evaluation?
 # Sample from learned model and see if we can relearn current model?? -- shows how stable it is...
@@ -40,6 +40,7 @@ def _ignore_boundary_warnings(func):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', BoundaryWarning)
             return func(*args, **kwargs)
+
     return _wrapper
 
 
@@ -97,7 +98,8 @@ def check_density(dens, random_state=0):
         # Check single sample
         X_1 = dens.sample(1, random_state=rng)
         if len(np.array(X_1).shape) != 2:
-            raise TypeError('A single sample should still return a 2D matrix with shape (1,n_features).')
+            raise TypeError(
+                'A single sample should still return a 2D matrix with shape (1,n_features).')
 
     score_vec = None
     if has_method(dens, 'score_samples'):
@@ -140,12 +142,14 @@ def check_destructor(trans, fitted_density=None, is_canonical=True, properties_t
     --------
     .check_destructor_interface
     """
+
     def _check_property(p):
         if p in properties_to_skip:
             warnings.warn(SkipTestWarning('Skipping checks for property "%s" because '
                                           '`properties_to_skip` included this property.' % p))
             return False
         return True
+
     if properties_to_skip is None:
         properties_to_skip = []
     properties_to_skip = [prop.lower() for prop in properties_to_skip]
@@ -201,6 +205,7 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
               domain is not real-valued unbounded)
           `score` (mixin)
     """
+
     def _check_density_attr(T, method_name='fit'):
         if hasattr(T, 'density_'):
             logger.info(_checking('transformer.density_'))
@@ -240,16 +245,19 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
                          ' happen if the data is within the transformer domain via the'
                          ' get_domain method or the default real-valued domain.')
     else:
-        np.testing.assert_array_equal(X_train, X_train_copy, 'fit() function should not mutate input data matrix `X`')
+        np.testing.assert_array_equal(X_train, X_train_copy,
+                                      'fit() function should not mutate input data matrix `X`')
     has_density_attr = _check_density_attr(trans)
 
     # Check that transform and inverse_transform work
     U_sample = trans.transform(X_test)
-    np.testing.assert_array_equal(X_test, X_test_copy, 'transform() function should not mutate input data matrix `X`')
+    np.testing.assert_array_equal(X_test, X_test_copy,
+                                  'transform() function should not mutate input data matrix `X`')
 
     U_sample_copy = U_sample.copy()
     trans.inverse_transform(U_sample)
-    np.testing.assert_array_equal(U_sample, U_sample_copy, 'inverse_transform() function should not mutate input data matrix `X`')
+    np.testing.assert_array_equal(U_sample, U_sample_copy,
+                                  'inverse_transform() function should not mutate input data matrix `X`')
 
     # # Check primary methods
     if has_method(trans, 'sample'):
@@ -261,7 +269,8 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
     score_vec = None
     if has_method(trans, 'score_samples'):
         score_vec = trans.score_samples(X_test)
-        np.testing.assert_array_equal(X_test, X_test_copy, 'score_samples() function should not mutate input data matrix `X`')
+        np.testing.assert_array_equal(X_test, X_test_copy,
+                                      'score_samples() function should not mutate input data matrix `X`')
         if len(score_vec) != n:
             raise RuntimeError('Output of score_samples is not of length n')
 
@@ -300,14 +309,16 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
         )
         warn_thresh = 0.01
         if avg_normalized_diff > warn_thresh:
-            warnings.warn('Apparent mismatch between transformer log-likelihood (via `score_samples`)'
-                          ' and density log-likelihood;'
-                          ' Either there is an error in the log likelihood calculations'
-                          ' or the approximation in the transformer is bad. Average normalized'
-                          ' exp(score) = likelihood difference is %g (threshold is %g)'
-                          % (float(avg_normalized_diff), warn_thresh))
-        logger.info('Average normalized difference between density and transformer `score_samples`: %g'
-                    % avg_normalized_diff)
+            warnings.warn(
+                'Apparent mismatch between transformer log-likelihood (via `score_samples`)'
+                ' and density log-likelihood;'
+                ' Either there is an error in the log likelihood calculations'
+                ' or the approximation in the transformer is bad. Average normalized'
+                ' exp(score) = likelihood difference is %g (threshold is %g)'
+                % (float(avg_normalized_diff), warn_thresh))
+        logger.info(
+            'Average normalized difference between density and transformer `score_samples`: %g'
+            % avg_normalized_diff)
 
     _check_score_method(trans, score_vec, X_test)
     logger.info(_success('check_destructor_interface'))
@@ -407,7 +418,8 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
 
     # Get samples of emd scores to compute a percentile
     X_emd_true_vec = _emd_sample(true_density, n, k, random_state=rng)
-    U_emd_true_vec = _emd_sample(UniformDensity().fit(np.zeros((1, n_features))), n, k, random_state=rng)
+    U_emd_true_vec = _emd_sample(UniformDensity().fit(np.zeros((1, n_features))), n, k,
+                                 random_state=rng)
 
     # Check whether these look like good samples
     def _p_val(val, true_vec):
@@ -445,7 +457,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
             import matplotlib.pyplot as plt
             axes = plt.subplots(2, 2)[1]
             for ax, title, X in zip(axes.ravel(),
-                                    ['X_true','U_true','X_trans','U_trans'],
+                                    ['X_true', 'U_true', 'X_trans', 'U_trans'],
                                     [X_true, U_true, X_trans, U_trans]):
                 ax.scatter(X[:, 0], X[:, 1], s=3)
                 ax.axis('equal')
@@ -455,6 +467,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
                 err_msg % ('inverse_transform', 'uniform', 'original (assumed)', avg_p_threshold,
                            'inverse_transform')
             )
+
         _plot_data_for_debug()
     if U_avg_p_val <= avg_p_threshold:
         raise UniformabilityError(
@@ -513,7 +526,7 @@ def check_invertibility(trans, random_state=0):
 
                 axes = plt.subplots(2, 2)[1]
                 for ax, title, X in zip(axes.ravel(),
-                                        ['X_true','U_true','X_trans','U_trans'],
+                                        ['X_true', 'U_true', 'X_trans', 'U_trans'],
                                         [X_true, U_true, _X_trans, _U_trans]):
                     ax.scatter(X[:, 0], X[:, 1], s=3)
                     ax.axis('equal')
@@ -522,15 +535,18 @@ def check_invertibility(trans, random_state=0):
 
                 axes = plt.subplots(2, 2)[1]
                 for ax, title, X in zip(axes.ravel(),
-                                        ['orig','middle','back'],
+                                        ['orig', 'middle', 'back'],
                                         [orig, middle, back]):
                     ax.scatter(X[:, 0], X[:, 1], s=3)
                     ax.axis('equal')
                     ax.set_title(title)
                 plt.show(block=False)
-                raise InvertibilityError('Transforming and then inverse transforming does not seem to '
-                                         'give the original data. Relative difference = %g.' % rel_diff)
+                raise InvertibilityError(
+                    'Transforming and then inverse transforming does not seem to '
+                    'give the original data. Relative difference = %g.' % rel_diff)
+
             _plot_debug_data()
+
     _check_nearly_equal(X_orig, X_back, U_trans)
     _check_nearly_equal(U_orig, U_back, X_trans)
     logger.info(_success('check_invertibility'))
@@ -692,7 +708,8 @@ def _check_score_method(est, score_vec, X_sample):
     if has_method(est, 'score'):
         X_sample_copy = X_sample.copy()
         score = est.score(X_sample)
-        np.testing.assert_array_equal(X_sample, X_sample_copy, 'score() function should not mutate input data matrix `X`')
+        np.testing.assert_array_equal(X_sample, X_sample_copy,
+                                      'score() function should not mutate input data matrix `X`')
 
         if score_vec is not None:
             # 1e-100 to avoid division by 0
@@ -742,7 +759,7 @@ _get_domain_n_features = _get_support_n_features
 
 
 def _relative_diff(orig, back):
-    return np.linalg.norm(np.abs(orig - back), ord='fro')/np.linalg.norm(orig, ord='fro')
+    return np.linalg.norm(np.abs(orig - back), ord='fro') / np.linalg.norm(orig, ord='fro')
 
 
 def _clean_warning_registry():
@@ -834,7 +851,9 @@ def _assert_unit_domain(rng, func, n_features=1):
 
     # Attempt to fit data inside the canonical domain (should not raise warning)
     for X in X_good:
-        _assert_no_warnings(func, X, allow_these_warnings=[BoundaryWarning, ShouldOnlyBeInTestWarning, _NumDimWarning])
+        _assert_no_warnings(func, X,
+                            allow_these_warnings=[BoundaryWarning, ShouldOnlyBeInTestWarning,
+                                                  _NumDimWarning])
 
     # Attempt to fit data outside the canonical domain (should raise warning)
     for X in X_bad:

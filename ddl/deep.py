@@ -53,7 +53,7 @@ class DeepDestructor(CompositeDestructor):
         if self.init_destructor is not None:
             destructors.append(self.init_destructor)
         destructors.extend(_take(cycle(self._get_canonical_destructors()),
-                                self.n_canonical_destructors))
+                                 self.n_canonical_destructors))
         return np.array([clone(d) for d in destructors])
 
 
@@ -62,8 +62,8 @@ class DeepCVMixin(object):
         # Save old random state and seed via internal random number generator
         rng = check_random_state(self.random_state)
         if self.n_extend < 1:
-            raise ValueError('n_extend should be greater than or equal to 1') 
-        # saved_random_state = np.random.get_state()
+            raise ValueError('n_extend should be greater than or equal to 1')
+            # saved_random_state = np.random.get_state()
         # np.random.seed(rng.randint(2 ** 32, dtype=np.uint32))
 
         # Setup parameters
@@ -105,7 +105,8 @@ class DeepCVMixin(object):
         if np.any(scores_mat.shape != np.array([len(splits), best_n_layers_over_folds, 2])):
             raise RuntimeError('scores_mat does not seem to be the correct shape')
         scores_avg = np.mean(scores_mat, axis=0)  # Average over different splits
-        best_n_layers = int(1 + np.argmax(scores_avg[:, 1].ravel()))  # Best over cumulative test_score
+        best_n_layers = int(
+            1 + np.argmax(scores_avg[:, 1].ravel()))  # Best over cumulative test_score
         best_score = np.max(scores_avg[:, 1].ravel())
         # logger.debug(self.log_prefix + '\n%s' % str(scores_mat))
         # logger.debug(self.log_prefix + '\n%s' % str(scores_avg))
@@ -114,7 +115,7 @@ class DeepCVMixin(object):
         if self.refit:
             if not self.silent:
                 logger.debug(self.log_prefix + 'Fitting final model with %d layers with score=%g'
-                            % (best_n_layers, best_score))
+                             % (best_n_layers, best_score))
             destructors = []
             Z = X.copy()
             for i, d in enumerate(islice(iter(self._get_destructor_iterable()), best_n_layers)):
@@ -123,7 +124,8 @@ class DeepCVMixin(object):
                 Z = d.transform(Z)
                 destructors.append(d)
                 if not self.silent:
-                    logger.debug(self.log_prefix + '(Final fit layer=%d) local layer score=%g' % (i + 1, score))
+                    logger.debug(self.log_prefix + '(Final fit layer=%d) local layer score=%g' % (
+                    i + 1, score))
         else:
             # Use already fitted destructor from CV array
             if len(cv_destructors_arr) > 1:
@@ -165,7 +167,8 @@ class DeepCVMixin(object):
                 continue
             elif len(cv_destructors) > 0:
                 if not self.silent:
-                    logger.debug(self.log_prefix + 'Re-fitting extra destructors for cv=%i deep destructor' % i)
+                    logger.debug(
+                        self.log_prefix + 'Re-fitting extra destructors for cv=%i deep destructor' % i)
                 # Pop off destructors that were already fit from the destructor iterator
                 _consume(destructor_iterator, len(cv_destructors))
                 for d in cv_destructors:
@@ -218,7 +221,8 @@ class DeepCVMixin(object):
                         if max_previous_scores == 0:
                             rel_diff = cur_score - max_previous_scores
                         else:
-                            rel_diff = (cur_score - max_previous_scores)/np.abs(max_previous_scores)
+                            rel_diff = (cur_score - max_previous_scores) / np.abs(
+                                max_previous_scores)
                         if not self.silent:
                             logger.debug(self.log_prefix + '(CV sp=%d, L=%d) Relative diff=%g'
                                          % (i + 1, len(cv_destructors), rel_diff))
@@ -231,11 +235,13 @@ class DeepCVMixin(object):
 
     def _get_destructor_iterable(self):
         """Yield an infinite sequence of destructors."""
+
         def _destructor_generator():
             if self.init_destructor is not None:
                 yield clone(self.init_destructor)
             for d in cycle(self._get_canonical_destructors()):
                 yield clone(d)
+
         return _destructor_generator()
 
 
