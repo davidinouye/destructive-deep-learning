@@ -76,9 +76,9 @@ jobs:
 
       - restore_cache:
           keys:
-          - mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
-          - mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}
-          - mlpack-
+          - mlpack-1-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
+          - mlpack-1-{{ checksum "ddl/externals/mlpack/setup.py" }}
+          - mlpack-1-
 
       - run:
           name: install ddl
@@ -91,8 +91,8 @@ jobs:
 
       - save_cache:
           paths:
-            - ./ddl/externals/mlpack
-          key: mlpack-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
+            - ./ddl/externals/mlpack/mlpack-mlpack-3.0.2
+          key: mlpack-1-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
         
       # run tests!
       - run:
