@@ -195,7 +195,7 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
             clone(density_estimator).fit(X[y == label, :])
             for label in np.unique(y)
         ])
-        self.n_dim_ = X.shape[1]
+        self.n_features_ = X.shape[1]
         return self
 
     def _get_density_estimator_or_default(self):
@@ -216,7 +216,7 @@ class _GaussianMixtureMixin(object):
     adds a few methods. """
     def fit(self, X, y=None):
         super(_GaussianMixtureMixin, self).fit(X, y)
-        self.n_dim_ = X.shape[1]
+        self.n_features_ = X.shape[1]
         return self
 
     def sample(self, n_samples=1, random_state=None):
@@ -662,7 +662,7 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
         self.best_log_likelihood_ = best_log_likelihood
         self.lower_bound_ = np.nan
         self.converged_ = True
-        self.n_dim_ = n_features
+        self.n_features_ = n_features
         return self
 
 

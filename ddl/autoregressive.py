@@ -46,8 +46,8 @@ class AutoregressiveDestructor(BaseDensityDestructor):
         except NotFittedError:
             pass
         else:
-            n_dim = self._get_n_dim()
-            if X.shape[1] != n_dim:
+            n_features = self._get_n_features()
+            if X.shape[1] != n_features:
                 raise ValueError('Incorrect number of dimensions.')
         if inverse:
             X = check_X_in_interval(X, _UNIT_SPACE)
@@ -96,14 +96,14 @@ class AutoregressiveDestructor(BaseDensityDestructor):
     def _check_X(self, X):
         return X
 
-    def _get_order_or_default(self, n_dim):
+    def _get_order_or_default(self, n_features):
         if self.order is None:
-            return np.array(list(range(n_dim)))
+            return np.array(list(range(n_features)))
         elif self.order == 'random':
             rng = check_random_state(self.random_state)
-            return rng.permutation(n_dim)
-        elif len(self.order) == n_dim:
+            return rng.permutation(n_features)
+        elif len(self.order) == n_features:
             return np.array(self.order)
         else:
             raise ValueError('`order` should be either None, \'random\', or something that has '
-                             'length = n_dim')
+                             'length = n_features')

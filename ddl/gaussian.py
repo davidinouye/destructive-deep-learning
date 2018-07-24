@@ -62,7 +62,7 @@ class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin
 
         self.independent_destructor_ = independent_destructor
         self.gaussian_density_ = gaussian_density
-        self.n_dim_ = n_features
+        self.n_features_ = n_features
         return self
 
     def score_samples(self, X, y=None):
@@ -204,7 +204,7 @@ class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin
         # Setup fitted density
         independent_density = IndependentDensity(univariate_estimators=estimators)
         independent_density.univariate_densities_ = univariate_densities
-        independent_density.n_dim_ = len(univariate_densities)
+        independent_density.n_features_ = len(univariate_densities)
 
         # Setup fitted destructor
         independent_destructor = IndependentDestructor(
@@ -285,16 +285,16 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         """Should do a simple regularized fit."""
         X = check_array(X)
         self.mean_ = np.mean(X, axis=0)
-        _, n_dim = X.shape
+        _, n_features = X.shape
 
         if self.covariance_type == 'full' or self.covariance_type == 'tied':
             if X.shape[0] == 1:
-                self.covariance_ = np.zeros((n_dim, n_dim))
+                self.covariance_ = np.zeros((n_features, n_features))
                 if self.reg_covar <= 0:
                     raise ValueError('reg_covar <= 0 but only 1 sample given so variance '
                                      'impossible to estimate.')
             else:
-                self.covariance_ = np.cov(X, rowvar=False).reshape((n_dim, n_dim))
+                self.covariance_ = np.cov(X, rowvar=False).reshape((n_features, n_features))
             self.covariance_.flat[::len(self.covariance_) + 1] += self.reg_covar
         elif self.covariance_type == 'diag':
             self.covariance_ = np.var(X, axis=0)
@@ -483,7 +483,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
             self.precision_cholesky_ = _compute_precision_cholesky(self.covariance_,
                                                                    self.covariance_type)
             self.precision_ = _cholesky_to_full(self.precision_cholesky_, self.covariance_type)
-        self.n_dim_ = len(self.mean_)
+        self.n_features_ = len(self.mean_)
         return self
 
     def _get_marginal_params(self, target_idx):

@@ -41,7 +41,7 @@ def get_domain_or_default(trans, warn=False):
         return _DEFAULT_DOMAIN
 
 
-def check_domain(domain, n_dim):
+def check_domain(domain, n_features):
     """Utility that returns domain after expanding to the specified number of dimensions if
     necessary.
 
@@ -52,15 +52,15 @@ def check_domain(domain, n_dim):
     """
     domain = np.array(domain)
     if len(domain.shape) == 1:
-        domain = np.array([domain for i in range(n_dim)])
+        domain = np.array([domain for i in range(n_features)])
     if np.any(np.isnan(domain)):
         raise ValueError('The domain/support should not contain NaN values.')
-    if len(domain) != n_dim:
+    if len(domain) != n_features:
         warnings.warn(DataConversionWarning(
-            'Domain had %d dimensions but requested `n_dim` was %d. Using `domain = '
-            'itertools.islice(itertools.cycle(domain), n_dim)`.'
-            % (len(domain), n_dim)))
-        domain = list(itertools.islice(itertools.cycle(domain), n_dim))
+            'Domain had %d dimensions but requested `n_features` was %d. Using `domain = '
+            'itertools.islice(itertools.cycle(domain), n_features)`.'
+            % (len(domain), n_features)))
+        domain = list(itertools.islice(itertools.cycle(domain), n_features))
     return domain
 
 
@@ -72,12 +72,12 @@ def check_X_in_interval(X, interval):
                   '0.19.1) will fail if an exception is raised while calling fit, transform, '
                   'etc.  Therefore, we only require that an warning is issued.)'
                   % str(interval.tolist()))
-    n_samples, n_dim = np.shape(X)
+    n_samples, n_features = np.shape(X)
     if n_samples == 0:
         return X  # Trivial case of no samples
-    dom = check_domain(interval, n_dim)
+    dom = check_domain(interval, n_features)
     copied = False
-    for i, (low_domain, high_domain), low, high in zip(range(n_dim), dom, np.min(X, axis=0),
+    for i, (low_domain, high_domain), low, high in zip(range(n_features), dom, np.min(X, axis=0),
                                                        np.max(X, axis=0)):
         if low < low_domain:
             warnings.warn(DataConversionWarning(

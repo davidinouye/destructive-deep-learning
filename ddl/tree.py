@@ -11,7 +11,7 @@ from sklearn.utils.validation import check_array, check_is_fitted
 from sklearn.tree import ExtraTreeRegressor
 
 from .base import (BaseDensityDestructor, IdentityDestructor, ScoreMixin, 
-                   get_inverse_canonical_destructor, get_n_dim, BoundaryWarning)
+                   get_inverse_canonical_destructor, get_n_features, BoundaryWarning)
 from .utils import get_domain_or_default, get_support_or_default, check_X_in_interval
 # noinspection PyProtectedMember
 from .utils import _UNIT_SPACE
@@ -76,7 +76,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         
         self.fitted_tree_estimator_ = fitted_tree_estimator
         self.tree_ = tree
-        self.n_dim_ = X.shape[1]
+        self.n_features_ = X.shape[1]
         return self
 
     def _get_tree_estimator(self):
@@ -244,10 +244,10 @@ class TreeDensity(BaseEstimator, ScoreMixin):
             return self.node_destructor
 
     def _check_is_fitted(self):
-        check_is_fitted(self, ['tree_', 'n_dim_'])
+        check_is_fitted(self, ['tree_', 'n_features_'])
 
     def _check_dim(self, X):
-        if X.shape[1] != self.n_dim_:
+        if X.shape[1] != self.n_features_:
             raise ValueError('X does not have the same dimension as the original training data.')
 
 

@@ -19,13 +19,13 @@ class _Data(object):
 
 
 def _make_rotated_uniform(n_samples, scale=None, Q=None, random_state=0):
-    n_dim = 2
+    n_features = 2
     rng = check_random_state(random_state)
     if scale is None:
         scale = np.array([1, 3])
     if Q is None:
-        Q = np.linalg.qr(rng.randn(n_dim, n_dim))[0]
-    U = rng.rand(n_samples, n_dim) - 0.5
+        Q = np.linalg.qr(rng.randn(n_features, n_features))[0]
+    U = rng.rand(n_samples, n_features) - 0.5
     X = np.dot(U * scale, Q)
     return X, None, False
 
@@ -35,7 +35,7 @@ def _make_autoregressive(
         x_distribution='uniform', random_state=0
 ):
     rng = check_random_state(random_state)
-    n_dim = 2
+    n_features = 2
     # Get x values
     if x_distribution == 'gaussian':
         x = x_scale * rng.randn(n_samples)
@@ -81,10 +81,10 @@ def _make_quadratic(n_samples, random_state=0):
 def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_state=0,
               kind='gaussian'):
     rng = check_random_state(random_state)
-    n_dim = 2
+    n_features = 2
 
     if Q is None:
-        Q = np.eye(n_dim, n_dim)
+        Q = np.eye(n_features, n_features)
     if kind == 'gaussian':
         if sigma is None:
             sigma = 0.2
@@ -117,7 +117,7 @@ def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_
     n_per_component = rng.multinomial(n_samples, 1 / n_components * np.ones(n_components))
 
     X = np.vstack([
-        sample(pos, n, n_dim)
+        sample(pos, n, n_features)
         for pos, n in zip(positions, n_per_component)
     ])
     X, y = _get_y_and_shuffle(X, n_per_component)

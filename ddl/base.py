@@ -43,53 +43,53 @@ class ScoreMixin(object):
 class DestructorMixin(ScoreMixin, TransformerMixin):
     """
     Adds `sample`, `get_domain`, and score *if* the destructor defines
-    the `density_` attribute after fitting. (Also supplying `self.n_dim_` can reduce
+    the `density_` attribute after fitting. (Also supplying `self.n_features_` can reduce
     some computation, see note below.)
 
-    Note that this finds the data dimension by looking for the `self.n_dim_`
-    attribute, the `self.density_.n_dim_` attribute and finally attempting
+    Note that this finds the data dimension by looking for the `self.n_features_`
+    attribute, the `self.density_.n_features_` attribute and finally attempting
     to call `self.density_.sample(1)` and determine the dimension from the density
     sample.
     """
 
     def sample(self, n_samples=1, random_state=None):
         rng = check_random_state(random_state)
-        U = rng.rand(n_samples, self._get_n_dim())
+        U = rng.rand(n_samples, self._get_n_features())
         X = self.inverse_transform(U)
         return X
 
     # Utility method to attempt to automatically determine the number of dimensions.
-    def _get_n_dim(self):
-        return get_n_dim(self)
+    def _get_n_features(self):
+        return get_n_features(self)
 
 
-def get_n_dim(destructor, try_destructor_sample=False):
-    """Attempt to find n_dim either from `destructor.n_dim_`, `destructor.density_.n_dim_`, or
+def get_n_features(destructor, try_destructor_sample=False):
+    """Attempt to find n_features either from `destructor.n_features_`, `destructor.density_.n_features_`, or
     via density sampling `destructor.density_.sample(1, random_state=0).shape[1]`.
     If `try_destructor_sample=True`, additionally attempt 
     `destructor.sample(1, random_state=0).shape[1]`. This option could cause infinite recursion
-    since `DestructorMixin` uses `get_n_dim(destructor)` in order to sample but this can be avoided
-    if the destructor reimplements sample without `get_n_dim()` such as in the
+    since `DestructorMixin` uses `get_n_features(destructor)` in order to sample but this can be avoided
+    if the destructor reimplements sample without `get_n_features()` such as in the
     `CompositeDestructor`.
     """
-    if hasattr(destructor, 'n_dim_'):
-        n_dim = destructor.n_dim_
-    elif hasattr(destructor, 'density_') and hasattr(destructor.density_, 'n_dim_'):
-        n_dim = destructor.density_.n_dim_
+    if hasattr(destructor, 'n_features_'):
+        n_features = destructor.n_features_
+    elif hasattr(destructor, 'density_') and hasattr(destructor.density_, 'n_features_'):
+        n_features = destructor.density_.n_features_
     elif hasattr(destructor, 'density_') and hasattr(destructor.density_, 'sample'):
-        warnings.warn('Because `destructor.n_dim_` does not exist and'
-                      ' `destructor.density_.n_dim_` does not exist'
+        warnings.warn('Because `destructor.n_features_` does not exist and'
+                      ' `destructor.density_.n_features_` does not exist'
                       ' we attempt to determine the dimension by sampling'
                       ' from destructor.density_, which may be computationally'
-                      ' demanding.  Add destructor.n_dim_ to reduce time if necessary.'
+                      ' demanding.  Add destructor.n_features_ to reduce time if necessary.'
                       , _NumDimWarning)
-        n_dim = np.array(destructor.density_.sample(n_samples=1, random_state=0)).shape[1]
+        n_features = np.array(destructor.density_.sample(n_samples=1, random_state=0)).shape[1]
     else:
         if try_destructor_sample:
             # Attempt to sample from destructor
             if hasattr(destructor, 'sample'):
                 try:
-                    n_dim = np.array(fitted_destructor.sample(n_samples=1, random_state=0)).shape[1]
+                    n_features = np.array(fitted_destructor.sample(n_samples=1, random_state=0)).shape[1]
                 except RuntimeError:
                     err = True
                 else:
@@ -98,15 +98,15 @@ def get_n_dim(destructor, try_destructor_sample=False):
                 err = True
             if err:
                 raise RuntimeError(
-                    'Could not find n_dim in fitted_destructor.n_dim_, fitted_destructor.density_.n_dim_, '
+                    'Could not find n_features in fitted_destructor.n_features_, fitted_destructor.density_.n_features_, '
                     'fitted_destructor.density_.sample(1).shape[1], or fitted_destructor.sample(1).shape[1]. '
                 )
         else:
-            raise RuntimeError('Could not find n_dim in destructor or density.'
-                               ' Checked destructor.n_dim_, destructor.density_.n_dim_, and'
+            raise RuntimeError('Could not find n_features in destructor or density.'
+                               ' Checked destructor.n_features_, destructor.density_.n_features_, and'
                                ' attempted to sample from destructor.density_ to determine'
-                               ' n_dim but failed in all cases.')
-    return n_dim
+                               ' n_features but failed in all cases.')
+    return n_features
 
 
 class BoundaryWarning(DataConversionWarning):
@@ -119,10 +119,10 @@ class BoundaryWarning(DataConversionWarning):
 
 class _NumDimWarning(UserWarning):
     """Warning that we have to use 1 sample in order to determine the
-    number of dimensions. (Because `trans.n_dim_` does not exist and
-    ``trans.density_.n_dim_` does not exist we attempt to determine the
+    number of dimensions. (Because `trans.n_features_` does not exist and
+    ``trans.density_.n_features_` does not exist we attempt to determine the
     dimension by sampling from self.density_, which may be
-    computationally demanding.  Add self.n_dim_ to reduce time if
+    computationally demanding.  Add self.n_features_ to reduce time if
     necessary.)
     """
 
@@ -197,7 +197,7 @@ class IdentityDestructor(BaseDensityDestructor):
         return np.array([0, 1])
 
     def _check_dim(self, X):
-        if X.shape[1] != self.density_.n_dim_:
+        if X.shape[1] != self.density_.n_features_:
             raise ValueError('Dimension of input does not match dimension of the original '
                              'training data.')
 
@@ -211,13 +211,13 @@ class UniformDensity(BaseEstimator, ScoreMixin):
     def fit(self, X, y=None):
         X = check_array(X)
         X = check_X_in_interval(X, get_support_or_default(self))
-        self.n_dim_ = X.shape[1]
+        self.n_features_ = X.shape[1]
         return self
 
     def sample(self, n_samples=1, random_state=None):
         self._check_is_fitted()
         generator = check_random_state(random_state)
-        return generator.rand(n_samples, self.n_dim_)
+        return generator.rand(n_samples, self.n_features_)
 
     def score_samples(self, X, y=None):
         self._check_is_fitted()
@@ -229,13 +229,13 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         return np.array([0, 1])
 
     def _check_is_fitted(self):
-        check_is_fitted(self, ['n_dim_'])
+        check_is_fitted(self, ['n_features_'])
 
 
 def get_implicit_density(fitted_destructor, copy=False):
     """Returns an implicit density based on a fitted destructor.
     This must be handled carefully to enable proper sklearn cloning and check_destructor() tests that
-    require n_dim to be available.
+    require n_features to be available.
     If copy=True, the new destructor will create a deep copy of the fitted destructor rather than just 
     copying a reference to it.
     """
@@ -247,7 +247,7 @@ def get_implicit_density(fitted_destructor, copy=False):
 def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
     """Returns the inverse of a fitted canonical destructor.
     This must be handled carefully to enable proper sklearn cloning and check_destructor() tests that
-    require n_dim to be available.
+    require n_features to be available.
     If copy=True, the new destructor will create a deep copy of the fitted destructor rather than just 
     copying a reference to it.
     """
@@ -281,7 +281,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         else:
             self.fitted_canonical_destructor_ = clone(self.canonical_destructor).fit(X, y)
 
-        self.n_dim_ = get_n_dim(self.fitted_canonical_destructor_)
+        self.n_features_ = get_n_features(self.fitted_canonical_destructor_)
         self.density_ = get_implicit_density(self, copy=False)  # Copy has already occurred above if needed
         return self
 

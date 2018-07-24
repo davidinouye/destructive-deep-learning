@@ -83,7 +83,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         # Save important variables
         self.groups_ = groups
         self.group_destructors_ = group_destructors
-        self.n_dim_ = X.shape[1]
+        self.n_features_ = X.shape[1]
 
         Z = np.ascontiguousarray(Z)  # Convert back to standard C-order array
         return Z

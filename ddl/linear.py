@@ -70,7 +70,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         except AttributeError:
             try:
                 # For PCA, ICA and possibly other decomposition methods
-                # shape is (n_components, n_dim)
+                # shape is (n_components, n_features)
                 coef = lin_est.components_
             except AttributeError:
                 raise ValueError('After fitting, the linear estimator does not have attribute '
@@ -78,7 +78,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         # logger.debug(coef)
 
         # Create matrix object for projections
-        # shape is (n_dim,) or (n_components, n_dim) or
+        # shape is (n_features,) or (n_components, n_features) or
         coef = np.array(coef)
         if len(coef.shape) == 1 or coef.shape[0] == 1:
             w = coef.ravel()  # Make vector
@@ -102,7 +102,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
                     scale = w_norm
                 A = _HouseholderWithScaling(u, scale=scale, copy=False)
         elif coef.shape[0] != coef.shape[1]:
-            raise NotImplementedError('Projectors not implemented for 1 < n_components < n_dim. '
+            raise NotImplementedError('Projectors not implemented for 1 < n_components < n_features. '
                                       'Probably a series of Householder reflectors would be '
                                       'computationally the best.')
         else:

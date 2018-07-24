@@ -69,7 +69,7 @@ def check_density(dens, random_state=0):
 
     # Sample based on support
     n = 10
-    d = _get_support_n_dim(support)
+    d = _get_support_n_features(support)
     X_train = _sample_demo(support, n, d, random_state=rng)
     X_test = _sample_demo(support, n, d, random_state=rng)
 
@@ -97,7 +97,7 @@ def check_density(dens, random_state=0):
         # Check single sample
         X_1 = dens.sample(1, random_state=rng)
         if len(np.array(X_1).shape) != 2:
-            raise TypeError('A single sample should still return a 2D matrix with shape (1,n_dim).')
+            raise TypeError('A single sample should still return a 2D matrix with shape (1,n_features).')
 
     score_vec = None
     if has_method(dens, 'score_samples'):
@@ -230,7 +230,7 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
 
     # Call get_domain and sample some demo data
     n = 10
-    d = _get_domain_n_dim(domain)
+    d = _get_domain_n_features(domain)
     X_train = _sample_demo(domain, n, d, random_state=rng)
     X_test = _sample_demo(domain, n, d, random_state=rng)
 
@@ -337,7 +337,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
         # Sample demo data based on domain
         trans_temp = clone(trans)
         domain = get_domain_or_default(trans_temp)
-        d = _get_domain_n_dim(domain)
+        d = _get_domain_n_features(domain)
         n_train = n
         X_temp = _sample_demo(domain, n_train, d, random_state=rng)
 
@@ -353,7 +353,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
                                ' so unable to continue with uniformability test.')
 
     # Extract number of dimensions
-    n_dim = np.array(true_density.sample(1, random_state=rng)).shape[1]
+    n_features = np.array(true_density.sample(1, random_state=rng)).shape[1]
 
     # Fit transformer ideally via `fit_from_density` if it exists
     if has_method(trans, 'fit_from_density'):
@@ -375,7 +375,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
     def _transformer_emd(_trans, _true_density):
         # Sample from true densities
         X_true = _true_density.sample(n, random_state=rng)
-        U_true = rng.rand(n, n_dim)
+        U_true = rng.rand(n, n_features)
 
         # Apply transforms to get (approximate) samples from the other distribution
         X_trans = _trans.inverse_transform(U_true)
@@ -386,7 +386,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
         _assert_X_in_interval(U_trans, np.array([0, 1]))
 
         # Check that inverse_transform domain is 0, 1
-        _assert_unit_domain(rng, _trans.inverse_transform, n_dim=n_dim)
+        _assert_unit_domain(rng, _trans.inverse_transform, n_features=n_features)
 
         # Compute emd between the transformed samples and independent samples from the true
         # distribution
@@ -403,7 +403,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
 
     # Get samples of emd scores to compute a percentile
     X_emd_true_vec = _emd_sample(true_density, n, k, random_state=rng)
-    U_emd_true_vec = _emd_sample(UniformDensity().fit(np.zeros((1, n_dim))), n, k, random_state=rng)
+    U_emd_true_vec = _emd_sample(UniformDensity().fit(np.zeros((1, n_features))), n, k, random_state=rng)
 
     # Check whether these look like good samples
     def _p_val(val, true_vec):
@@ -432,7 +432,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
     if X_avg_p_val <= avg_p_threshold:
         n = 1000
         X_true = true_density.sample(n, random_state=rng)
-        U_true = rng.rand(n, n_dim)
+        U_true = rng.rand(n, n_features)
         X_trans = trans.inverse_transform(U_true)
         U_trans = trans.transform(X_true)
 
@@ -470,7 +470,7 @@ def check_invertibility(trans, random_state=0):
     rng = check_random_state(random_state)
     domain = get_domain_or_default(trans, warn=True)
     n = 100
-    d = _get_support_n_dim(domain)
+    d = _get_support_n_features(domain)
     X_train = _sample_demo(domain, n, d, random_state=rng)
     trans.fit(X_train)
 
@@ -567,7 +567,7 @@ def check_identity_element(trans, random_state=0):
     rng = check_random_state(random_state)
     domain = get_domain_or_default(trans, warn=True)
     n = 1000
-    d = _get_support_n_dim(domain)
+    d = _get_support_n_features(domain)
 
     # Sample uniform samples in order to fit destructor
     X_train = rng.rand(n, d)
@@ -612,13 +612,13 @@ class IdentityElementError(DestructorError):
     pass
 
 
-def _sample_demo(support, n_samples, n_dim, random_state=None):
+def _sample_demo(support, n_samples, n_features, random_state=None):
     """Sample demo dataset based on support of density."""
     # Update to the number of dimensions as needed
     assert n_samples > 2, 'n_samples should be greater than 2 so that at' \
                           'least endpoints can be given supplied'
     rng = check_random_state(random_state)
-    support = check_domain(support, n_dim)
+    support = check_domain(support, n_features)
     X = np.vstack((
         rng.randn(n_samples) * 10
         if s[0] == -np.inf and s[1] == np.inf
@@ -636,7 +636,7 @@ def _sample_demo(support, n_samples, n_dim, random_state=None):
                          'right-bounded, and bounded are implemented.')
     if np.any(np.isnan(X)):
         raise ValueError('Samples have NaN values.')
-    if np.any(X.shape != np.array([n_samples, n_dim])):
+    if np.any(X.shape != np.array([n_samples, n_features])):
         raise RuntimeError('Demo data is different than specified shape.')
     return X
 
@@ -705,27 +705,27 @@ def _check_score_method(est, score_vec, X_sample):
 
 
 def _check_support(support):
-    """Check support has dimension either (2,) or (n_dim,2)."""
+    """Check support has dimension either (2,) or (n_features,2)."""
     support = np.array(support)
     if len(support.shape) == 1 and support.shape[0] == 2:
         return support
     elif len(support.shape) == 2 and support.shape[1] == 2:
         return support
     else:
-        raise ValueError('The shape of support should either be (2,) or (n_dim,2) but shape ')
+        raise ValueError('The shape of support should either be (2,) or (n_features,2) but shape ')
 
 
-def _get_support_n_dim(support, default_n_dim=2):
-    """Gets the n_dim based on support or returns the default"""
+def _get_support_n_features(support, default_n_features=2):
+    """Gets the n_features based on support or returns the default"""
     support = _check_support(support)
     if len(support.shape) == 1:
-        return default_n_dim
+        return default_n_features
     elif len(support.shape) == 2:
         return support.shape[0]
 
 
 # Alias since domain and support are handled the same
-_get_domain_n_dim = _get_support_n_dim
+_get_domain_n_features = _get_support_n_features
 
 
 def _relative_diff(orig, back):
@@ -806,16 +806,16 @@ def _assert_X_in_interval(X, interval):
     return _assert_no_warnings(check_X_in_interval, X, interval)
 
 
-def _assert_unit_domain(rng, func, n_dim=1):
+def _assert_unit_domain(rng, func, n_features=1):
     # Setup test cases
     X_good = [
-        a * np.ones((10, n_dim))
+        a * np.ones((10, n_features))
         for a in (0, 1, 0.5)
     ]
-    X_good.append(rng.rand(1000, n_dim))
+    X_good.append(rng.rand(1000, n_features))
 
     X_bad = [
-        a * np.ones((10, n_dim))
+        a * np.ones((10, n_features))
         for a in (2, 1.1, -0.1, -1, -2, -1e5, 1e5)
     ]
 

@@ -14,7 +14,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from sklearn.model_selection import KFold, check_cv
 from sklearn.exceptions import NotFittedError
 
-from .base import DestructorMixin, ScoreMixin, get_implicit_density, get_n_dim
+from .base import DestructorMixin, ScoreMixin, get_implicit_density, get_n_features
 from .independent import IndependentDestructor, IndependentInverseCdf
 from .utils import make_interior_probability
 # noinspection PyProtectedMember
@@ -103,13 +103,13 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def sample(self, n_samples=1, random_state=None):
-        """Nearly the same as `DestructorMixin.sample` but n_dim is found from first 
+        """Nearly the same as `DestructorMixin.sample` but n_features is found from first 
         fitted destructor to avoid recursion.
         """
         self._check_is_fitted()
         rng = check_random_state(random_state)
-        n_dim = get_n_dim(self.fitted_destructors_[-1])
-        U = rng.rand(n_samples, n_dim)
+        n_features = get_n_features(self.fitted_destructors_[-1])
+        U = rng.rand(n_samples, n_features)
         X = self.inverse_transform(U)
         return X
 

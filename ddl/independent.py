@@ -89,12 +89,12 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         self.univariate_estimators = univariate_estimators
 
     def fit(self, X, y=None, **fit_params):
-        def _check_univariate(estimators, n_dim):
+        def _check_univariate(estimators, n_features):
             if estimators is None:
-                return [IndependentDensity._get_default_univariate() for _ in range(n_dim)]
+                return [IndependentDensity._get_default_univariate() for _ in range(n_features)]
             elif len(np.array(estimators).shape) == 0:
-                return [estimators for _ in range(n_dim)]
-            elif len(estimators) == n_dim:
+                return [estimators for _ in range(n_features)]
+            elif len(estimators) == n_features:
                 return estimators
             else:
                 try:
@@ -103,7 +103,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
                     raise ValueError('`univariate_estimators` should be either None, a single '
                                      'estimator, or an array-like of estimators.')
                 else:
-                    return list(itertools.islice(temp, n_dim))
+                    return list(itertools.islice(temp, n_features))
         X = check_array(X)
         est_arr = _check_univariate(self.univariate_estimators, X.shape[1])
 
@@ -112,7 +112,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
             clone(est).fit(np.reshape(x_col, (-1, 1)))
             for est, x_col in zip(est_arr, X.transpose())
         ])
-        self.n_dim_ = len(self.univariate_densities_)
+        self.n_features_ = len(self.univariate_densities_)
         return self
 
     def sample(self, n_samples=1, random_state=None):
@@ -142,7 +142,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
     def marginal_density(self, marginal_idx):
         marginal_density = clone(self)
         marginal_density.univariate_densities_ = self.univariate_densities_[marginal_idx]
-        marginal_density.n_dim_ = len(marginal_idx)
+        marginal_density.n_features_ = len(marginal_idx)
         # noinspection PyProtectedMember
         marginal_density._check_is_fitted()
         return marginal_density
@@ -175,7 +175,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
             return np.array([_unwrap_support(dens) for dens in self.univariate_densities_])
 
     def _check_is_fitted(self):
-        check_is_fitted(self, ['univariate_densities_', 'n_dim_'])
+        check_is_fitted(self, ['univariate_densities_', 'n_features_'])
 
     @staticmethod
     def _get_default_univariate():
@@ -267,11 +267,11 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
             for d in self.fitted_densities_
         ])
 
-    def _get_densities_or_default(self, fitted_densities, n_dim):
+    def _get_densities_or_default(self, fitted_densities, n_features):
         if fitted_densities is None:
-            return np.array([STANDARD_NORMAL_DENSITY for _ in range(n_dim)])
+            return np.array([STANDARD_NORMAL_DENSITY for _ in range(n_features)])
         elif len(np.array(fitted_densities).shape) == 0:
-            return np.array([fitted_densities for _ in range(n_dim)])
+            return np.array([fitted_densities for _ in range(n_features)])
         else:
             return np.array(fitted_densities)
 
