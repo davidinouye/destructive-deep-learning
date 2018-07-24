@@ -10,7 +10,7 @@ from sklearn.base import clone
 from sklearn.model_selection import check_cv
 from sklearn.utils.validation import check_array
 
-from .base import IdentityDestructor, CompositeDestructor, get_implicit_density
+from .base import CompositeDestructor, IdentityDestructor, get_implicit_density
 
 # noinspection PyProtectedMember
 
