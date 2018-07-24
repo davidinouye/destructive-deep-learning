@@ -19,14 +19,14 @@ try:
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
             dict_obj = cPickle.load(f)
-        return (dict_obj['data'], dict_obj['labels'])
+        return dict_obj['data'], dict_obj['labels']
 
 except ImportError:
     import pickle
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
             dict_obj = pickle.load(f, encoding='bytes')
-        return (dict_obj[b'data'], dict_obj[b'labels'])
+        return dict_obj[b'data'], dict_obj[b'labels']
 
 # From MAF code
 MNIST_ALPHA = 1.0e-6
@@ -166,7 +166,7 @@ def _preprocess_mnist(X, y, rng):
     X = _logit_transform(X, MNIST_ALPHA)
     # One hot encode labels
     #y = _one_hot_encode(y, 10).astype(np.int64)
-    return (X, y.astype(np.int64))
+    return X, y.astype(np.int64)
 
 
 def _preprocess_cifar10(X, y, flip, rng):
@@ -180,7 +180,7 @@ def _preprocess_cifar10(X, y, flip, rng):
         y = np.hstack([y, y])
     # One hot encode
     #y = _one_hot_encode(y, 10)
-    return (X, y.astype(np.int64))
+    return X, y.astype(np.int64)
 
 
 #############################################################
@@ -267,6 +267,7 @@ def _get_maf_original(data_name):
             '..', '..', 'maf'
         )
         sys.path.append(maf_path)
+        # noinspection PyPackageRequirements
         import datasets  # maf/datasets/*
 
         # Reset datasets root directory relative to this file

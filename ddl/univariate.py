@@ -363,10 +363,6 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
                                  ' scalar indicating percentage extension of domain')
             return _domain
 
-    def _check_is_fitted(self):
-        check_is_fitted(self, ['bounds_', 'x_query_', 'query_width_',
-                               'pdf_query_', 'cdf_query_'])
-
     def _normalize_f_query(self, f_query, query_width):
         # noinspection PyAugmentAssignment
         f_query = f_query/np.sum(f_query)  # Normalize to 1

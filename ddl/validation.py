@@ -440,6 +440,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
         X_trans = trans.inverse_transform(U_true)
         U_trans = trans.transform(X_true)
 
+        # noinspection PyPackageRequirements
         import matplotlib.pyplot as plt
         axes = plt.subplots(2, 2)[1]
         for ax, title, X in zip(axes.ravel(),
@@ -499,6 +500,7 @@ def check_invertibility(trans, random_state=0):
             logger.debug(middle)
             logger.debug(back)
 
+            # noinspection PyPackageRequirements
             import matplotlib.pyplot as plt
             n = 1000
             X_true = trans.sample(n_samples=n)

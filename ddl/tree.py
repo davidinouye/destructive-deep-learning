@@ -308,7 +308,7 @@ def _relative_to_absolute_probability(tree_depth_iter, prob):
         node.value = np.nan
 
 
-class _ArrayedTreeWrapper():
+class _ArrayedTreeWrapper:
     """A simple wrapper for an array-based tree like in scikit-learn.
     Note this is not an estimator but just a good wrapper object to expose iterators etc.
     Fitting will need to take this object or iterator as input.
@@ -372,7 +372,7 @@ class _ArrayedTreeWrapper():
                 node_stack.append((cur_node.left_child_index, left_domain))
 
 
-class _SklearnNode():
+class _SklearnNode:
     # Need to mutate actual tree object so keep reference to tree object
     def __init__(self, tree, node_values, node_destructors, node_i, domain):
         # Create list of values instead of matrix of values
@@ -398,10 +398,6 @@ class _SklearnNode():
             return False
 
     # Read only properties
-    @property
-    def domain(self):
-        return self._domain
-    
     @property
     def feature(self):
         return self._tree.feature[self._node_i]

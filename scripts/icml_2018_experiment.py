@@ -342,6 +342,7 @@ def _get_experiment_filename_and_label(data_name, model_name=None, model_kwargs=
 
 # Add fast sanity-check tests for mnist dataset
 try:
+    # noinspection PyPackageRequirements
     import pytest
 except ImportError:
     pass

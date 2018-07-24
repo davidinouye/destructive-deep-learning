@@ -12,18 +12,23 @@ terms of the 3-clause BSD license.  You should have received a copy of the
 http://www.opensource.org/licenses/BSD-3-Clause for more information.
 """
 import numpy as np
+# noinspection PyPackageRequirements
 import pandas as pd
 
 # The CategoricalDtype class has moved multiple times, so this insanity is
 # necessary to import the right version.
 if int(pd.__version__.split('.')[0]) > 0 or \
    int(pd.__version__.split('.')[1]) >= 20:
+  # noinspection PyPackageRequirements
   from pandas.api.types import CategoricalDtype
 elif int(pd.__version__.split('.')[1]) >= 18:
+  # noinspection PyPackageRequirements
   from pandas.types.dtypes import CategoricalDtype
 elif int(pd.__version__.split('.')[1]) == 17:
+  # noinspection PyPackageRequirements
   from pandas.core.dtypes import CategoricalDtype
 elif int(pd.__version__.split('.')[1]) >= 15:
+  # noinspection PyPackageRequirements
   from pandas.core.common import CategoricalDtype
 
 # We need a unicode type, but on python3 we don't have it.
@@ -48,7 +53,7 @@ def to_matrix(x, dtype=np.double, copy=False):
       not hasattr(x, '__array__'):
     raise TypeError("given argument is not array-like")
 
-  if (isinstance(x, np.ndarray) and x.dtype == dtype and x.flags.c_contiguous):
+  if isinstance(x, np.ndarray) and x.dtype == dtype and x.flags.c_contiguous:
     if copy: # Copy the matrix if required.
       return x.copy("C"), True
     else:
@@ -73,9 +78,9 @@ def to_matrix_with_info(x, dtype, copy=False):
 
     # Copy the matrix if needed.
     if copy:
-      return (x.copy(order="C"), True, d)
+      return x.copy(order="C"), True, d
     else:
-      return (x, False, d)
+      return x, False, d
 
   if isinstance(x, pd.DataFrame) or isinstance(x, pd.Series):
     # It's a pandas dataframe.  So we need to see if any of the dtypes are
@@ -90,7 +95,7 @@ def to_matrix_with_info(x, dtype, copy=False):
         # We can just return the matrix as-is; it's all numeric.
         t = to_matrix(x, dtype=dtype, copy=copy)
         d = np.zeros([x.shape[1]], dtype=np.bool)
-        return (t[0], t[1], d)
+        return t[0], t[1], d
 
     if np.dtype(str) in dtype_array or np.dtype(unicode) in dtype_array:
       raise TypeError('cannot convert matrices with string types')
@@ -128,7 +133,7 @@ def to_matrix_with_info(x, dtype, copy=False):
     # We'll have to force the second part of the tuple (whether or not to take
     # ownership) to true.
     t = to_matrix(y.apply(pd.to_numeric), dtype=dtype)
-    return (t[0], True, d)
+    return t[0], True, d
 
   if isinstance(x, list):
     # Get the number of dimensions.
@@ -150,7 +155,7 @@ def to_matrix_with_info(x, dtype, copy=False):
       alias = True
       x[0] = oldval
 
-    return (out, not alias, d)
+    return out, not alias, d
 
   # If we got here, the type is not known.
   raise TypeError("given matrix is not a numpy ndarray or pandas DataFrame or "\

@@ -10,6 +10,7 @@ import time
 import warnings
 
 import numpy as np
+# noinspection PyPackageRequirements
 import pytest
 from sklearn.base import clone
 from sklearn.decomposition import PCA

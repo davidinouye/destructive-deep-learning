@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 
 import numpy as np
+# noinspection PyPackageRequirements
 import pytest
 from sklearn.utils import check_random_state
 
