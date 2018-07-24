@@ -194,7 +194,7 @@ def _get_inverse_logit_destructor(data_name):
                 independent_density=IndependentDensity(
                     univariate_estimators=ScipyUnivariateDensity(
                         scipy_rv=scipy.stats.uniform,
-                        scipy_fit_kwargs=dict(floc=MNIST_ALPHA, fscale=1 - 2 * MNIST_ALPHA)
+                        scipy_fit_kwargs=dict(floc=alpha, fscale=1 - 2 * alpha)
                     )
                 )
             )
