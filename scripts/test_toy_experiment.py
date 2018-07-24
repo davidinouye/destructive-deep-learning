@@ -1,4 +1,4 @@
-# Simple and fast (but not comprehensive) tests 
+# Simple and fast (but not comprehensive) tests
 # to sanity check that ICML 2018 experiments will run the same
 # *** Mostly copied from demo_toy_experiment.py notebook ***
 from __future__ import division, print_function
@@ -214,9 +214,7 @@ def test_toy_destructor(destructor_name):
     n_samples = 2 * n_train
     D = make_toy_data(data_name, n_samples=n_samples, random_state=random_state)
     X_train = D.X[:n_train]
-    y_train = D.y[:n_train] if D.y is not None else None
     X_test = D.X[n_train:]
-    y_test = D.y[n_train:] if D.y is not None else None
 
     # noinspection PyShadowingNames
     def _fit_and_score(data_name, destructor, destructor_name, n_train, random_state=0):

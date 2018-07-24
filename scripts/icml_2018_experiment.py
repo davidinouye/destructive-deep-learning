@@ -53,8 +53,6 @@ def run_experiment(data_name, model_name, model_kwargs=None):
     data_dict = get_maf_data(data_name)
     X_train, X_validation, X_test = (
         data_dict['X_train'], data_dict['X_validation'], data_dict['X_test'])
-    if 'perc_train' in model_kwargs:
-        X_train, X_validation = _perc_resample(model_kwargs['perc_train'])
     n_train, n_validation, n_test = (_X.shape[0] for _X in (X_train, X_validation, X_test))
 
     # Setup cv and refit parameters
