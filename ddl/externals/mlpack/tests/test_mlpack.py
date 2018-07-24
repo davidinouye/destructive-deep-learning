@@ -10,6 +10,7 @@ from ddl.tree import TreeDensity, TreeDestructor
 from ddl.validation import check_destructor
 
 try:
+    # noinspection PyProtectedMember
     from ddl.externals.mlpack import _det as det
 except ImportError:
     import warnings

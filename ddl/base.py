@@ -11,6 +11,7 @@ from sklearn.exceptions import DataConversionWarning, NotFittedError
 from sklearn.utils import check_array, check_random_state
 from sklearn.utils.validation import check_is_fitted
 
+# noinspection PyProtectedMember
 from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default
 
 logger = logging.getLogger(__name__)

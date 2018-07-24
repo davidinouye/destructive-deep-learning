@@ -470,12 +470,12 @@ class _SklearnNode():
             warnings.warn(BoundaryWarning('Numerical imprecision or faulty algorithm because `threshold` should '
                           'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.' 
                           % (self.domain[self.feature, 0], x, self.domain[self.feature, 0])))
-            x = x+1e-15 
+            x += 1e-15
         elif x >= self.domain[self.feature, 1]:
             warnings.warn(BoundaryWarning('Numerical imprecision or faulty algorithm because `threshold` should '
                           'never be the same as the edge of the domain which is %g, changing from %g to %g+1e-15.' 
                           % (self.domain[self.feature, 1], x, self.domain[self.feature, 1])))
-            x = x-1e-15 
+            x -= 1e-15
         self._tree.threshold[self._node_i] = x 
         
     @property

@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
-import urllib.request
+from sklearn.externals.six.moves import urllib
 
 import numpy
 from Cython.Build import cythonize
