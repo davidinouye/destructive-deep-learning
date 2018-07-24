@@ -23,7 +23,7 @@ def build_mlpack():
     build_path = os.path.join(repo_path, 'build')
 
     # Download and extract
-    if not os.path.isdir(repo_path)
+    if not os.path.isdir(repo_path):
         print('Downloading mlpack source')
         if not os.path.isfile(tar_file_path):
             urllib.request.urlretrieve(tar_url, tar_file_path)
