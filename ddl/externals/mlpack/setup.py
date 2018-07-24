@@ -34,38 +34,36 @@ def build_mlpack():
         tar.close()
         os.remove(tar_file_path)
 
-    # Add flag needed for static library linking
-    print('Prepending flag for PIC')
-    with open(cmake_file_path, 'r') as f:
-        cmake_file_str = f.read()
-    with open(cmake_file_path, 'w') as f:
-        f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
+    if not os.path.isdir(build_path):
+        # Add flag needed for static library linking
+        print('Prepending flag for PIC')
+        with open(cmake_file_path, 'r') as f:
+            cmake_file_str = f.read()
+        with open(cmake_file_path, 'w') as f:
+            f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
 
-    # Setup build directory and run cmake
-    #print('Removing old build directory if necessary and creating new build directory')
-    print('Attempting to create build directory if it does not exist')
-    #shutil.rmtree(build_path, ignore_errors=True)
-    try:
+        # Setup build directory and run cmake
+        #print('Removing old build directory if necessary and creating new build directory')
+        print('Attempting to create build directory if it does not exist')
+        #shutil.rmtree(build_path, ignore_errors=True)
         os.mkdir(build_path)
-    except OSError:
-        pass
 
-    print('Running cmake')
-    orig_cwd = os.getcwd()
-    os.chdir(build_path)
-    if sys.platform == 'darwin':
-        print('Exporting environment variables needed for cmake in Mac OS')
-        os.environ['CC'] = '/usr/local/opt/llvm/bin/clang'
-        os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
-        os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
-        os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
-        subprocess.call(['cmake', 
-                         '-D', 'BUILD_SHARED_LIBS=OFF', 
-                         '-D', 'FORCE_CXX11=ON',
-                         '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
-                         '../'])
-    else:
-        subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
+        print('Running cmake')
+        orig_cwd = os.getcwd()
+        os.chdir(build_path)
+        if sys.platform == 'darwin':
+            print('Exporting environment variables needed for cmake in Mac OS')
+            os.environ['CC'] = '/usr/local/opt/llvm/bin/clang'
+            os.environ['CXX'] = '/usr/local/opt/llvm/bin/clang++'
+            os.environ['LDFLAGS'] = '-L/usr/local/opt/llvm/lib'
+            os.environ['CPPFLAGS'] = '-I/usr/local/opt/llvm/include'
+            subprocess.call(['cmake', 
+                             '-D', 'BUILD_SHARED_LIBS=OFF', 
+                             '-D', 'FORCE_CXX11=ON',
+                             '-D', 'CMAKE_CXX_FLAGS=-std=c++11',
+                             '../'])
+        else:
+            subprocess.call(['cmake', '-D', 'BUILD_SHARED_LIBS=OFF', '../'])
 
     # Actually build mlpack
     print('Building mlpack')
