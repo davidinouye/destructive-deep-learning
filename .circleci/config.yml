@@ -25,13 +25,14 @@ jobs:
 
       # Download and cache dependencies
       - restore_cache:
+          name: Restore pip dependencies cache
           keys:
           - v0-1-0-dependencies-{{ checksum "setup.py" }}
           # fallback to using the latest cache if no exact match is found
           - v0-1-0-dependencies-
 
       - run:
-          name: install dependencies
+          name: Install pip dependencies
           command: |
             python -m venv venv
             . venv/bin/activate
@@ -50,18 +51,20 @@ jobs:
             pip install scikit-learn
 
       - save_cache:
+          name: Save pip dependencies cache
           paths:
             - ./venv
           key: v0-1-0-dependencies-{{ checksum "setup.py" }}
 
       - restore_cache:
+          name: Restore MNIST data cache
           keys:
           - data-mnist-{{ checksum "scripts/maf_data.py" }}
           # fallback to using the latest cache if no exact match is found
           - data-mnist-
 
       - run:
-          name: get mnist data
+          name: Load MNIST data
           command: |
             . venv/bin/activate
             # calls setup.py and downloads necessary packages if needed
@@ -70,16 +73,18 @@ jobs:
             make data/mnist
 
       - save_cache:
+          name: Save MNIST data cache
           paths:
             - ./data
           key: data-mnist-{{ checksum "scripts/maf_data.py" }}
 
       - restore_cache:
+          name: Restore mlpack build directory
           keys:
           - mlpack-2-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
 
       - run:
-          name: install ddl
+          name: Build ddl package
           command: |
             . venv/bin/activate
             # calls setup.py and downloads necessary packages if needed
@@ -89,13 +94,13 @@ jobs:
             make # Build mlpack extensions in-place
 
       - save_cache:
+          name: Save mlpack build directory
           paths:
             - ./ddl/externals/mlpack/mlpack-mlpack-3.0.2
           key: mlpack-2-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
         
-      # run tests!
       - run:
-          name: run tests
+          name: Run tests
           command: |
             . venv/bin/activate
             make test
