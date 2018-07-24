@@ -33,7 +33,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
+            python -m venv venv
             . venv/bin/activate
             # Needed to install POT correctly below
             pip install setuptools
