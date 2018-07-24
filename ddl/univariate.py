@@ -7,7 +7,7 @@ from abc import abstractmethod
 import numpy as np
 import scipy.stats
 from scipy.interpolate import interp1d
-from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
+from sklearn.base import BaseEstimator, clone
 from sklearn.exceptions import DataConversionWarning, NotFittedError
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity

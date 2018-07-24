@@ -12,7 +12,7 @@ SETUPTOOLS_COMMANDS = {'develop', 'release', 'bdist_egg', 'bdist_rpm', 'bdist_wi
                        'install_egg_info', 'build_sphinx', 'egg_info', 'easy_install', 'upload',
                        'bdist_wheel', '--single-version-externally-managed'}
 if SETUPTOOLS_COMMANDS.intersection(sys.argv):
-    import setuptools
+    pass
 
 
 def configuration(parent_package='', top_path=None):

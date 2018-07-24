@@ -2,10 +2,8 @@ import argparse
 import errno
 import gzip
 import os
-import shutil
 import sys
 import tarfile
-import tempfile
 import time
 import urllib
 import warnings

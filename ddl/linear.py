@@ -5,20 +5,17 @@ import warnings
 
 import numpy as np
 import scipy.stats
-from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.decomposition import PCA, FastICA
+from sklearn.decomposition import PCA
 from sklearn.exceptions import DataConversionWarning
-from sklearn.preprocessing import QuantileTransformer
 from sklearn.utils import check_random_state
-from sklearn.utils.extmath import row_norms
-from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import CompositeDestructor, ScoreMixin, get_implicit_density
 from .independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
 from .univariate import ScipyUnivariateDensity
 # noinspection PyProtectedMember
-from .utils import _INF_SPACE, _UNIT_SPACE
+from .utils import _INF_SPACE
 
 logger = logging.getLogger(__name__)
 

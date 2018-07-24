@@ -1,13 +1,9 @@
 from __future__ import division, print_function
 
-import numpy as np
 # noinspection PyPackageRequirements
-import pytest
-from sklearn.base import clone
 from sklearn.decomposition import PCA
 from sklearn.utils import check_random_state
 
-import ddl
 from ddl.autoregressive import AutoregressiveDestructor
 from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canonical_destructor
 from ddl.deep import DeepDestructor, DeepDestructorCV
@@ -15,7 +11,7 @@ from ddl.independent import IndependentDensity, IndependentDestructor
 from ddl.linear import LinearProjector
 from ddl.mixture import GaussianMixtureDensity
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
-from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
+from ddl.univariate import HistogramUnivariateDensity
 from ddl.validation import check_density, check_destructor
 
 

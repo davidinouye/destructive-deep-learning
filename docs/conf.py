@@ -19,7 +19,7 @@
 import os
 import sys
 
-# Import package and create api file in generated 
+# Import package and create api file in generated
 import ddl
 from create_api import create_api_rst
 

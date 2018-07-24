@@ -9,9 +9,7 @@ import warnings
 import numpy as np
 import scipy.stats  # Needed for standard error of the mean scipy.stats.sem
 from sklearn.base import clone
-from sklearn.decomposition import PCA, FastICA
-from sklearn.model_selection import ShuffleSplit
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.decomposition import PCA
 
 from ddl.base import CompositeDestructor
 from ddl.deep import DeepDestructorCV

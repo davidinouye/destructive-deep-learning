@@ -15,7 +15,7 @@ from .base import AutoregressiveMixin, ScoreMixin
 from .independent import IndependentDensity, IndependentDestructor
 from .univariate import UnivariateDensity
 # noinspection PyProtectedMember
-from .utils import _INF_SPACE, _UNIT_SPACE, make_interior_probability
+from .utils import make_interior_probability
 
 
 class _JointGaussianCopulaDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):

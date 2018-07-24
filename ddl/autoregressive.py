@@ -1,21 +1,13 @@
 from __future__ import division, print_function
 
-from abc import abstractmethod
-
 import numpy as np
-import scipy.stats
-from scipy.interpolate import interp1d
-from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
+from sklearn.base import clone
 from sklearn.exceptions import NotFittedError
-from sklearn.mixture import GaussianMixture
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_random_state
-from sklearn.utils.validation import check_array, column_or_1d
+from sklearn.utils.validation import check_array
 
-from .base import BaseDensityDestructor, ScoreMixin
+from .base import BaseDensityDestructor
 from .gaussian import GaussianDensity
-from .independent import IndependentDensity
 # noinspection PyProtectedMember
 from .utils import (_UNIT_SPACE, check_X_in_interval, get_domain_or_default,
                     make_interior_probability)

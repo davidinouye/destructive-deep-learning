@@ -1,8 +1,8 @@
 from __future__ import division, print_function
 
-from copy import deepcopy
 import logging
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from sklearn.base import BaseEstimator, clone
@@ -11,9 +11,9 @@ from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import (BaseDensityDestructor, BoundaryWarning, IdentityDestructor, ScoreMixin,
-                   get_inverse_canonical_destructor, get_n_features)
+                   get_inverse_canonical_destructor)
 # noinspection PyProtectedMember
-from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default
+from .utils import _UNIT_SPACE, check_X_in_interval, get_support_or_default
 
 logger = logging.getLogger(__name__)
 

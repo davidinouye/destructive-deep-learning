@@ -2,7 +2,6 @@ from __future__ import division, print_function
 
 import logging
 import warnings
-from abc import abstractmethod
 
 import numpy as np
 from scipy.optimize import brentq as scipy_brentq

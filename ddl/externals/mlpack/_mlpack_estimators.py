@@ -1,7 +1,6 @@
 from __future__ import division, print_function
 
 import logging
-import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator

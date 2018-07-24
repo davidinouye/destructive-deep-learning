@@ -1,9 +1,9 @@
 from __future__ import division, print_function
 
-from copy import deepcopy
 import logging
 import warnings
 from abc import abstractmethod
+from copy import deepcopy
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone

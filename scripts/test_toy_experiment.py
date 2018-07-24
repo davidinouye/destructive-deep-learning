@@ -4,17 +4,13 @@
 from __future__ import division, print_function
 
 import logging
-import os
-import sys
 import time
 import warnings
 
 import numpy as np
 # noinspection PyPackageRequirements
 import pytest
-from sklearn.base import clone
 from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from ddl.autoregressive import AutoregressiveDestructor
@@ -23,11 +19,10 @@ from ddl.datasets import make_toy_data
 from ddl.deep import DeepDestructorCV
 from ddl.externals.mlpack import MlpackDensityTreeEstimator
 from ddl.independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
-from ddl.linear import (BestLinearReconstructionDestructor, LinearProjector,
-                        RandomOrthogonalEstimator)
+from ddl.linear import LinearProjector, RandomOrthogonalEstimator
 from ddl.mixture import FirstFixedGaussianMixtureDensity, GaussianMixtureDensity
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
-from ddl.univariate import HistogramUnivariateDensity, ScipyUnivariateDensity
+from ddl.univariate import HistogramUnivariateDensity
 
 logger = logging.getLogger(__name__)
 

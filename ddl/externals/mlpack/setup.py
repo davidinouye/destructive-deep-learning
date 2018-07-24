@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import os
-import shutil
 import subprocess
 import sys
 import tarfile
-from sklearn.externals.six.moves import urllib
 
 import numpy
 from Cython.Build import cythonize
 from numpy.distutils.core import setup
 from numpy.distutils.misc_util import Configuration
+from sklearn.externals.six.moves import urllib
 
 
 def build_mlpack():

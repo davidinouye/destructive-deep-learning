@@ -2,27 +2,17 @@ from __future__ import division, print_function
 
 import itertools
 import logging
-import pdb
-import warnings
-from abc import ABCMeta, abstractmethod
 
 import numpy as np
-import scipy.stats
-from scipy.interpolate import interp1d
-from scipy.sparse import issparse
-from sklearn.base import BaseEstimator, DensityMixin, TransformerMixin, clone
-from sklearn.exceptions import DataConversionWarning, NotFittedError
-from sklearn.mixture import GaussianMixture
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
-from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
+from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.exceptions import NotFittedError
+from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
 
-from .base import BaseDensityDestructor, BoundaryWarning, ScoreMixin
+from .base import BaseDensityDestructor, ScoreMixin
 from .univariate import STANDARD_NORMAL_DENSITY, ScipyUnivariateDensity
 # noinspection PyProtectedMember
-from .utils import (_DEFAULT_SUPPORT, _INF_SPACE, _UNIT_SPACE, check_X_in_interval,
-                    get_domain_or_default, get_support_or_default, make_finite,
-                    make_interior_probability, make_positive)
+from .utils import (_UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default,
+                    make_interior_probability)
 
 logger = logging.getLogger(__name__)
 
