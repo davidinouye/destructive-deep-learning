@@ -215,11 +215,6 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
                 'Skipping tests that require the "density_" attribute.' % method_name))
             return False
 
-    # TODO Implement checks to ensure transform, inverse_transform, score_samples do not mutate objects
-    warnings.warn('Need to implement tests to ensure that transform, inverse_transform, '
-                  'and score_samples do not mutate input. Also, need to make sure '
-                  'learned destructor is *not* identity when testing other properties.')
-
     rng = check_random_state(random_state)
     trans = clone(trans)  # Remove fitted properties if exist
     _check_estimator_but_ignore_warnings(trans)
@@ -233,6 +228,8 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
     d = _get_domain_n_features(domain)
     X_train = _sample_demo(domain, n, d, random_state=rng)
     X_test = _sample_demo(domain, n, d, random_state=rng)
+    X_train_copy = X_train.copy()  # Needed for checking mutability
+    X_test_copy = X_test.copy()  # Needed for checking mutability
 
     # # Check required methods
     # Fit
@@ -242,11 +239,17 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
         raise ValueError('The demo data raised a value error when calling fit. This should not'
                          ' happen if the data is within the transformer domain via the'
                          ' get_domain method or the default real-valued domain.')
+    else:
+        np.testing.assert_array_equal(X_train, X_train_copy, 'fit() function should not mutate input data matrix `X`')
     has_density_attr = _check_density_attr(trans)
 
     # Check that transform and inverse_transform work
     U_sample = trans.transform(X_test)
+    np.testing.assert_array_equal(X_test, X_test_copy, 'transform() function should not mutate input data matrix `X`')
+
+    U_sample_copy = U_sample.copy()
     trans.inverse_transform(U_sample)
+    np.testing.assert_array_equal(U_sample, U_sample_copy, 'inverse_transform() function should not mutate input data matrix `X`')
 
     # # Check primary methods
     if has_method(trans, 'sample'):
@@ -258,6 +261,7 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
     score_vec = None
     if has_method(trans, 'score_samples'):
         score_vec = trans.score_samples(X_test)
+        np.testing.assert_array_equal(X_test, X_test_copy, 'score_samples() function should not mutate input data matrix `X`')
         if len(score_vec) != n:
             raise RuntimeError('Output of score_samples is not of length n')
 
@@ -680,7 +684,10 @@ def _compute_emd(X1, X2):
 
 def _check_score_method(est, score_vec, X_sample):
     if has_method(est, 'score'):
+        X_sample_copy = X_sample.copy()
         score = est.score(X_sample)
+        np.testing.assert_array_equal(X_sample, X_sample_copy, 'score() function should not mutate input data matrix `X`')
+
         if score_vec is not None:
             # 1e-100 to avoid division by 0
             mean_diff = np.abs((score - np.mean(score_vec)) / np.maximum(np.abs(score), 1e-100))
