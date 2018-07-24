@@ -48,6 +48,7 @@ def test_mlpack_det(test):
     else:
         X = rng.randn(200, 2)
         tree = det.PyDTree(X)
+        alpha = -1  # Just to initialize alpha
         for i in range(10):
             if i == 0:
                 alpha = tree.grow(X)

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """
 serialization.pxd: serialization functions for mlpack classes.
 

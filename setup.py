@@ -14,6 +14,7 @@ SETUPTOOLS_COMMANDS = {'develop', 'release', 'bdist_egg', 'bdist_rpm', 'bdist_wi
 if SETUPTOOLS_COMMANDS.intersection(sys.argv):
     import setuptools
 
+
 def configuration(parent_package='', top_path=None):
     """Creates `configuration` parameter for setup function.
 
@@ -53,6 +54,7 @@ def configuration(parent_package='', top_path=None):
 
 if __name__ == '__main__':
     from numpy.distutils.core import setup
+
     metadata = dict(
         name='ddl',
         packages=['ddl'],
@@ -67,7 +69,7 @@ if __name__ == '__main__':
         # Nose needed by 0.19.1 version of scikit-learn for importing testing module
         # I think this was fixed for upcoming version 0.20.X to avoid dependency
         install_requires=['numpy', 'scipy', 'scikit-learn',
-                          'pandas' # Currently required by ddl/externals/mlpack/_matrix_utils.py
+                          'pandas'  # Currently required by ddl/externals/mlpack/_matrix_utils.py
                           ],
         # OPTIONAL: ['matplotlib', 'pot', 'seaborn']
         # Cython, numpy and pypandoc needed to install pot package
@@ -79,7 +81,8 @@ if __name__ == '__main__':
         # $ pip install pypandoc
         setup_requires=['numpy', 'Cython'],
         extras_require={
-            'test': ['pytest', 'pytest-cov', 'codecov', 'nose', 'pot', 'isort'],  # Testing framework
+            'test': ['pytest', 'pytest-cov', 'codecov', 'nose', 'pot', 'isort'],
+            # Testing framework
         },
     )
 

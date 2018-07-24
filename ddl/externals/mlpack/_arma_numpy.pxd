@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 arma_numpy.pxd: Armadillo/numpy interface functionality.
 

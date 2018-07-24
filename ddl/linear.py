@@ -149,7 +149,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
     was a independent Gaussian, then this would correspond to ZCA
     whitening."""
     def __init__(self, linear_estimator=None, destructor=None):
-        super().__init__()
+        super(BestLinearReconstructionDestructor, self).__init__()
         self.linear_estimator = linear_estimator
         self.destructor = destructor
 

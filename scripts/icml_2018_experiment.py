@@ -35,8 +35,8 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 
-
 logger = logging.getLogger(__name__)
+
 
 def run_experiment(data_name, model_name, model_kwargs=None):
     if model_kwargs is None:
@@ -360,9 +360,9 @@ else:
         result_dict = run_experiment(data_name, model_name, model_kwargs=model_kwargs)
 
         # Check if test likelihood/score is as expected
-        model_names = ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
+        _model_names = ['deep-copula', 'image-pairs-copula', 'image-pairs-tree']
         expected_test_scores = [-1.060270463188296844e+03, -1.155477974922050180e+03, -1.134326498390250208e+03]
-        ind = model_names.index(model_name)
+        ind = _model_names.index(model_name)
         assert(np.abs(expected_test_scores[ind] - result_dict['test_score']) < 1e-12)
 
 
@@ -389,26 +389,26 @@ if __name__ == '__main__':
     print('----------------------')
 
     # Run experiments
-    model_kwargs = vars(args).copy() # Extract model_kwargs as dictionary
-    model_names = model_kwargs.pop('model_names').split(',')
-    data_names = model_kwargs.pop('data_names').split(',')
-    is_parallel = model_kwargs.pop('parallel_subprocesses')
+    _model_kwargs = vars(args).copy() # Extract model_kwargs as dictionary
+    model_names = _model_kwargs.pop('model_names').split(',')
+    data_names = _model_kwargs.pop('data_names').split(',')
+    is_parallel = _model_kwargs.pop('parallel_subprocesses')
     processes = []
-    for data_name in data_names:
+    for _data_name in data_names:
         # Make sure data has already been cached
-        get_maf_data(data_name)
-        for model_name in model_names:
-            model_kwargs['experiment_filename'], model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
-                data_name, model_name=model_name, model_kwargs=model_kwargs)
+        get_maf_data(_data_name)
+        for _model_name in model_names:
+            _model_kwargs['experiment_filename'], _model_kwargs['experiment_label'] = _get_experiment_filename_and_label(
+                _data_name, model_name=_model_name, model_kwargs=_model_kwargs)
             if not is_parallel:
                 # Just run the experiment directly
                 try:
-                    run_experiment(data_name, model_name, model_kwargs)
+                    run_experiment(_data_name, _model_name, _model_kwargs)
                 except RuntimeError as e:
                     if 'mlpack' not in str(e).lower():
                         raise e
                     else:
-                        warnings.warn('Skipping %s because of error "%s"' % (model_name, str(e)))
+                        warnings.warn('Skipping %s because of error "%s"' % (_model_name, str(e)))
             else:
                 # Generate script to run experiment in parallel in separate subprocesses
                 script_str = (
@@ -417,8 +417,8 @@ if __name__ == '__main__':
                     'from icml_2018_experiment import run_experiment\n'
                     'run_experiment(\'%s\', \'%s\', model_kwargs=%s)\n'
                 ) % (
-                    os.path.dirname(os.path.realpath(__file__)), 
-                    data_name, model_name, str(model_kwargs)
+                                 os.path.dirname(os.path.realpath(__file__)),
+                                 _data_name, _model_name, str(_model_kwargs)
                 )
                 echo_args = ['echo', '-e', script_str]
 
@@ -428,12 +428,12 @@ if __name__ == '__main__':
                 python = subprocess.Popen(['python'], stdin=echo.stdout, stdout=DEVNULL)
                 processes.append(echo)
                 processes.append(python)
-                print('Started subprocess for experiment %s' % model_kwargs['experiment_label'])
-                print('  Appending to end of log file %s.log' % model_kwargs['experiment_filename'])
+                print('Started subprocess for experiment %s' % _model_kwargs['experiment_label'])
+                print('  Appending to end of log file %s.log' % _model_kwargs['experiment_filename'])
 
             # Remove filenames and labels for next round
-            model_kwargs.pop('experiment_filename')
-            model_kwargs.pop('experiment_label')
+            _model_kwargs.pop('experiment_filename')
+            _model_kwargs.pop('experiment_label')
 
     if is_parallel:
         # Wait for all processes to finish

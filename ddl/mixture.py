@@ -596,6 +596,7 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
         best_log_likelihood = -np.inf
         best_weight = np.nan
         best_var = np.nan
+        best_mean = np.nan
         for ii, bump_idx in enumerate(test_idx):
             # Now add bump
             bump_sel = np.zeros(n_samples, dtype=np.bool)

@@ -33,14 +33,16 @@ elif int(pd.__version__.split('.')[1]) >= 15:
 
 # We need a unicode type, but on python3 we don't have it.
 try:
+  # noinspection PyUnboundLocalVariable
   UNICODE_EXISTS = bool(type(unicode))
 except NameError:
   unicode = str
 
 # We also need a buffer type.
 try:
+  # noinspection PyUnboundLocalVariable
   BUFFER_EXISTS = bool(type(buffer))
-except:
+except NameError:
   buffer = memoryview
 
 def to_matrix(x, dtype=np.double, copy=False):
@@ -158,5 +160,5 @@ def to_matrix_with_info(x, dtype, copy=False):
     return out, not alias, d
 
   # If we got here, the type is not known.
-  raise TypeError("given matrix is not a numpy ndarray or pandas DataFrame or "\
-      "Python array; not supported at this time");
+  raise TypeError("given matrix is not a numpy ndarray or pandas DataFrame or "
+      "Python array; not supported at this time")

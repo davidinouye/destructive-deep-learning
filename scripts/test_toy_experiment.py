@@ -223,6 +223,7 @@ def test_toy_destructor(destructor_name):
     X_test = D.X[n_train:]
     y_test = D.y[n_train:] if D.y is not None else None
 
+    # noinspection PyShadowingNames
     def _fit_and_score(data_name, destructor, destructor_name, n_train, random_state=0):
         """Simple function to fit and score a destructor."""
         # Fix random state of global generator so repeatable if destructors are random

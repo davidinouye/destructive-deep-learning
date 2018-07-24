@@ -16,7 +16,7 @@ from .utils import (check_domain, check_X_in_interval, get_domain_or_default,
 try:
     from sklearn.exceptions import SkipTestWarning, DataConversionWarning
     from sklearn.utils.estimator_checks import check_estimator
-except:
+except ImportError:
     warnings.warn('Could not import sklearn\'s SkipTestWarning, '
                   'DataConversionWarning or check_estimator '
                   '(likely because nose is not installed) but continuing '
@@ -434,26 +434,28 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
                'caused by a problem in `trans.%s`, `fitted_density.sample`, or too high '
                'of a p-value threshold.')
     if X_avg_p_val <= avg_p_threshold:
-        n = 1000
-        X_true = true_density.sample(n, random_state=rng)
-        U_true = rng.rand(n, n_features)
-        X_trans = trans.inverse_transform(U_true)
-        U_trans = trans.transform(X_true)
+        def _plot_data_for_debug():
+            n_samples = 1000
+            X_true = true_density.sample(n_samples, random_state=rng)
+            U_true = rng.rand(n_samples, n_features)
+            X_trans = trans.inverse_transform(U_true)
+            U_trans = trans.transform(X_true)
 
-        # noinspection PyPackageRequirements
-        import matplotlib.pyplot as plt
-        axes = plt.subplots(2, 2)[1]
-        for ax, title, X in zip(axes.ravel(),
-                                ['X_true','U_true','X_trans','U_trans'],
-                                [X_true, U_true, X_trans, U_trans]):
-            ax.scatter(X[:, 0], X[:, 1], s=3)
-            ax.axis('equal')
-            ax.set_title(title)
-        plt.show(block=False)
-        raise UniformabilityError(
-            err_msg % ('inverse_transform', 'uniform', 'original (assumed)', avg_p_threshold,
-                       'inverse_transform')
-        )
+            # noinspection PyPackageRequirements
+            import matplotlib.pyplot as plt
+            axes = plt.subplots(2, 2)[1]
+            for ax, title, X in zip(axes.ravel(),
+                                    ['X_true','U_true','X_trans','U_trans'],
+                                    [X_true, U_true, X_trans, U_trans]):
+                ax.scatter(X[:, 0], X[:, 1], s=3)
+                ax.axis('equal')
+                ax.set_title(title)
+            plt.show(block=False)
+            raise UniformabilityError(
+                err_msg % ('inverse_transform', 'uniform', 'original (assumed)', avg_p_threshold,
+                           'inverse_transform')
+            )
+        _plot_data_for_debug()
     if U_avg_p_val <= avg_p_threshold:
         raise UniformabilityError(
             err_msg % ('transform', 'original (assumed)', 'uniform', avg_p_threshold,
@@ -500,33 +502,35 @@ def check_invertibility(trans, random_state=0):
             logger.debug(middle)
             logger.debug(back)
 
-            # noinspection PyPackageRequirements
-            import matplotlib.pyplot as plt
-            n = 1000
-            X_true = trans.sample(n_samples=n)
-            U_true = rng.rand(n, d)
-            X_trans = trans.inverse_transform(U_true)
-            U_trans = trans.transform(X_true)
+            def _plot_debug_data():
+                # noinspection PyPackageRequirements
+                import matplotlib.pyplot as plt
+                n_samples = 1000
+                X_true = trans.sample(n_samples=n_samples)
+                U_true = rng.rand(n_samples, d)
+                _X_trans = trans.inverse_transform(U_true)
+                _U_trans = trans.transform(X_true)
 
-            axes = plt.subplots(2, 2)[1]
-            for ax, title, X in zip(axes.ravel(),
-                                    ['X_true','U_true','X_trans','U_trans'],
-                                    [X_true, U_true, X_trans, U_trans]):
-                ax.scatter(X[:, 0], X[:, 1], s=3)
-                ax.axis('equal')
-                ax.set_title(title)
-            plt.show(block=False)
+                axes = plt.subplots(2, 2)[1]
+                for ax, title, X in zip(axes.ravel(),
+                                        ['X_true','U_true','X_trans','U_trans'],
+                                        [X_true, U_true, _X_trans, _U_trans]):
+                    ax.scatter(X[:, 0], X[:, 1], s=3)
+                    ax.axis('equal')
+                    ax.set_title(title)
+                plt.show(block=False)
 
-            axes = plt.subplots(2, 2)[1]
-            for ax, title, X in zip(axes.ravel(),
-                                    ['orig','middle','back'],
-                                    [orig, middle, back]):
-                ax.scatter(X[:, 0], X[:, 1], s=3)
-                ax.axis('equal')
-                ax.set_title(title)
-            plt.show(block=False)
-            raise InvertibilityError('Transforming and then inverse transforming does not seem to '
-                                     'give the original data. Relative difference = %g.' % rel_diff)
+                axes = plt.subplots(2, 2)[1]
+                for ax, title, X in zip(axes.ravel(),
+                                        ['orig','middle','back'],
+                                        [orig, middle, back]):
+                    ax.scatter(X[:, 0], X[:, 1], s=3)
+                    ax.axis('equal')
+                    ax.set_title(title)
+                plt.show(block=False)
+                raise InvertibilityError('Transforming and then inverse transforming does not seem to '
+                                         'give the original data. Relative difference = %g.' % rel_diff)
+            _plot_debug_data()
     _check_nearly_equal(X_orig, X_back, U_trans)
     _check_nearly_equal(U_orig, U_back, X_trans)
     logger.info(_success('check_invertibility'))

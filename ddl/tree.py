@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 
-import copy
+from copy import deepcopy
 import logging
 import warnings
 
@@ -586,7 +586,7 @@ def _tree_transform(tree, X, y=None):
 
 def _get_inverse_tree(tree):
     """Computes the tree corresponding to the inverse of the transformation."""
-    tree_out = copy.deepcopy(tree)
+    tree_out = deepcopy(tree)
     for node_in, node_out in zip(tree, tree_out):  # Iterator starting at root (can be depth-first or breadth-first)
         # Implicitly changes a and b for children since bounds computed when traversing
         # Need to extract values before setting them since they are used internally

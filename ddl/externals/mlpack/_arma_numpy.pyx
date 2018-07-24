@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 arma_numpy.pyx: Armadillo/numpy interface functionality.
 

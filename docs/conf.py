@@ -30,6 +30,7 @@ create_api_rst(ddl, 'generated')
 # -- Project information -----------------------------------------------------
 
 project = 'destructive-deep-learning (ddl)'
+# noinspection PyShadowingBuiltins
 copyright = '2018, David I. Inouye'
 author = 'David I. Inouye'
 

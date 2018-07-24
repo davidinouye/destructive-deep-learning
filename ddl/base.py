@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 
-import copy
+from copy import deepcopy
 import logging
 import warnings
 from abc import abstractmethod
@@ -71,6 +71,7 @@ def get_n_features(destructor, try_destructor_sample=False):
     if the destructor reimplements sample without `get_n_features()` such as in the
     `CompositeDestructor`.
     """
+    n_features = np.nan
     if hasattr(destructor, 'n_features_'):
         n_features = destructor.n_features_
     elif hasattr(destructor, 'density_') and hasattr(destructor.density_, 'n_features_'):
@@ -276,7 +277,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         if destructor_already_fitted:
             self.fitted_canonical_destructor_ = self.canonical_destructor
             if copy:
-                self.fitted_canonical_destructor_ = copy.deepcopy(self.fitted_canonical_destructor_)
+                self.fitted_canonical_destructor_ = deepcopy(self.fitted_canonical_destructor_)
         else:
             self.fitted_canonical_destructor_ = clone(self.canonical_destructor).fit(X, y)
 
@@ -312,7 +313,7 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         if destructor_already_fitted:
             self.fitted_destructor_ = self.destructor
             if copy:
-                self.fitted_destructor_ = copy.deepcopy(self.fitted_destructor_)
+                self.fitted_destructor_ = deepcopy(self.fitted_destructor_)
         else:
             self.fitted_destructor_ = clone(self.destructor).fit(X, y)
         return self

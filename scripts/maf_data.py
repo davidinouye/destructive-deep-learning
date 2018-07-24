@@ -39,6 +39,7 @@ _DOWNLOAD_DIR = os.path.join(
 )
 
 
+# noinspection PyShadowingNames
 def get_maf_data(data_name):
     if data_name == 'mnist':
         return _get_maf_mnist()
@@ -142,6 +143,7 @@ def _get_mnist_raw():
     _make_dir(_DOWNLOAD_DIR)
     n_attempts = 3
     print('Attempting to load/fetch MNIST data via sklearn.datasets.fetch_mldata')
+    data_obj = None
     for i in range(n_attempts):
         try:
             data_obj = fetch_mldata('MNIST original', data_home=_DOWNLOAD_DIR)
@@ -198,8 +200,8 @@ def _flip_augmentation(X):
 
 
 def _logit_transform(X, alpha):
-    def _logit(X):
-        return np.log(X / (1.0 - X))
+    def _logit(_X):
+        return np.log(_X / (1.0 - _X))
     return _logit(alpha + (1 - 2 * alpha) * X)
 
 
@@ -243,11 +245,11 @@ def _data_dict_to_arr(data_dict):
 def _check_maf_data():
     warnings.warn('This function should generally not be called because it '
                   'requires special setup but is kept here in order to reproduce functions if needed.')
-    for data_name in ['mnist', 'cifar10']:
-        print('Loading %s data directly and via maf code' % data_name)
-        direct = _data_dict_to_arr(get_maf_data(data_name))
-        original = _data_dict_to_arr(_get_maf_original(data_name))
-        print('Comparing dtypes and values of returned arrays for %s' % data_name)
+    for _data_name in ['mnist', 'cifar10']:
+        print('Loading %s data directly and via maf code' % _data_name)
+        direct = _data_dict_to_arr(get_maf_data(_data_name))
+        original = _data_dict_to_arr(_get_maf_original(_data_name))
+        print('Comparing dtypes and values of returned arrays for %s' % _data_name)
         for i, (x_direct, x_original) in enumerate(zip(np.array(direct).ravel(), np.array(original).ravel())):
             # Check that they have the same dtype
             assert x_direct.dtype == x_original.dtype, 'dtypes not equal for index %d' % i
@@ -257,6 +259,7 @@ def _check_maf_data():
     print('All arrays are equal! :-)')
 
 
+# noinspection PyShadowingNames
 def _get_maf_original(data_name):
     warnings.warn('This function should generally not be called because it '
                   'requires special setup but is kept here in order to reproduce functions if needed.')
@@ -327,10 +330,6 @@ def _save_mnist_recreation_indices():
         '..', '..', 'maf', 'data',
     )
     mnist_path = os.path.join(datasets_root, 'mnist', 'mnist.pkl.gz')
-    try:
-        import cPickle as pickle
-    except ImportError:
-        import pickle
     with gzip.open(mnist_path, 'rb') as f:
         maf_train, maf_val, maf_test = pickle.load(f)
 
