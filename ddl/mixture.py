@@ -82,7 +82,6 @@ class _MixtureMixin(ScoreMixin):
         # Retrieve components
         components = self._get_component_densities()  # (n_components,)
 
-        n_components = len(components)
         n_samples, n_features = X.shape
 
         # Get new weights
@@ -510,7 +509,7 @@ class _RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
         )
 
     def fit(self, X, y=None):
-        super(RegularizedGaussianMixtureDensity, self).fit(X, y)
+        super(_RegularizedGaussianMixtureDensity, self).fit(X, y)
 
         # Update means, etc. with single Gaussian component
         self.n_components += 1
@@ -624,7 +623,6 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
                         best_var = var
                         best_log_likelihood = log_likelihood
                         best_mean = bump_mean
-                        best_ii = ii
                     self.n_iter_ += 1
 
         # Plot stuff for debugging
