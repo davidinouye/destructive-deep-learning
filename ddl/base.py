@@ -67,7 +67,7 @@ def get_n_features(destructor, try_destructor_sample=False):
     """Attempt to find n_features either from `destructor.n_features_`,
     `destructor.density_.n_features_`, or
     via density sampling `destructor.density_.sample(1, random_state=0).shape[1]`.
-    If `try_destructor_sample=True`, additionally attempt 
+    If `try_destructor_sample=True`, additionally attempt
     `destructor.sample(1, random_state=0).shape[1]`. This option could cause infinite recursion
     since `DestructorMixin` uses `get_n_features(destructor)` in order to sample but this can be
     avoided if the destructor reimplements sample without `get_n_features()` such as in the
@@ -83,8 +83,8 @@ def get_n_features(destructor, try_destructor_sample=False):
                       ' `destructor.density_.n_features_` does not exist'
                       ' we attempt to determine the dimension by sampling'
                       ' from destructor.density_, which may be computationally'
-                      ' demanding.  Add destructor.n_features_ to reduce time if necessary.'
-                      , _NumDimWarning)
+                      ' demanding.  Add destructor.n_features_ to reduce time if necessary.',
+                      _NumDimWarning)
         n_features = np.array(destructor.density_.sample(n_samples=1, random_state=0)).shape[1]
     else:
         if try_destructor_sample:
@@ -92,7 +92,7 @@ def get_n_features(destructor, try_destructor_sample=False):
             if hasattr(destructor, 'sample'):
                 try:
                     n_features = np.array(
-                        fitted_destructor.sample(n_samples=1, random_state=0)
+                        destructor.sample(n_samples=1, random_state=0)
                     ).shape[1]
                 except RuntimeError:
                     err = True
@@ -102,9 +102,9 @@ def get_n_features(destructor, try_destructor_sample=False):
                 err = True
             if err:
                 raise RuntimeError(
-                    'Could not find n_features in fitted_destructor.n_features_, '
-                    'fitted_destructor.density_.n_features_, '
-                    'fitted_destructor.density_.sample(1).shape[1], or fitted_destructor.sample('
+                    'Could not find n_features in destructor.n_features_, '
+                    'destructor.density_.n_features_, '
+                    'destructor.density_.sample(1).shape[1], or destructor.sample('
                     '1).shape[1]. '
                 )
         else:
@@ -357,10 +357,9 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
-        rng = check_random_state(self.random_state)
         # Save old random state and seed via internal random number generator
         # saved_random_state = np.random.get_state()
-        # np.random.seed(rng.randint(2 ** 32, dtype=np.uint32))
+        # np.random.seed(self.random_state)
 
         Z = check_array(X, copy=True)
 
@@ -404,7 +403,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def sample(self, n_samples=1, random_state=None):
-        """Nearly the same as `DestructorMixin.sample` but n_features is found from first 
+        """Nearly the same as `DestructorMixin.sample` but n_features is found from first
         fitted destructor to avoid recursion.
         """
         self._check_is_fitted()

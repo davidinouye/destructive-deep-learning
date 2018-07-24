@@ -8,9 +8,9 @@ from itertools import cycle, islice
 import numpy as np
 from sklearn.base import clone
 from sklearn.model_selection import check_cv
-from sklearn.utils.validation import check_array, check_random_state
+from sklearn.utils.validation import check_array
 
-from .base import CompositeDestructor, get_implicit_density
+from .base import IdentityDestructor, CompositeDestructor, get_implicit_density
 
 # noinspection PyProtectedMember
 
@@ -53,12 +53,12 @@ class DeepDestructor(CompositeDestructor):
 
 class DeepCVMixin(object):
     def fit(self, X, y=None, X_test=None, **fit_params):
-        # Save old random state and seed via internal random number generator
-        rng = check_random_state(self.random_state)
         if self.n_extend < 1:
             raise ValueError('n_extend should be greater than or equal to 1')
-            # saved_random_state = np.random.get_state()
-        # np.random.seed(rng.randint(2 ** 32, dtype=np.uint32))
+
+        # Save old random state and seed via internal random number generator
+        # saved_random_state = np.random.get_state()
+        # np.random.seed(self.random_state)
 
         # Setup parameters
         X = check_array(X)
@@ -133,6 +133,8 @@ class DeepCVMixin(object):
         self.cv_test_scores_ = scores_mat[:, :, 1].transpose()
         self.best_n_layers_ = best_n_layers
 
+        # Reset random state
+        # np.random.set_state(saved_random_state)
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
