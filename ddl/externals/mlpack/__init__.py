@@ -1,1 +1,1 @@
-from ._mlpack_estimators import MlpackDensityTreeEstimator
+from ._mlpack_estimators import MlpackDensityTreeEstimator  # noqa F401

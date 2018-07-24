@@ -68,7 +68,6 @@ def test_mlpack_det_get_arrayed_tree():
     # Setup dataset
     D = make_toy_data('uniform_grid', n_samples=1000, random_state=0)
     X = D.X
-    y = D.y
 
     # Setup tree
     min_vals = np.zeros(X.shape[1])

@@ -15,7 +15,6 @@ from sklearn.datasets import fetch_mldata
 try:
     import cPickle
 
-
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
             dict_obj = cPickle.load(f)
@@ -23,7 +22,6 @@ try:
 
 except ImportError:
     import pickle
-
 
     def _get_cifar10_data_and_labels(file_path):
         with open(file_path, 'rb') as f:
@@ -53,7 +51,7 @@ def get_maf_data(data_name):
 
 def _get_maf_mnist():
     X, y = _get_mnist_raw()
-    # This splits file was created by comparing MNIST downloaded to the 
+    # This splits file was created by comparing MNIST downloaded to the
     #  MAF MNIST dataset splits
     splits_file = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -329,7 +327,7 @@ def _get_maf_original(data_name):
 
 
 def _save_mnist_recreation_indices():
-    """Code to find MNIST train, validation and test indices for recreation of 
+    """Code to find MNIST train, validation and test indices for recreation of
     MNIST MAF dataset.
     Note this should not be called directly.  This is only here for reproducibility."""
     warnings.warn('This function should generally not be called because it '
