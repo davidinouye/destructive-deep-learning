@@ -119,9 +119,9 @@ class TreeDensity(BaseEstimator, ScoreMixin):
             else:
                 # Add children to stack with appropriate selections
                 _update_stack('right')
-                sel_left = _update_stack('left')
+                _update_stack('left')
 
-                # Don't know relative probability yet (must compute below) 
+                # Don't know relative probability yet (must compute below)
                 node.value = np.nan
 
         # Convert absolute probabilities to relative probabilities
@@ -278,7 +278,7 @@ class RandomTreeEstimator(BaseEstimator):
 
 
 def _absolute_to_relative_probability(tree_depth_iter):
-    """Changes from absolute probabilities at the leaves to relative 
+    """Changes from absolute probabilities at the leaves to relative
     probabilities on non-leaves modifying the tree in-place.
     """
     node = next(tree_depth_iter)
@@ -338,7 +338,6 @@ class _ArrayedTreeWrapper:
 
     def __str__(self):
         def _domain_str():
-            dom = node.domain
             return ','.join('[' + ','.join('%.3g' % a for a in dom) + ']' for dom in node.domain)
 
         s_arr = []
@@ -465,7 +464,6 @@ class _SklearnNode:
     def value_out(self):
         # Extract necessary variables
         (a, b) = self.domain[self.feature]
-        p = self.value
         t = self.threshold
         return (t - a) / (b - a)
 
@@ -588,7 +586,6 @@ def _tree_transform(tree, X, y=None):
         else:
             # Extract necessary variables
             (a, b) = node.domain[node.feature]
-            p = node.value
             t = node.threshold
             t_out = node.threshold_out
 
@@ -596,7 +593,7 @@ def _tree_transform(tree, X, y=None):
             _update_stack('right')
             _update_stack('left')
 
-    # Cleanup values since numerical errors can cause them to fall 
+    # Cleanup values since numerical errors can cause them to fall
     #  outside of the destructor range of [0, 1]
     X = np.maximum(np.minimum(X, 1), 0)
     return X
@@ -621,7 +618,7 @@ def _get_inverse_tree(tree):
             p = node_in.value
             t = node_in.threshold
 
-            # Output threshold if a = a_tilde and b = b_tilde 
+            # Output threshold if a = a_tilde and b = b_tilde
             #  (i.e. threshold relative to new bounds)
             node_out.threshold = (b_tilde - a_tilde) * p + a_tilde
             # Want a probability that inverts this function
