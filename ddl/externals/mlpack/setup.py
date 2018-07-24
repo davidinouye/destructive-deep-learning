@@ -23,15 +23,16 @@ def build_mlpack():
     build_path = os.path.join(repo_path, 'build')
 
     # Download and extract
-    print('Downloading mlpack source')
-    if not os.path.isfile(tar_file_path):
-        urllib.request.urlretrieve(tar_url, tar_file_path)
+    if not os.path.isdir(repo_path)
+        print('Downloading mlpack source')
+        if not os.path.isfile(tar_file_path):
+            urllib.request.urlretrieve(tar_url, tar_file_path)
 
-    print('Extracting tar.gz file')
-    tar = tarfile.open(tar_file_path, 'r:gz')
-    tar.extractall(package_path)
-    tar.close()
-    #os.remove(tar_file_path)
+        print('Extracting tar.gz file')
+        tar = tarfile.open(tar_file_path, 'r:gz')
+        tar.extractall(package_path)
+        tar.close()
+        os.remove(tar_file_path)
 
     # Add flag needed for static library linking
     print('Prepending flag for PIC')
@@ -41,9 +42,13 @@ def build_mlpack():
         f.write('set(CMAKE_POSITION_INDEPENDENT_CODE ON)\n' + cmake_file_str)
 
     # Setup build directory and run cmake
-    print('Removing old build directory if necessary and creating new build directory')
-    shutil.rmtree(build_path, ignore_errors=True)
-    os.mkdir(build_path)
+    #print('Removing old build directory if necessary and creating new build directory')
+    print('Attempting to create build directory if it does not exist')
+    #shutil.rmtree(build_path, ignore_errors=True)
+    try:
+        os.mkdir(build_path)
+    except OSError:
+        pass
 
     print('Running cmake')
     orig_cwd = os.getcwd()
