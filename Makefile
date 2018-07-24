@@ -16,7 +16,8 @@ test/other:
 test/experiments/toy:
 	pytest -k test_toy_experiment $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 test/experiments/mnist:
-	pytest -k test_mnist_experiment $(PYTEST_FLAGS) ddl scripts/icml_2018_experiment.py
+	# Need capture=no flag to enable output so that test will not time out in circleci
+	pytest --capture=no -k test_mnist_experiment $(PYTEST_FLAGS) ddl scripts/icml_2018_experiment.py
 test/special:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/mnist: scripts/maf_data.py
