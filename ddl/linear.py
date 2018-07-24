@@ -144,7 +144,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
 
 class BestLinearReconstructionDestructor(CompositeDestructor):
-    """Class that converts a linear -> destructor combination 
+    """Class that converts a linear -> destructor combination
     into a combination that returns the data to as close to
     the original space as possible.
     For example, if the linear projector was PCA and the destructor

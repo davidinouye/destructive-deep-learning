@@ -215,7 +215,6 @@ class ScipyUnivariateDensity(UnivariateDensity):
         X = super(ScipyUnivariateDensity, self)._check_X(X, inverse)
 
         # Move away from support/domain boundaries if necessary
-        scipy_rv = self._get_scipy_rv_or_default()
         if inverse and (np.any(X <= 0) or np.any(X >= 1)):
             warnings.warn(BoundaryWarning(
                 'Some probability values (input to inverse functions) are either 0 or 1. Bounding '

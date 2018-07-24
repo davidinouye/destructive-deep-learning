@@ -38,7 +38,6 @@ def _make_autoregressive(
         x_distribution='uniform', random_state=0
 ):
     rng = check_random_state(random_state)
-    n_features = 2
     # Get x values
     if x_distribution == 'gaussian':
         x = x_scale * rng.randn(n_samples)
