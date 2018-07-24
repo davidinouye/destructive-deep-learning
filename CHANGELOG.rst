@@ -20,7 +20,8 @@ Added
 Changed
 ^^^^^^^
 
--  Placeholder @davidinouye.
+- Removed explicit dependency on pre-built mlpack and updated docker/singularity images.
+- Updated build system especially for circleci to make it simpler to build mlpack extension.
 
 Removed
 ^^^^^^^
