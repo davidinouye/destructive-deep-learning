@@ -4,6 +4,8 @@
 from __future__ import division, print_function
 
 import logging
+import os
+import sys
 import time
 import warnings
 
@@ -13,6 +15,10 @@ import pytest
 from sklearn.decomposition import PCA
 from sklearn.utils import check_random_state
 
+# Add directory for ddl library
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')) # noqa E402
+
+# isort:imports-firstparty
 from ddl.autoregressive import AutoregressiveDestructor
 from ddl.base import CompositeDestructor
 from ddl.datasets import make_toy_data

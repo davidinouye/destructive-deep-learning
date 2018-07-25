@@ -11,6 +11,12 @@ import scipy.stats  # Needed for standard error of the mean scipy.stats.sem
 from sklearn.base import clone
 from sklearn.decomposition import PCA
 
+# Add the directory of this script
+sys.path.append(os.path.dirname(os.path.realpath(__file__))) # noqa E402
+# Add directory for ddl library
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')) # noqa E402
+
+# isort:imports-firstparty
 from ddl.base import CompositeDestructor
 from ddl.deep import DeepDestructorCV
 from ddl.externals.mlpack import MlpackDensityTreeEstimator
@@ -25,11 +31,6 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-# Add the directory of this script
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-# Add directory for ddl library
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
 logger = logging.getLogger(__name__)
 
