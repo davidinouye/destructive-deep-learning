@@ -17,6 +17,7 @@
 # noinspection SpellCheckingInspection
 
 import os
+import shutil
 import sys
 
 # Import needed directories
@@ -29,7 +30,14 @@ import ddl
 from create_api import create_api_rst
 
 
+def copy_and_overwrite(from_path, to_path):
+    if os.path.exists(to_path):
+        shutil.rmtree(to_path)
+    shutil.copytree(from_path, to_path)
+
+
 create_api_rst(ddl, 'generated')
+copy_and_overwrite('../notebooks', 'generated/notebooks')
 
 # -- Project information -----------------------------------------------------
 
@@ -61,6 +69,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
+    'nbsphinx',
 ]
 
 napoleon_google_docstring = False
@@ -93,7 +102,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

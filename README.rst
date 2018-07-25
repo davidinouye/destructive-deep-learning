@@ -91,6 +91,7 @@ Install ``homebrew`` as per `homebrew documentation <https://brew.sh/>`_ (note t
 Then, install cmake, armadillo and boost (required to build mlpack) and llvm (required for openmp support for mlpack):
 
 .. code:: console
+
     brew update && brew install \
         cmake \
         armadillo \

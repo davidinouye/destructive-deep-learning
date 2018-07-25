@@ -8,11 +8,12 @@ Destructive Deep Learning (ddl) documentation
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
    readme
    generated/api
+   generated/notebooks/*
    changelog
-
 
 
 .. Indices and tables

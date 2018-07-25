@@ -69,6 +69,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
     def __init__(self, univariate_estimators=None):
         """Default assumes that univariate_estimators are Gaussian.
         `univariate_estimators` should be:
+
             #. None (defaults to `ScipyUnivariateDensity()`),
             #. univariate density estimator,
             #. array-like of univariate density estimators.
