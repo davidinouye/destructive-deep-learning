@@ -50,6 +50,7 @@ jobs:
             pip install pandas
             pip install scikit-learn
             pip install isort
+            pip install flake8
 
       - save_cache:
           name: Save pip dependencies cache
