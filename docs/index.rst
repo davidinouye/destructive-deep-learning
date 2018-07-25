@@ -11,8 +11,8 @@ Destructive Deep Learning (ddl) documentation
    :glob:
 
    readme
-   generated/api
    generated/notebooks/*
+   generated/api
    changelog
 
 
