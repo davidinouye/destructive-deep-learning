@@ -7,7 +7,7 @@ cleanmlpack:
 	rm -rf ddl/externals/mlpack/mlpack-mlpack-3.0.2
 	rm ddl/externals/mlpack/mlpack-3.0.2.tar.gz
 test:
-	isort --recursive --check-only
+	isort --recursive --check-only --verbose
 	pytest --cov=ddl $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 	codecov
 test/mlpack:
