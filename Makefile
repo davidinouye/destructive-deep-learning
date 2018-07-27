@@ -1,5 +1,5 @@
 SHELL:=/bin/bash
-PYTEST_FLAGS=--maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
+PYTEST_FLAGS=--cov=ddl --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
 
 all:
 	python setup.py build_ext --inplace
@@ -9,17 +9,18 @@ cleanmlpack:
 test:
 	isort --recursive --check-only
 	flake8
-	pytest --cov=ddl $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
-	codecov
+	pytest $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 test/mlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
 test/other:
 	pytest --ignore=ddl/externals/mlpack $(PYTEST_FLAGS) ddl
 test/experiments/toy:
-	pytest -k test_toy_experiment $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
+	pytest $(PYTEST_FLAGS) scripts/test_toy_experiment.py
 test/experiments/mnist:
 	# Need capture=no flag to enable output so that test will not time out in circleci
-	pytest --capture=no -k test_mnist_experiment $(PYTEST_FLAGS) ddl scripts/icml_2018_experiment.py
+	pytest --capture=no $(PYTEST_FLAGS) scripts/icml_2018_experiment.py
+codecov:
+	codecov
 test/special:
 	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
 data/mnist: scripts/maf_data.py

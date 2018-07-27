@@ -102,7 +102,7 @@ jobs:
           key: mlpack-2-{{ checksum "ddl/externals/mlpack/setup.py" }}-{{ checksum "ddl/externals/mlpack/_det.pyx" }}
         
       - run:
-          name: Run package tests, toy experiment and code coverage
+          name: Run package and toy experiment tests
           command: |
             . venv/bin/activate
             make test
@@ -112,6 +112,12 @@ jobs:
           command: |
             . venv/bin/activate
             make test/experiments/mnist
+
+      - run:
+          name: Gather and send code coverage results
+          command: |
+            . venv/bin/activate
+            make codecov
 
 #      - store_artifacts:
 #          path: test-reports
