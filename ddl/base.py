@@ -4,6 +4,7 @@ import logging
 import warnings
 from abc import abstractmethod
 from copy import deepcopy
+from functools import wraps
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -338,6 +339,29 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         return get_domain_or_default(self.destructor)
 
 
+def _check_global_random_state(f):
+    """Decorator that saves the global random state, sets the global random state based on
+    `self.random_state`, calls the function and the resets the global random state.
+
+    This is useful for composite or deep destructors where one does not want to
+    set the random_state for each individual destructor but wants exact
+    reproducibility.
+    """
+    @wraps(f)
+    def decorated(self, *args, **kwargs):
+        # Save original global random state
+        #  and seed global random state
+        saved_random_state = np.random.get_state()
+        rng = check_random_state(self.random_state)
+        np.random.set_state(rng.get_state())
+
+        # Call function and then reset global random state
+        ret_val = f(self, *args, **kwargs)
+        np.random.set_state(saved_random_state)
+        return ret_val
+    return decorated
+
+
 class CompositeDestructor(BaseEstimator, DestructorMixin):
     """Joins multiple destructors (or relative destructors like
     LinearProjector) into a composite destructor.
@@ -356,11 +380,8 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         self.fit_transform(X, y, **fit_params)
         return self
 
+    @_check_global_random_state
     def fit_transform(self, X, y=None, **fit_params):
-        # Save old random state and seed via internal random number generator
-        # saved_random_state = np.random.get_state()
-        # np.random.seed(self.random_state)
-
         Z = check_array(X, copy=True)
 
         # Fit and transform all destructors
@@ -373,9 +394,6 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
         self.fitted_destructors_ = np.array(destructors)
         self.density_ = get_implicit_density(self)
-
-        # Reset random state
-        # np.random.set_state(saved_random_state)
         return Z
 
     def _single_fit_transform(self, d, Z, y):
