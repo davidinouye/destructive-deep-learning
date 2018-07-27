@@ -349,6 +349,10 @@ def _check_global_random_state(f):
     """
     @wraps(f)
     def decorated(self, *args, **kwargs):
+        # If random_state is None then Just call function directly
+        if self.random_state is None:
+            return f(self, *args, **kwargs)
+
         # Save original global random state
         #  and seed global random state
         saved_random_state = np.random.get_state()
