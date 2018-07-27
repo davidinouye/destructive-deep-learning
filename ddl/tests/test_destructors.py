@@ -139,7 +139,7 @@ def test_deep_destructor_with_tree_destructor():
 def test_deep_destructor_cv_with_tree_destructor():
     destructor = DeepDestructorCV(
         canonical_destructor=TreeDestructor(),
-        n_canonical_destructors=2,
+        max_canonical_destructors=2,
         cv=2,
     )
     assert check_destructor(destructor)
