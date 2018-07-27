@@ -164,7 +164,7 @@ def _get_model(data_name, model_name, model_kwargs):
         canonical_destructor=canonical_destructor,
         stop_tol=deep_stop_tol,
         # Either n_extend or max_canonical_destructors must be None
-        n_extend=1 if not model_kwargs['is_test'] else None,
+        n_extend=1,
         cv=model_kwargs['cv'],
         refit=model_kwargs['refit'],
         silent=False,

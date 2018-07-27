@@ -54,7 +54,7 @@ class DeepDestructor(CompositeDestructor):
 class DeepDestructorCV(DeepDestructor):
     # noinspection PyMissingConstructor
     def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
-                 max_canonical_destructors=None, n_extend=None, refit=True, silent=False,
+                 max_canonical_destructors=None, n_extend=1, refit=True, silent=False,
                  log_prefix='', random_state=None):
         """Parameter `canonical_destructor` can be a list of canonical destructors.
         The list will be cycled through to get as many canonical destructors as needed."""
@@ -72,11 +72,7 @@ class DeepDestructorCV(DeepDestructor):
     @_check_global_random_state
     def fit(self, X, y=None, X_test=None, **fit_params):
         # Setup parameters
-        if self.n_extend is not None and self.max_canonical_destructors is not None:
-            raise ValueError('Either or both of `n_extend` or `max_canonical_destructors` '
-                             'must be None.')
-        n_extend = self.n_extend if self.n_extend is not None else 1
-        if n_extend < 1:
+        if self.n_extend < 1:
             raise ValueError('n_extend should be greater than or equal to 1')
         X = check_array(X)
         cv = check_cv(self.cv)
@@ -85,17 +81,8 @@ class DeepDestructorCV(DeepDestructor):
         # CV path fit and transform
         cv_destructors_arr = [[] for _ in splits]
         scores_arr = [[] for _ in splits]
-
-        # Setup max number of layers based on initial destructor, etc.
-        # None means continue until other conditions based on n_extend and stop_tol
-        # If max_canonical_destructors is set to a number, then add 1 to max_layers
-        # if there is also an initial destructor.
-        max_layers = self.max_canonical_destructors
-        if max_layers is not None and self.init_destructor is not None:
-            max_layers += 1
         cv_destructors_arr, scores_arr, splits = self._fit_cv_destructors(
-            X, cv_destructors_arr, scores_arr, splits, X_test=X_test,
-            max_layers=max_layers, n_extend=n_extend)
+            X, cv_destructors_arr, scores_arr, splits, X_test=X_test)
 
         # Add layers as needed up to max # of layers of all splits
         if not self.silent:
@@ -104,7 +91,7 @@ class DeepDestructorCV(DeepDestructor):
             len(cv_destructors) for cv_destructors in cv_destructors_arr])
         cv_destructors_arr, scores_arr, splits = self._fit_cv_destructors(
             X, cv_destructors_arr, scores_arr, splits, X_test=X_test,
-            max_layers=best_n_layers_over_folds, n_extend=n_extend)
+            selected_n_layers=best_n_layers_over_folds)
 
         # Determine best number of layers
         scores_mat = np.array(scores_arr)
@@ -149,7 +136,7 @@ class DeepDestructorCV(DeepDestructor):
         return self.transform(X, y)
 
     def _fit_cv_destructors(self, X, cv_destructors_arr, scores_arr, splits, X_test=None,
-                            max_layers=None, n_extend=1):
+                            selected_n_layers=None):
         compute_test = X_test is not None
         for i, (cv_destructors, scores, (train, validation)) in enumerate(
                 zip(cv_destructors_arr, scores_arr, splits)):
@@ -163,7 +150,7 @@ class DeepDestructorCV(DeepDestructor):
 
             # If some destructors are already fit
             destructor_iterator = iter(self._get_destructor_iterable())
-            if max_layers is not None and len(cv_destructors) == max_layers:
+            if selected_n_layers is not None and len(cv_destructors) == selected_n_layers:
                 # Don't need to fit any more destructors
                 if not self.silent:
                     logger.debug(self.log_prefix + 'Already done fitting cv=%i deep destructor' % i)
@@ -212,15 +199,27 @@ class DeepDestructorCV(DeepDestructor):
                 cum_scores = previous_scores + np.array([train_score, validation_score])
                 scores.append(cum_scores)
 
-                # Keep going if need to fit a certain number of layers no matter what
-                if max_layers is not None:
-                    if len(cv_destructors) == max_layers:
+                # Stop if global max layers is reached
+                if self.max_canonical_destructors is not None:
+                    global_max_layers = self.max_canonical_destructors
+                    if self.init_destructor is not None:
+                        global_max_layers += 1
+                    if len(cv_destructors) == global_max_layers:
                         stop = True
+                        continue
+
+                if selected_n_layers is not None:
+                    if len(cv_destructors) == selected_n_layers:
+                        stop = True
+                    else:
+                        # Keep going if need to fit a certain number of layers no matter what
+                        # (i.e. don't check n_extend in this case)
+                        pass
                 else:
                     # If we have n_extend + 1 layers then check cumulative scores
-                    if len(cv_destructors) > n_extend:
+                    if len(cv_destructors) > self.n_extend:
                         cur_score = scores[-1][1]
-                        max_previous_scores = np.max([sc[1] for sc in scores[:-n_extend]])
+                        max_previous_scores = np.max([sc[1] for sc in scores[:-self.n_extend]])
                         if max_previous_scores == 0:
                             rel_diff = cur_score - max_previous_scores
                         else:
