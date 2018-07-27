@@ -51,7 +51,24 @@ class DeepDestructor(CompositeDestructor):
         return np.array([clone(d) for d in destructors])
 
 
-class DeepCVMixin(object):
+class DeepDestructorCV(DeepDestructor):
+    # noinspection PyMissingConstructor
+    def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
+                 n_canonical_destructors=None, n_extend=1, refit=True, silent=False, log_prefix='',
+                 random_state=None):
+        """Parameter `canonical_destructor` can be a list of canonical destructors.
+        The list will be cycled through to get as many canonical destructors as needed."""
+        self.canonical_destructor = canonical_destructor
+        self.init_destructor = init_destructor
+        self.cv = cv
+        self.stop_tol = stop_tol
+        self.n_canonical_destructors = n_canonical_destructors
+        self.n_extend = n_extend
+        self.silent = silent
+        self.log_prefix = log_prefix
+        self.refit = refit
+        self.random_state = random_state
+
     @_check_global_random_state
     def fit(self, X, y=None, X_test=None, **fit_params):
         # Setup parameters
@@ -232,25 +249,6 @@ class DeepCVMixin(object):
                 yield clone(d)
 
         return _destructor_generator()
-
-
-class DeepDestructorCV(DeepCVMixin, DeepDestructor):
-    # noinspection PyMissingConstructor
-    def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
-                 n_canonical_destructors=None, n_extend=1, refit=True, silent=False, log_prefix='',
-                 random_state=None):
-        """Parameter `canonical_destructor` can be a list of canonical destructors.
-        The list will be cycled through to get as many canonical destructors as needed."""
-        self.canonical_destructor = canonical_destructor
-        self.init_destructor = init_destructor
-        self.cv = cv
-        self.stop_tol = stop_tol
-        self.n_canonical_destructors = n_canonical_destructors
-        self.n_extend = n_extend
-        self.silent = silent
-        self.log_prefix = log_prefix
-        self.refit = refit
-        self.random_state = random_state
 
 
 def _take(iterable, n):
