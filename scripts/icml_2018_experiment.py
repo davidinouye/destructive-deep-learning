@@ -367,7 +367,8 @@ else:
         expected_test_scores = [-1.060270463188296844e+03, -1.155477974922050180e+03,
                                 -1.134326498390250208e+03]
         ind = _model_names.index(model_name)
-        assert (np.abs(expected_test_scores[ind] - result_dict['test_score']) < 1e-12)
+        assert (np.abs(expected_test_scores[ind] - result_dict['test_score'])
+                / np.abs(expected_test_scores[ind]) < 1e-15)
 
 if __name__ == '__main__':
     # Parse args
