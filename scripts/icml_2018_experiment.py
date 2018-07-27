@@ -170,7 +170,7 @@ def _get_model(data_name, model_name, model_kwargs):
         log_prefix='',
         random_state=0,
         # Set maximum number of layers (None for infinite)
-        n_canonical_destructors=None if not model_kwargs['is_test'] else 2,
+        n_canonical_destructors=None if not model_kwargs['is_test'] else 1,
     )
 
 

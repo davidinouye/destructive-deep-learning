@@ -205,7 +205,7 @@ def _get_toy_destructors_and_names():
             d.set_params(cv=cv)
         # **** Change from notebook to make faster ****
         if 'n_canonical_destructors' in d.get_params():
-            d.set_params(n_canonical_destructors=2)
+            d.set_params(n_canonical_destructors=1)
 
     return destructors, destructor_names
 

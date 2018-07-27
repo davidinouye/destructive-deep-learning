@@ -77,26 +77,21 @@ class DeepDestructorCV(DeepDestructor):
         X = check_array(X)
         cv = check_cv(self.cv)
         splits = list(cv.split(X))
-        # Could split based on y but since y is just an ancillary
-        #  variable, just split based on X (ignore below)
-        # if y is not None:
-        #     cv = check_cv(self.cv, y=y, classifier=True)
-        #     try:
-        #        splits = list(cv.split(X, y))
-        #    except ValueError:
-        #        # If this fails because too few samples
-        #        cv = check_cv(self.cv)
-        #        splits = list(cv.split(X))
-        # else:
-        #    cv = check_cv(self.cv)
-        #    splits = list(cv.split(X))
 
         # CV path fit and transform
         cv_destructors_arr = [[] for _ in splits]
         scores_arr = [[] for _ in splits]
+
+        # Setup max number of layers based on initial destructor, etc.
+        # None means continue until other conditions based on n_extend and stop_tol
+        # If n_canonical_destructors is set to a number, then add 1 to max_layers
+        # if there is also an initial destructor.
+        max_layers = self.n_canonical_destructors
+        if max_layers is not None and self.init_destructor is not None:
+            max_layers += 1
         cv_destructors_arr, scores_arr, splits = self._fit_cv_destructors(
             X, cv_destructors_arr, scores_arr, splits, X_test=X_test,
-            max_layers=self.n_canonical_destructors)
+            max_layers=max_layers)
 
         # Add layers as needed up to max # of layers of all splits
         if not self.silent:
@@ -115,8 +110,6 @@ class DeepDestructorCV(DeepDestructor):
         best_n_layers = int(
             1 + np.argmax(scores_avg[:, 1].ravel()))  # Best over cumulative test_score
         best_score = np.max(scores_avg[:, 1].ravel())
-        # logger.debug(self.log_prefix + '\n%s' % str(scores_mat))
-        # logger.debug(self.log_prefix + '\n%s' % str(scores_avg))
 
         # Final fitting with best # of layers
         if self.refit:
