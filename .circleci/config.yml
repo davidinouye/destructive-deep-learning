@@ -51,6 +51,7 @@ jobs:
             pip install scikit-learn
             pip install isort
             pip install flake8
+            pip install pydocstyle
 
       - save_cache:
           name: Save pip dependencies cache

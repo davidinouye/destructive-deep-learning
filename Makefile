@@ -9,6 +9,7 @@ cleanmlpack:
 test:
 	isort --recursive --check-only
 	flake8
+	-pydocstyle  --add-ignore D103,D102,D107 --explain --source ddl/base.py
 	pytest $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 test/mlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
