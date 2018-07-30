@@ -68,17 +68,20 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
-    'nbsphinx',
+    'numpydoc', # numpy doc strings
+    'nbsphinx', # Jupyter notebook extension
 ]
 
-napoleon_google_docstring = False
-napoleon_use_param = False
-napoleon_use_ivar = True
+# Copied the below hack from scikit-learn
+# this is needed for some reason...
+# see https://github.com/numpy/numpydoc/issues/69
+numpydoc_class_members_toctree = False
 
 autosummary_generate = True
 
 autodoc_default_flags = ['members', 'inherited-members', 'show-inheritance', 'undoc-members']
+
+add_function_parentheses = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
