@@ -11,6 +11,8 @@ test:
 	flake8
 	-pydocstyle  --add-ignore D103,D102,D107 --explain --source ddl/base.py
 	pytest $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
+pydocstyle:
+	pydocstyle  --add-ignore D103,D102,D107 --explain --source ddl/base.py
 test/mlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
 test/other:

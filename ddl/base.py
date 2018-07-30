@@ -89,7 +89,7 @@ def get_n_features(destructor, try_destructor_sample=False):
 
     Parameters
     ----------
-    destructor :
+    destructor : estimator
     try_destructor_sample : bool
 
     """
@@ -167,6 +167,12 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
     The only methods that need to be implemented in this case are
     ``get_density_estimator``, ``transform`` and ``inverse_transform``.
+
+    Attributes
+    ----------
+    density_ : estimator
+        Fitted underlying density.
+
     """
 
     @abstractmethod
@@ -218,6 +224,11 @@ class IdentityDestructor(BaseDensityDestructor):
     This assumes a canonical uniform density on the unit hypercube and
     has a domain of [0, 1].
 
+    Attributes
+    ----------
+    density_ : estimator
+        Fitted underlying density.
+
     See Also
     --------
     UniformDensity
@@ -261,6 +272,11 @@ class UniformDensity(BaseEstimator, ScoreMixin):
     trivial density is used as the underlying density for the
     ``IdentityDestructor``.
 
+    Attributes
+    ----------
+    n_features_ : int
+        Number of features of the training data.
+
     See Also
     --------
     IdentityDestructor
@@ -303,8 +319,17 @@ def get_implicit_density(fitted_destructor, copy=False):
     ``n_features_`` attribute to be available. Thus we have implemented
     this method instead of explicitly exposing an implicit density class.
 
-    If ``copy=True``, the new destructor will create a deep copy of the
-    fitted destructor rather than just copying a reference to it.
+    Parameters
+    ----------
+    fitted_destructor : estimator
+    copy : bool
+        If ``copy=True``, the new destructor will create a deep copy of the
+        fitted destructor rather than just copying a reference to it.
+
+    Returns
+    -------
+    density : _ImplicitDensity
+
     """
     return _ImplicitDensity(
         destructor=fitted_destructor
@@ -323,8 +348,18 @@ def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
     ``n_features_`` attribute to be available. Thus we have implemented
     this method instead of explicitly exposing an implicit density class.
 
-    If ``copy=True``, the new destructor will create a deep copy of the
-    fitted destructor rather than just copying a reference to it.
+    Parameters
+    ----------
+    fitted_canonical_destructor : estimator
+    copy : bool
+        If ``copy=True``, the new destructor will create a deep copy of the
+        fitted destructor rather than just copying a reference to it.
+
+
+    Returns
+    -------
+    destructor : _InverseCanonicalDestructor
+
     """
     return _InverseCanonicalDestructor(
         canonical_destructor=fitted_canonical_destructor
@@ -443,17 +478,23 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
     into a single composite destructor. This is a fundamental building
     block for creating more complex destructors from simple atomic
     destructors.
+
+    Parameters
+    ----------
+    destructors : list
+        List of destructor estimators to use as subdestructors.
+
+    random_state :
+        Global random state used if any of the subdestructors are
+        random-based. By seeding the global ``np.random`` via
+        ``random_state`` and then resetting to its previous state,
+        we can avoid having to carefully pass around random states for
+        random-based sub destructors.
+
     """
 
     def __init__(self, destructors=None, random_state=None):
-        """Initialize composite destructor.
-
-        ``random_state`` is needed if any of the atomic destructors
-        are random-based. By seeding the global np.random via
-        random_state and then resetting to its previous state, we can
-        avoid having to carefully pass around random_states for random
-        atomic destructors.
-        """
+        """Initialize composite destructor."""
         self.destructors = destructors
         self.random_state = random_state
 
