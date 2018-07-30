@@ -159,7 +159,7 @@ class _NumDimWarning(UserWarning):
 
 
 class BaseDensityDestructor(BaseEstimator, DestructorMixin):
-    """Abstract destructor an explicit underlying density.
+    """Abstract destructor derived from an explicit underlying density.
 
     This should be used if the destructor is based on an *explicit*
     underlying density such as a ``TreeDestructor`` or
