@@ -1,3 +1,4 @@
+"""Deep destructors module."""
 from __future__ import division, print_function
 
 import collections
@@ -18,13 +19,72 @@ logger = logging.getLogger(__name__)
 
 
 class DeepDestructor(CompositeDestructor):
-    """Add destructors/layers until the validation log-likelihood stops going down."""
+    """Destructor formed by composing copies of some atomic destructor.
+
+    This destructor creates a dynamic composite destructor that includes an
+    optional initial destructor (parameter `init_destructor`) followed by
+    multiple copies of a canonical destructor (parameter
+    `canonical_destructor`). The `init_destructor` is often used for
+    preprocessing steps such as standardization.
+
+    If the training data's domain/support is not the unit hypercube,
+    an initial destructor is required---this initial destructor should have
+    a domain that matches the training data (by the definition of a
+    destructor, the range of the destructor is the unit hypercube and thus
+    the initial destructor will project the data onto the canonical domain.
+
+    This is a relatively thin wrapper around
+    :class:`~ddl.base.CompositeDestructor` that creates copies of the
+    canonical destructor to create a deep composite destructor with
+    destuctors (or "layers") that are similar in structure because they have
+    the same hyperparameters.
+
+    See Also
+    --------
+    DeepDestructorCV
+        A deep destructor whose number of destructors/layers is chosen
+        automatically based on cross-validation test likelihood.
+
+    ddl.base.CompositeDestructor
+
+    Parameters
+    ----------
+    canonical_destructor : estimator or list
+        The canonical destructor(s) that will be cloned to build up a deep
+        destructor. Parameter `canonical_destructor` can be a list of
+        canonical destructors. The list will be cycled through to get as
+        many canonical destructors as needed.
+
+    init_destructor : estimator, optional
+        Initial destructor (e.g. preprocessing or just to project to
+        canonical domain).
+
+    n_canonical_destructors : int, defaults to 1
+        Number of cloned canonical destructors to add to the deep
+        destructor.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by `np.random`.
+
+    Attributes
+    ----------
+    fitted_destructors_ : list
+        List of fitted (sub)destructors. See `fitted_destructors_` of
+        :class:`~ddl.base.CompositeDestructor`.
+
+    density_ : estimator
+        *Implicit* density of deep destructor.
+
+    """
 
     # noinspection PyMissingConstructor
     def __init__(self, canonical_destructor=None, init_destructor=None,
                  n_canonical_destructors=1, random_state=None):
-        """Parameter `canonical_destructor` can be a list of canonical destructors.
-        The list will be cycled through to get as many canonical destructors as needed."""
+
         self.canonical_destructor = canonical_destructor
         self.init_destructor = init_destructor
         self.n_canonical_destructors = n_canonical_destructors
@@ -52,12 +112,93 @@ class DeepDestructor(CompositeDestructor):
 
 
 class DeepDestructorCV(DeepDestructor):
+    """Deep destructor whose number of destructors/layers is determined by CV.
+
+    Nearly the same as `DeepDestructor` except that the number of
+    canonical destructors (i.e. the number of layers) is automatically
+    determined using cross validation. The likelihood of held-out data in
+    each CV fold is used to determine the number of parameters.
+
+    This destructor is computationally more efficient than using
+    `sklearn.model_selection.GridSearchCV` because the deep destructor can
+    be built one layer at a time and the test likelihood can be accumulated
+    one layer at a time.
+
+    See Also
+    --------
+    DeepDestructor
+
+    Parameters
+    ----------
+
+    canonical_destructor : estimator or list
+        The canonical destructor(s) that will be cloned to build up a deep
+        destructor. Parameter `canonical_destructor` can be a list of
+        canonical destructors. The list will be cycled through to get as
+        many canonical destructors as needed.
+
+    init_destructor : estimator, optional
+        Initial destructor (e.g. preprocessing or just to project to
+        canonical domain).
+
+    cv :
+
+    stop_tol :
+
+    max_canonical_destructors : int or None, defaults to None
+        The maximum number of destructors (including the initial destructor)
+        to add to the deep destructor. If set to None, then the number of
+        destructors is unbounded.
+
+    n_extend : int, defaults to 1
+        The number of destructors/layers to extend even after the stopping
+        tolerance defined by `stop_tol` has been reached. This could be
+        useful if the destructors are random or not gauranteed to always
+        increase likelihood. If `n_extend` is 1, then the optimization will
+        stop as soon as the test log likelihood decreases.
+
+    refit : bool, defaults to False
+        Whether to refit the entire deep destructor with the selected number
+        of layers or just extract the fit from the first fold.
+
+    silent : bool, defaults to False
+        Whether to output debug messages via :class:`logging.logger`. Note that
+        logging messages are not output to standard out automatically.  Please
+        see the Python module :mod:`logging` for more information.
+
+    log_prefix : str, defaults to ''
+        Prefix of debug logging messages via :class:`logging.logger`. See
+        `silent` parameter.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, random_state is the seed used by the random number generator;
+        If RandomState instance, random_state is the random number generator;
+        If None, the random number generator is the RandomState instance used
+        by `np.random`.
+
+    Attributes
+    ----------
+    fitted_destructors_ : array, shape = [n_layers]
+        Array of fitted destructors. See `fitted_destructors_` of
+        `base.CompositeDestructor`.
+
+    density_ : estimator
+        *Implicit* density of deep destructor.
+
+    cv_train_scores_ : array, shape = [n_layers, n_splits]
+        Cross validation train scores (mean log-likelihood).
+
+    cv_test_scores_ : array, shape = [n_layers, n_splits]
+        Cross validation test scores (mean log-likelihood).
+
+    best_n_layers_ : int
+        Best number of layers as selected by cross validation.
+
+    """
     # noinspection PyMissingConstructor
     def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
                  max_canonical_destructors=None, n_extend=1, refit=True, silent=False,
                  log_prefix='', random_state=None):
-        """Parameter `canonical_destructor` can be a list of canonical destructors.
-        The list will be cycled through to get as many canonical destructors as needed."""
         self.canonical_destructor = canonical_destructor
         self.init_destructor = init_destructor
         self.cv = cv

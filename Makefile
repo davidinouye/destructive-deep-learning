@@ -1,5 +1,8 @@
 SHELL:=/bin/bash
 PYTEST_FLAGS=--cov=ddl --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
+PYDOCSTYLE_FILES=ddl/base.py ddl/deep.py
+PYDOCSTYLE_FLAGS=--add-ignore D103,D102,D107 --explain --source 
+
 
 all:
 	python setup.py build_ext --inplace
@@ -9,10 +12,10 @@ cleanmlpack:
 test:
 	isort --recursive --check-only
 	flake8
-	-pydocstyle  --add-ignore D103,D102,D107 --explain --source ddl/base.py
+	-pydocstyle $(PYDOCSTYLE_FLAGS) $(PYDOCSTYLE_FILES)
 	pytest $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 pydocstyle:
-	pydocstyle  --add-ignore D103,D102,D107 --explain --source ddl/base.py
+	pydocstyle $(PYDOCSTYLE_FLAGS) $(PYDOCSTYLE_FILES)
 test/mlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
 test/other:

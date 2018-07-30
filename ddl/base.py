@@ -1,4 +1,4 @@
-"""Base destructors and mixins for building destructors."""
+"""Base destructors and destructor mixins."""
 from __future__ import division, print_function
 
 import logging
@@ -490,6 +490,16 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         ``random_state`` and then resetting to its previous state,
         we can avoid having to carefully pass around random states for
         random-based sub destructors.
+
+    Attributes
+    ----------
+    fitted_destructors_ : list
+        List of fitted (sub)destructors. (Note that these objects are cloned
+        via ``sklearn.base.clone`` from the ``destructors`` parameter so as
+        to avoid mutating the ``destructors`` parameter.)
+
+    density_ : estimator
+        *Implicit* density of composite destructor.
 
     """
 
