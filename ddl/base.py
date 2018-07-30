@@ -80,17 +80,18 @@ def get_n_features(destructor, try_destructor_sample=False):
     or via density sampling ``destructor.density_.sample(1,
     random_state=0).shape[1]``.
 
-    If ``try_destructor_sample=True``,
-    additionally attempt ``destructor.sample(1, random_state=0).shape[
-    1]``. This option could cause infinite recursion since
-    ``DestructorMixin`` uses ``get_n_features(destructor)`` in order to
-    sample but this can be avoided if the destructor reimplements sample
-    without ``get_n_features()`` such as in the ``CompositeDestructor``.
 
     Parameters
     ----------
     destructor : estimator
-    try_destructor_sample : bool
+        The (fitted) destructor from which to extract the number of features.
+    try_destructor_sample : bool, optional, default=False
+        If ``True``, additionally attempt ``destructor.sample(1,
+        random_state=0).shape[ 1]``. This option could cause infinite
+        recursion since :class:`~ddl.base.DestructorMixin` uses
+        :func:`get_n_features` in order to sample but this can be avoided if
+        the destructor reimplements sample without :func:`get_n_features`
+        such as in the :class:`ddl.base.CompositeDestructor`.
 
     """
     n_features = np.nan
@@ -322,6 +323,9 @@ def get_implicit_density(fitted_destructor, copy=False):
     Parameters
     ----------
     fitted_destructor : estimator
+        A fitted destructor estimator from which to construct the implicit
+        density.
+
     copy : bool
         If ``copy=True``, the new destructor will create a deep copy of the
         fitted destructor rather than just copying a reference to it.
@@ -351,6 +355,9 @@ def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
     Parameters
     ----------
     fitted_canonical_destructor : estimator
+        A fitted *canonical* destructor from which to construct the implicit
+        inverse destructor.
+
     copy : bool
         If ``copy=True``, the new destructor will create a deep copy of the
         fitted destructor rather than just copying a reference to it.
@@ -484,12 +491,18 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
     destructors : list
         List of destructor estimators to use as subdestructors.
 
-    random_state :
+    random_state : int, RandomState instance or None, optional (default=None)
         Global random state used if any of the subdestructors are
-        random-based. By seeding the global ``np.random`` via
-        ``random_state`` and then resetting to its previous state,
+        random-based. By seeding the global :mod:`numpy.random`` via
+        `random_state` and then resetting to its previous state,
         we can avoid having to carefully pass around random states for
         random-based sub destructors.
+
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
 
     Attributes
     ----------

@@ -59,7 +59,7 @@ class DeepDestructor(CompositeDestructor):
         Initial destructor (e.g. preprocessing or just to project to
         canonical domain).
 
-    n_canonical_destructors : int, defaults to 1
+    n_canonical_destructors : int, default=1
         Number of cloned canonical destructors to add to the deep
         destructor.
 
@@ -68,7 +68,7 @@ class DeepDestructor(CompositeDestructor):
         generator; If :class:`~numpy.random.RandomState` instance,
         `random_state` is the random number generator; If None, the random
         number generator is the :class:`~numpy.random.RandomState` instance
-        used by `np.random`.
+        used by :mod:`numpy.random`.
 
     Attributes
     ----------
@@ -120,9 +120,9 @@ class DeepDestructorCV(DeepDestructor):
     each CV fold is used to determine the number of parameters.
 
     This destructor is computationally more efficient than using
-    `sklearn.model_selection.GridSearchCV` because the deep destructor can
-    be built one layer at a time and the test likelihood can be accumulated
-    one layer at a time.
+    :class:`sklearn.model_selection.GridSearchCV` because the deep
+    destructor can be built one layer at a time and the test likelihood can
+    be accumulated one layer at a time.
 
     See Also
     --------
@@ -141,40 +141,51 @@ class DeepDestructorCV(DeepDestructor):
         Initial destructor (e.g. preprocessing or just to project to
         canonical domain).
 
-    cv :
+    cv : int, cross-validation generator or an iterable, default=None
+        Determines the cross-validation splitting strategy. Possible inputs
+        for cv are:
 
-    stop_tol :
+            - None, to use the default 3-fold cross validation,
+            - integer, to specify the number of folds in a `(Stratified)KFold`,
+            - An object to be used as a cross-validation generator.
+            - An iterable yielding train, test splits.
 
-    max_canonical_destructors : int or None, defaults to None
+    stop_tol : float, default=1e-3
+        Relative difference at which to stop adding destructors.  For
+        example, if set to 0.0, then the algorithm will stop if the test log
+        likelihood ever decreases.
+
+    max_canonical_destructors : int or None, default=None
         The maximum number of destructors (including the initial destructor)
         to add to the deep destructor. If set to None, then the number of
         destructors is unbounded.
 
-    n_extend : int, defaults to 1
+    n_extend : int, default=1
         The number of destructors/layers to extend even after the stopping
         tolerance defined by `stop_tol` has been reached. This could be
         useful if the destructors are random or not gauranteed to always
         increase likelihood. If `n_extend` is 1, then the optimization will
         stop as soon as the test log likelihood decreases.
 
-    refit : bool, defaults to False
+    refit : bool, default=False
         Whether to refit the entire deep destructor with the selected number
         of layers or just extract the fit from the first fold.
 
-    silent : bool, defaults to False
+    silent : bool, default=False
         Whether to output debug messages via :class:`logging.logger`. Note that
         logging messages are not output to standard out automatically.  Please
         see the Python module :mod:`logging` for more information.
 
-    log_prefix : str, defaults to ''
+    log_prefix : str, default=''
         Prefix of debug logging messages via :class:`logging.logger`. See
         `silent` parameter.
 
     random_state : int, RandomState instance or None, optional (default=None)
-        If int, random_state is the seed used by the random number generator;
-        If RandomState instance, random_state is the random number generator;
-        If None, the random number generator is the RandomState instance used
-        by `np.random`.
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
 
     Attributes
     ----------
