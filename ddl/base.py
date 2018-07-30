@@ -1,3 +1,4 @@
+"""Base destructors and mixins for building destructors."""
 from __future__ import division, print_function
 
 import logging
@@ -19,7 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 class AutoregressiveMixin(object):
-    """Core methods that autoregressive densities need to handle."""
+    """
+    Abstract mixin for autoregressive densities.
+
+    Abstract methods for ``conditional_densities``, ``marginal_cdf`` and
+    ``marginal_inverse_cdf``.
+    """
 
     @abstractmethod
     def conditional_densities(self, X, cond_idx_arr, not_cond_idx_arr):
@@ -35,22 +41,24 @@ class AutoregressiveMixin(object):
 
 
 class ScoreMixin(object):
-    """Simple returns mean of score_samples(), which should return log-likelihood."""
+    """Mixin for ``score`` that returns mean of ``score_samples``."""
 
     def score(self, X, y=None):
         return np.mean(self.score_samples(X, y))
 
 
 class DestructorMixin(ScoreMixin, TransformerMixin):
-    """
-    Adds `sample`, `get_domain`, and score *if* the destructor defines
-    the `density_` attribute after fitting. (Also supplying `self.n_features_` can reduce
-    some computation, see note below.)
+    """Mixin helper class to add universal destructor methods.
 
-    Note that this finds the data dimension by looking for the `self.n_features_`
-    attribute, the `self.density_.n_features_` attribute and finally attempting
-    to call `self.density_.sample(1)` and determine the dimension from the density
-    sample.
+    Adds ``sample``, ``get_domain``, and ``score`` *if* the destructor
+    defines the ``density_`` attribute after fitting. (Also, if the
+    destructor defines the attribute ``n_features_``, no sampling is
+    required to determine the number of features, see note below.)
+
+    Note that this finds the data dimension by looking sequentally for
+    the fitted ``n_features_`` attribute, the ``density_.n_features_``
+    attribute, and finally attempting to call `self.density_.sample(1)`
+    and determine the dimension from the density sample.
     """
 
     def sample(self, n_samples=1, random_state=None):
@@ -65,14 +73,25 @@ class DestructorMixin(ScoreMixin, TransformerMixin):
 
 
 def get_n_features(destructor, try_destructor_sample=False):
-    """Attempt to find n_features either from `destructor.n_features_`,
-    `destructor.density_.n_features_`, or
-    via density sampling `destructor.density_.sample(1, random_state=0).shape[1]`.
-    If `try_destructor_sample=True`, additionally attempt
-    `destructor.sample(1, random_state=0).shape[1]`. This option could cause infinite recursion
-    since `DestructorMixin` uses `get_n_features(destructor)` in order to sample but this can be
-    avoided if the destructor reimplements sample without `get_n_features()` such as in the
-    `CompositeDestructor`.
+    """Get the number of features for a fitted destructor.
+
+    Attempt to find ``n_features`` either from
+    ``destructor.n_features_``, ``destructor.density_.n_features_``,
+    or via density sampling ``destructor.density_.sample(1,
+    random_state=0).shape[1]``.
+
+    If ``try_destructor_sample=True``,
+    additionally attempt ``destructor.sample(1, random_state=0).shape[
+    1]``. This option could cause infinite recursion since
+    ``DestructorMixin`` uses ``get_n_features(destructor)`` in order to
+    sample but this can be avoided if the destructor reimplements sample
+    without ``get_n_features()`` such as in the ``CompositeDestructor``.
+
+    Parameters
+    ----------
+    destructor :
+    try_destructor_sample : bool
+
     """
     n_features = np.nan
     if hasattr(destructor, 'n_features_'):
@@ -118,7 +137,9 @@ def get_n_features(destructor, try_destructor_sample=False):
 
 
 class BoundaryWarning(DataConversionWarning):
-    """Warning when data is on the boundary of the domain or range and
+    """Warning that data is on the boundary of the required set.
+
+    Warning when data is on the boundary of the domain or range and
     is converted to data that lies inside the boundary. For example, if
     the domain is (0,inf) rather than [0,inf), values of 0 will be made
     a small epsilon above 0.
@@ -126,7 +147,9 @@ class BoundaryWarning(DataConversionWarning):
 
 
 class _NumDimWarning(UserWarning):
-    """Warning that we have to use 1 sample in order to determine the
+    """Warning about the number of dimensions.
+
+    Warning that we have to use 1 sample in order to determine the
     number of dimensions. (Because `trans.n_features_` does not exist and
     ``trans.density_.n_features_` does not exist we attempt to determine the
     dimension by sampling from self.density_, which may be
@@ -136,6 +159,16 @@ class _NumDimWarning(UserWarning):
 
 
 class BaseDensityDestructor(BaseEstimator, DestructorMixin):
+    """Abstract destructor an explicit underlying density.
+
+    This should be used if the destructor is based on an *explicit*
+    underlying density such as a ``TreeDestructor`` or
+    ``IndepedentDestructor``.
+
+    The only methods that need to be implemented in this case are
+    ``get_density_estimator``, ``transform`` and ``inverse_transform``.
+    """
+
     @abstractmethod
     def get_density_estimator(self):
         raise NotImplementedError()
@@ -180,6 +213,17 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
 
 class IdentityDestructor(BaseDensityDestructor):
+    """Identity destructor/transform.
+
+    This assumes a canonical uniform density on the unit hypercube and
+    has a domain of [0, 1].
+
+    See Also
+    --------
+    UniformDensity
+
+    """
+
     def get_density_estimator(self):
         return UniformDensity()
 
@@ -211,7 +255,17 @@ class IdentityDestructor(BaseDensityDestructor):
 
 
 class UniformDensity(BaseEstimator, ScoreMixin):
-    """Uniform density estimator (no estimation necessary except number of dimensions)."""
+    """Uniform density estimator.
+
+    Only the ``n_features_`` attribute needs fitting. This nearly
+    trivial density is used as the underlying density for the
+    ``IdentityDestructor``.
+
+    See Also
+    --------
+    IdentityDestructor
+
+    """
 
     def __init__(self):
         pass
@@ -241,11 +295,16 @@ class UniformDensity(BaseEstimator, ScoreMixin):
 
 
 def get_implicit_density(fitted_destructor, copy=False):
-    """Returns an implicit density based on a fitted destructor.
-    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests
-    that require n_features to be available.
-    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than
-    just copying a reference to it.
+    """Return the implicit density associated with a fitted destructor.
+
+    Extracting the *implicit* density associated with an already-fitted
+    destructor must be handled carefully to enable proper ``sklearn``
+    cloning and ``check_destructor`` tests that require the
+    ``n_features_`` attribute to be available. Thus we have implemented
+    this method instead of explicitly exposing an implicit density class.
+
+    If ``copy=True``, the new destructor will create a deep copy of the
+    fitted destructor rather than just copying a reference to it.
     """
     return _ImplicitDensity(
         destructor=fitted_destructor
@@ -253,11 +312,19 @@ def get_implicit_density(fitted_destructor, copy=False):
 
 
 def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
-    """Returns the inverse of a fitted canonical destructor.
-    This must be handled carefully to enable proper sklearn cloning and check_destructor() tests
-    that require n_features to be available.
-    If copy=True, the new destructor will create a deep copy of the fitted destructor rather than
-    just copying a reference to it.
+    """Return the inverse destructor of a fitted *canonical* destructor.
+
+    Note that only a canonical destructor has an inverse which is also a
+    destructor.
+
+    Extracting the inverse destructor associated with an already-fitted
+    destructor must be handled carefully to enable proper ``sklearn``
+    cloning and ``check_destructor`` tests that require the
+    ``n_features_`` attribute to be available. Thus we have implemented
+    this method instead of explicitly exposing an implicit density class.
+
+    If ``copy=True``, the new destructor will create a deep copy of the
+    fitted destructor rather than just copying a reference to it.
     """
     return _InverseCanonicalDestructor(
         canonical_destructor=fitted_canonical_destructor
@@ -265,14 +332,17 @@ def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
 
 
 class ShouldOnlyBeInTestWarning(UserWarning):
+    """Warning that should only occur in testing."""
+
     pass
 
 
 class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
-    """Defines an inverse canonical destructor which is also a canonical destructor.
-    There is a slight technical condition that the canonical destructor must uniquely
-    map every point of the unit hypercube (or similarly that the associated density
-    has support everywhere in the hypercube).
+    """An inverse canonical destructor which is also a destructor.
+
+    There is a slight technical condition that the canonical destructor
+    must uniquely map every point of the unit hypercube (or similarly
+    that the associated density has support everywhere in the hypercube).
     """
 
     def __init__(self, canonical_destructor=None):
@@ -340,12 +410,11 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
 
 
 def _check_global_random_state(f):
-    """Decorator that saves the global random state, sets the global random state based on
-    `self.random_state`, calls the function and the resets the global random state.
+    """Decorate function to save, set and reset the global random state.
 
-    This is useful for composite or deep destructors where one does not want to
-    set the random_state for each individual destructor but wants exact
-    reproducibility.
+    This is useful for composite or deep destructors where one does not
+    want to set the random_state for each individual destructor but
+    wants exact reproducibility.
     """
     @wraps(f)
     def decorated(self, *args, **kwargs):
@@ -367,15 +436,23 @@ def _check_global_random_state(f):
 
 
 class CompositeDestructor(BaseEstimator, DestructorMixin):
-    """Joins multiple destructors (or relative destructors like
-    LinearProjector) into a composite destructor.
+    """Meta destructor composed of multiple destructors.
+
+    This meta destructor composes multiple destructors or other
+    transformations (e.g. relative destructors like LinearProjector)
+    into a single composite destructor. This is a fundamental building
+    block for creating more complex destructors from simple atomic
+    destructors.
     """
 
     def __init__(self, destructors=None, random_state=None):
-        """`random_state` is needed if any of the atomic destructors are random-based.
-        By seeding the global np.random via random_state and then resetting to its previous
-        state, we can avoid having to carefully pass around random_states for random atomic
-        destructors.
+        """Initialize composite destructor.
+
+        ``random_state`` is needed if any of the atomic destructors
+        are random-based. By seeding the global np.random via
+        random_state and then resetting to its previous state, we can
+        avoid having to carefully pass around random_states for random
+        atomic destructors.
         """
         self.destructors = destructors
         self.random_state = random_state
@@ -425,8 +502,10 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def sample(self, n_samples=1, random_state=None):
-        """Nearly the same as `DestructorMixin.sample` but n_features is found from first
-        fitted destructor to avoid recursion.
+        """Sample from composite destructor.
+
+        Nearly the same as ``DestructorMixin.sample`` but the number of
+        features is found from first fitted destructor to avoid recursion.
         """
         self._check_is_fitted()
         rng = check_random_state(random_state)
@@ -452,11 +531,11 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return log_likelihood_layers
 
     def score(self, X, y=None, partial_idx=None):
-        """Overrides super class to allow for partial_idx"""
+        """Override super class to allow for partial_idx."""
         return np.mean(self.score_samples(X, y, partial_idx=partial_idx))
 
     def score_layers(self, X, y=None, partial_idx=None):
-        """Overrides super class to allow for partial_idx"""
+        """Override super class to allow for partial_idx."""
         return np.mean(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=0)
 
     def get_domain(self):
