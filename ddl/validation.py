@@ -470,14 +470,14 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
                 ax.axis('equal')
                 ax.set_title(title)
             plt.show(block=False)
-            raise UniformabilityError(
+            raise _UniformabilityError(
                 err_msg % ('inverse_transform', 'uniform', 'original (assumed)', avg_p_threshold,
                            'inverse_transform')
             )
 
         _plot_data_for_debug()
     if U_avg_p_val <= avg_p_threshold:
-        raise UniformabilityError(
+        raise _UniformabilityError(
             err_msg % ('transform', 'original (assumed)', 'uniform', avg_p_threshold,
                        'transform')
         )
@@ -548,7 +548,7 @@ def check_invertibility(trans, random_state=0):
                     ax.axis('equal')
                     ax.set_title(title)
                 plt.show(block=False)
-                raise InvertibilityError(
+                raise _InvertibilityError(
                     'Transforming and then inverse transforming does not seem to '
                     'give the original data. Relative difference = %g.' % rel_diff)
 
@@ -623,40 +623,40 @@ def check_identity_element(trans, random_state=0):
 
     diff = _relative_diff(X, U)
     if diff > 0.02:  # 2% movement of particles on average
-        raise IdentityElementError('Given that the transformer was trained on uniform samples, '
-                                   'the transformation does not appear to be the identity. There '
-                                   'are *two* possible causes: 1) The fitting procedure '
-                                   'overfitted the uniform samples such that the implied density '
-                                   'is far from uniform. 2) The transformation does not '
-                                   'appropriately produce an identity transformation. Relative '
-                                   'diff = %g' % diff)
+        raise _IdentityElementError('Given that the transformer was trained on uniform samples, '
+                                    'the transformation does not appear to be the identity. There '
+                                    'are *two* possible causes: 1) The fitting procedure '
+                                    'overfitted the uniform samples such that the implied density '
+                                    'is far from uniform. 2) The transformation does not '
+                                    'appropriately produce an identity transformation. Relative '
+                                    'diff = %g' % diff)
     logger.info('Relative difference after fitting and then transforming uniform samples (shape '
                 '%s) = %g' % (str(X_train.shape), diff))
     logger.info(_success('check_identity_element'))
     return True
 
 
-class DestructorError(RuntimeError):
+class _DestructorError(RuntimeError):
     """Destructor property error."""
     pass
 
 
-class UniformabilityError(DestructorError):
+class _UniformabilityError(_DestructorError):
     """Uniformability property error."""
     pass
 
 
-class InvertibilityError(DestructorError):
+class _InvertibilityError(_DestructorError):
     """Invertibility property error."""
     pass
 
 
-class CanonicalDomainError(DestructorError):
+class _CanonicalDomainError(_DestructorError):
     """Canonical domain property error."""
     pass
 
 
-class IdentityElementError(DestructorError):
+class _IdentityElementError(_DestructorError):
     """Identity element property error."""
     pass
 
