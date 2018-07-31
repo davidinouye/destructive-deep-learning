@@ -130,7 +130,6 @@ class DeepDestructorCV(DeepDestructor):
 
     Parameters
     ----------
-
     canonical_destructor : estimator or list
         The canonical destructor(s) that will be cloned to build up a deep
         destructor. Parameter `canonical_destructor` can be a list of
@@ -206,6 +205,7 @@ class DeepDestructorCV(DeepDestructor):
         Best number of layers as selected by cross validation.
 
     """
+
     # noinspection PyMissingConstructor
     def __init__(self, canonical_destructor=None, init_destructor=None, cv=None, stop_tol=1e-3,
                  max_canonical_destructors=None, n_extend=1, refit=True, silent=False,
@@ -389,7 +389,6 @@ class DeepDestructorCV(DeepDestructor):
 
     def _get_destructor_iterable(self):
         """Yield an infinite sequence of destructors."""
-
         def _destructor_generator():
             if self.init_destructor is not None:
                 yield clone(self.init_destructor)
@@ -400,7 +399,7 @@ class DeepDestructorCV(DeepDestructor):
 
 
 def _take(iterable, n):
-    """Return first n items of the iterable as a list"""
+    """Return first n items of the iterable as a list."""
     return list(islice(iterable, n))
 
 
