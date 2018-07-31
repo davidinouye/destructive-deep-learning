@@ -148,17 +148,24 @@ class ScipyUnivariateDensity(_UnivariateDensity):
         self.scipy_fit_kwargs = scipy_fit_kwargs
 
     def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         def _check_scipy_kwargs(kwargs, _scipy_rv):
@@ -608,17 +615,24 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         self.alpha = alpha
 
     def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         X = self._check_X(X)
@@ -689,17 +703,24 @@ class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         self.bounds = bounds
 
     def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         # Validate parameters

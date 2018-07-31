@@ -19,7 +19,30 @@ logger = logging.getLogger(__name__)
 
 
 class IndependentDestructor(BaseDensityDestructor):
-    """Independent destructor.
+    """Coordinate-wise destructor based on underlying independent density.
+
+    This destructor assumes that the underlying density is independent (i.e.
+    :class:`~ddl.independent.IndependentDensity`) and thus the
+    transformation merely applys a univariate CDF to each feature
+    independently of other features. The user can specify the univariate
+    densities for each feature using the random variables defined in
+    :mod:`scipy.stats`.  The fit method merely fits an independent density,
+    and then uses the corresponding CDFs to transform each coordinate
+    independently.
+
+    Parameters
+    ----------
+    independent_density : IndependentDensity
+        The independent density for this destructor.
+
+    Attributes
+    ----------
+    density_ : IndependentDensity
+        Fitted underlying independent density.
+
+    See Also
+    --------
+    IndependentDensity
 
     """
     def __init__(self, independent_density=None):
@@ -118,31 +141,64 @@ class IndependentDestructor(BaseDensityDestructor):
 
 
 class IndependentDensity(BaseEstimator, ScoreMixin):
-    """Independent density.
+    """Independent density estimator.
+
+    This density assumes that the underlying density is independent. The
+    user can specify the univariate densities for each feature.
+
+    Parameters
+    ----------
+    univariate_estimators : estimator or array-like of shape (n_features,)
+        Univariate estimator(s) for this independent density. Should be one of
+        the following:
+
+            #. None (default, assumes independent Gaussian density).
+            #. univariate density estimator (assumes all features have
+            the same density class, but the fitted parameters can be
+            different---e.g. the means of features 1 and 2 could be
+            different even though they are both Gaussian estimators.).
+            #. array-like of univariate density estimators for each feature.
+
+        Default assumes univariate Gaussian densities for all features.
+
+    Attributes
+    ----------
+    univariate_densities_ : array, shape (n_features, )
+        *Fitted* univariate estimators for each feature.
+
+    n_features_ : int
+        Number of features.
+
+    See Also
+    --------
+    ddl.univariate
+    ddl.univariate.ScipyUnivariateDensity
+    ddl.univariate.HistogramUnivariateDensity
 
     """
-    def __init__(self, univariate_estimators=None):
-        """Default assumes that univariate_estimators are Gaussian.
-        `univariate_estimators` should be:
 
-            #. None (defaults to `ScipyUnivariateDensity()`),
-            #. univariate density estimator,
-            #. array-like of univariate density estimators.
-        """
+    def __init__(self, univariate_estimators=None):
         self.univariate_estimators = univariate_estimators
 
     def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         def _check_univariate(estimators, n_features):
@@ -340,11 +396,33 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
 
 class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
-    """A transformer (or *relative* destructor) that performs the
-    inverse CDF transform independently for fitted univariate densities.
-    The default is the inverse CDF of the standard normal; this default
-    is useful to make linear projection destructors canonical (i.e. unit
-    domain and correspondingly the identity element property).
+    """Independent inverse CDF transformer applied coordinate-wise.
+
+    A transformer (or *relative* destructor) that performs the inverse CDF
+    transform independently for the fitted univariate densities
+    corresponding to each feature. The default is the inverse CDF of the
+    standard normal; this default is useful to make linear projection
+    destructors canonical by prepending this as a preprocessing step so that
+    the domain of the destructor is the unit hypercube (i.e. canonical
+    domain).
+
+    See :func:`fit` function documentation for more information.
+
+    Attributes
+    ----------
+    fitted_densities_ : array, shape (n_features,)
+
+        Fitted univariate densities for each feature. Note that these must
+        be passed in as parameters to the :func:`fit` function. All needed
+        transformation and scoring information is built into the univariate
+        densities.  For example, the :func:`transform` function merely uses
+        the :func:`inverse_cdf` function.
+
+    See Also
+    --------
+    ddl.univariate
+    IndependentDestructor
+
     """
 
     def fit(self, X, y=None, fitted_densities=None, **fit_params):
