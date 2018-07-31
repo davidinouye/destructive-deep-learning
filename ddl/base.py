@@ -919,18 +919,25 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         self.destructors = destructors
         self.random_state = random_state
 
-    def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+    def fit(self, X, y=None):
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         self.fit_transform(X, y, **fit_params)
@@ -1056,17 +1063,27 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return X
 
     def score_samples(self, X, y=None, partial_idx=None):
-        """[Placeholder].
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
-        partial_idx :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
+
+        partial_idx : list or None, default=None
+            List of indices of the fitted destructor to use in
+            the computing the log likelihood. The default of None uses all
+            the fitted destructors. Mainly used for visualization
+            or debugging.
 
         Returns
         -------
-        obj : object
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         return np.sum(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=1)

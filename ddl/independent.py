@@ -131,18 +131,25 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         """
         self.univariate_estimators = univariate_estimators
 
-    def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
+    def fit(self, X, y=None):
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Optional extra fit parameters.
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
         def _check_univariate(estimators, n_features):
