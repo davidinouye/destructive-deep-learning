@@ -437,8 +437,7 @@ replacements = [
     \"\"\"
 
     Returns
-    """,
-    """
+    """, """
     \"\"\"[Placeholder].
 
     Returns
@@ -449,8 +448,7 @@ replacements = [
     \"\"\"
 
     Parameters
-    """,
-    """
+    """, """
     \"\"\"[Placeholder].
 
     Parameters
@@ -462,8 +460,7 @@ replacements = [
     -------
 
     \"\"\"
-        """,
-        """
+        """, """
     Returns
     -------
     obj : object
