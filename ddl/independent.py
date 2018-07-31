@@ -132,7 +132,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         self.univariate_estimators = univariate_estimators
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -142,6 +142,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         def _check_univariate(estimators, n_features):
@@ -229,7 +230,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return independent_scores.sum(axis=1)
 
     def conditional_densities(self, X, cond_idx, not_cond_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -239,13 +240,14 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         # Since independent, the conditional is equal to the marginal
         return self.marginal_density(not_cond_idx)
 
     def marginal_density(self, marginal_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -253,6 +255,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         marginal_density = clone(self)
@@ -263,7 +266,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return marginal_density
 
     def marginal_cdf(self, x, target_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -272,13 +275,14 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         return self.univariate_densities_[target_idx].cdf(np.array(x).reshape(-1, 1)).reshape(
             np.array(x).shape)
 
     def marginal_inverse_cdf(self, x, target_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -287,6 +291,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         return self.univariate_densities_[target_idx].inverse_cdf(

@@ -206,7 +206,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         _absolute_to_relative_probability(iter(tree))
 
     def sample(self, n_samples=1, random_state=None, shuffle=True):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -216,6 +216,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         # Randomly sample leaf nodes based on their node_value
@@ -359,7 +360,7 @@ class RandomTreeEstimator(BaseEstimator):
         self.random_state = random_state
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -369,6 +370,7 @@ class RandomTreeEstimator(BaseEstimator):
 
         Returns
         -------
+        obj : object
 
         """
         # Just make y a random gaussian variable
@@ -441,7 +443,7 @@ class _ArrayedTreeWrapper:
         self.node_values = [None for _ in range(len(tree.feature))]
 
     def set_node_destructor(self, node_destructor):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -515,10 +517,11 @@ class _SklearnNode:
         return 'node_i = %d, value = %g' % (self.node_i, self.value)
 
     def is_leaf(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         if np.isnan(self.left_child_index):
@@ -535,30 +538,33 @@ class _SklearnNode:
     # Read only properties
     @property
     def feature(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._tree.feature[self._node_i]
 
     @property
     def left_child_index(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._tree.children_left[self._node_i]
 
     @property
     def right_child_index(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._tree.children_right[self._node_i]
@@ -566,10 +572,11 @@ class _SklearnNode:
     # Read/write properties
     @property
     def node_i(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._node_i
@@ -580,10 +587,11 @@ class _SklearnNode:
 
     @property
     def domain(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._domain
@@ -594,10 +602,11 @@ class _SklearnNode:
 
     @property
     def value(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._node_values[self._node_i]
@@ -622,10 +631,11 @@ class _SklearnNode:
 
     @property
     def value_out(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         # Extract necessary variables
@@ -635,10 +645,11 @@ class _SklearnNode:
 
     @property
     def threshold(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._tree.threshold[self._node_i]
@@ -663,10 +674,11 @@ class _SklearnNode:
 
     @property
     def threshold_out(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         # Extract necessary variables
@@ -676,10 +688,11 @@ class _SklearnNode:
 
     @property
     def destructor(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self._node_destructors[self._node_i]

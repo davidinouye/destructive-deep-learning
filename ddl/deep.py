@@ -223,7 +223,7 @@ class DeepDestructorCV(DeepDestructor):
 
     @_check_global_random_state
     def fit(self, X, y=None, X_test=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -234,6 +234,7 @@ class DeepDestructorCV(DeepDestructor):
 
         Returns
         -------
+        obj : object
 
         """
         # Setup parameters

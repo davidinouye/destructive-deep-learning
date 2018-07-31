@@ -391,7 +391,7 @@ class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMix
 
 class _MixtureUnivariateMixin(object):
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -401,13 +401,14 @@ class _MixtureUnivariateMixin(object):
 
         Returns
         -------
+        obj : object
 
         """
         X = self._check_X(X)
         return super(_MixtureUnivariateMixin, self).fit(X, y, **fit_params)
 
     def cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -416,6 +417,7 @@ class _MixtureUnivariateMixin(object):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -425,7 +427,7 @@ class _MixtureUnivariateMixin(object):
         return u.reshape(-1, 1)
 
     def inverse_cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -434,6 +436,7 @@ class _MixtureUnivariateMixin(object):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()

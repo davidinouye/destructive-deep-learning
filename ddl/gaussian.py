@@ -189,7 +189,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return conditionals
 
     def marginal_cdf(self, x, target_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -198,6 +198,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self._fit_auxiliary()
@@ -218,7 +219,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return scipy.stats.norm.pdf(x, **params)
 
     def marginal_inverse_cdf(self, x, target_idx):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -227,6 +228,7 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self._fit_auxiliary()

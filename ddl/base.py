@@ -29,7 +29,7 @@ class AutoregressiveMixin(object):
 
     @abstractmethod
     def conditional_densities(self, X, cond_idx_arr, not_cond_idx_arr):
-        """Compute conditional densities. (abstract)
+        """(Abstract) Compute conditional densities.
 
         Parameters
         ----------
@@ -42,7 +42,7 @@ class AutoregressiveMixin(object):
 
     @abstractmethod
     def marginal_cdf(self, x, target_idx):
-        """Compute marginal cdf. (abstract)
+        """(Abstract) Compute marginal cdf.
 
         Parameters
         ----------
@@ -54,7 +54,7 @@ class AutoregressiveMixin(object):
 
     @abstractmethod
     def marginal_inverse_cdf(self, x, target_idx):
-        """Compute marginal inverse cdf. (abstract)
+        """(Abstract) Compute marginal inverse cdf.
 
         Parameters
         ----------
@@ -66,10 +66,10 @@ class AutoregressiveMixin(object):
 
 
 class ScoreMixin(object):
-    """Mixin for ``score`` that returns mean of ``score_samples``."""
+    """Mixin for :func:`score` that returns mean of :func:`score_samples`."""
 
     def score(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -78,6 +78,7 @@ class ScoreMixin(object):
 
         Returns
         -------
+        obj : object
 
         """
         return np.mean(self.score_samples(X, y))
@@ -234,14 +235,12 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
     @abstractmethod
     def get_density_estimator(self):
-        """Get density estimator (abstract method).
-
-        """
+        """(Abstract) Get density estimator."""
         raise NotImplementedError()
 
     @abstractmethod
     def transform(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -253,7 +252,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
     @abstractmethod
     def inverse_transform(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -264,7 +263,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         raise NotImplementedError()
 
     def fit(self, X, y=None, density_fit_params=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -274,6 +273,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         if density_fit_params is None:
@@ -283,7 +283,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def fit_from_density(self, density):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -291,6 +291,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self.density_ = density
@@ -380,7 +381,7 @@ class IdentityDestructor(BaseDensityDestructor):
         return UniformDensity()
 
     def transform(self, X, y=None, copy=True):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -390,6 +391,7 @@ class IdentityDestructor(BaseDensityDestructor):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -401,7 +403,7 @@ class IdentityDestructor(BaseDensityDestructor):
         return X
 
     def inverse_transform(self, X, y=None, copy=True):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -411,6 +413,7 @@ class IdentityDestructor(BaseDensityDestructor):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -637,7 +640,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         return self.fitted_canonical_destructor_
 
     def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -648,6 +651,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         if destructor_already_fitted:
@@ -750,7 +754,7 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         return self.fitted_destructor_
 
     def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -761,6 +765,7 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
 
         Returns
         -------
+        obj : object
 
         """
         if destructor_already_fitted:
@@ -840,7 +845,7 @@ def _check_global_random_state(f):
     """
     @wraps(f)
     def decorated(self, *args, **kwargs):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -850,6 +855,7 @@ def _check_global_random_state(f):
 
         Returns
         -------
+        obj : object
 
         """
         # If random_state is None then Just call function directly
@@ -914,7 +920,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -924,6 +930,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self.fit_transform(X, y, **fit_params)
@@ -1049,7 +1056,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return X
 
     def score_samples(self, X, y=None, partial_idx=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -1059,12 +1066,13 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         return np.sum(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=1)
 
     def score_samples_layers(self, X, y=None, partial_idx=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -1074,6 +1082,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()

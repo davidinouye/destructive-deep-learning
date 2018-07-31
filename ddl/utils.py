@@ -109,7 +109,7 @@ def check_X_in_interval_decorator(func):
     """Decorator utility for destructors to check domain."""
 
     def wrapper(trans, X, *args, **kwargs):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -120,6 +120,7 @@ def check_X_in_interval_decorator(func):
 
         Returns
         -------
+        obj : object
 
         """
         X = check_X_in_interval(X, get_domain_or_default(trans))

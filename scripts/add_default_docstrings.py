@@ -392,6 +392,45 @@ replacements = [
         \"\"\"
         """
     ),
+    (
+        """
+        \"\"\"
+
+        Returns
+        """,
+        """
+        \"\"\"[Placeholder].
+
+        Returns
+        """,
+    ),
+    (
+        """
+        \"\"\"
+
+        Parameters
+        """,
+        """
+        \"\"\"[Placeholder].
+
+        Parameters
+        """,
+    ),
+    (
+        """
+        Returns
+        -------
+
+        \"\"\"
+        """,
+        """
+        Returns
+        -------
+        obj : object
+
+        \"\"\"
+        """,
+    ),
 ]
 
 rootdir = 'ddl'

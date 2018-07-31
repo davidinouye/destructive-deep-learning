@@ -42,7 +42,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         self.orthogonal = orthogonal
 
     def fit(self, X, y=None, lin_est_fit_params=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -52,6 +52,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
         Returns
         -------
+        obj : object
 
         """
         # Find linear projection, project X (implicitly checks X)
@@ -216,7 +217,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
         self.destructor = destructor
 
     def fit_transform(self, X, y=None, **kwargs):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -226,6 +227,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
 
         Returns
         -------
+        obj : object
 
         """
         lin_est, destructor = self._get_estimators_or_default()
@@ -356,7 +358,7 @@ class IdentityLinearEstimator(BaseEstimator):
         pass
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -366,6 +368,7 @@ class IdentityLinearEstimator(BaseEstimator):
 
         Returns
         -------
+        obj : object
 
         """
         X = check_array(X)
@@ -383,7 +386,7 @@ class RandomOrthogonalEstimator(BaseEstimator):
         self.n_components = n_components
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -393,6 +396,7 @@ class RandomOrthogonalEstimator(BaseEstimator):
 
         Returns
         -------
+        obj : object
 
         """
         X = check_array(X)
@@ -420,7 +424,7 @@ class _SimpleMatrix(object):
             self.A = A
 
     def dot(self, X):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -428,22 +432,24 @@ class _SimpleMatrix(object):
 
         Returns
         -------
+        obj : object
 
         """
         return self.A.dot(X)
 
     def logabsdet(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         sign, logdet = np.linalg.slogdet(self.A)
         return logdet
 
     def inv(self, **kwargs):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -451,15 +457,17 @@ class _SimpleMatrix(object):
 
         Returns
         -------
+        obj : object
 
         """
         return _SimpleMatrix(np.linalg.inv(self.A), copy=False)
 
     def toarray(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return self.A.copy()
@@ -476,7 +484,7 @@ class _IdentityWithScaling(object):
         self.scale = scale
 
     def dot(self, X):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -484,6 +492,7 @@ class _IdentityWithScaling(object):
 
         Returns
         -------
+        obj : object
 
         """
         Z = np.array(X, copy=True)
@@ -492,10 +501,11 @@ class _IdentityWithScaling(object):
         return Z
 
     def logabsdet(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         if self.scale == 1 or self.scale == -1:
@@ -505,7 +515,7 @@ class _IdentityWithScaling(object):
             return np.log(np.abs(self.scale))
 
     def inv(self, copy=True):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -513,6 +523,7 @@ class _IdentityWithScaling(object):
 
         Returns
         -------
+        obj : object
 
         """
         # Just in case there is rounding error
@@ -544,7 +555,7 @@ class _HouseholderWithScaling(_IdentityWithScaling):
             self.u = u
 
     def dot(self, X):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -552,6 +563,7 @@ class _HouseholderWithScaling(_IdentityWithScaling):
 
         Returns
         -------
+        obj : object
 
         """
         # NOTE: X.shape = (d, n), NOT (d, n)
@@ -563,16 +575,17 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         return Z
 
     def logabsdet(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         return super(_HouseholderWithScaling, self).logabsdet()
 
     def inv(self, copy=True):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -580,6 +593,7 @@ class _HouseholderWithScaling(_IdentityWithScaling):
 
         Returns
         -------
+        obj : object
 
         """
         # Just in case there is rounding error
@@ -587,10 +601,11 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         return _HouseholderWithScaling(self.u, scale=inv_scale, copy=copy)
 
     def toarray(self):
-        """
+        """[Placeholder].
 
         Returns
         -------
+        obj : object
 
         """
         A = np.eye(len(self.u)) - np.outer(2 * self.u, self.u)

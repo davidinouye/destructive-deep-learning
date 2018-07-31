@@ -52,7 +52,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
 
     @abstractmethod
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -65,7 +65,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
 
     @abstractmethod
     def sample(self, n_samples=1, random_state=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -77,7 +77,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
 
     @abstractmethod
     def score_samples(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -89,7 +89,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
 
     @abstractmethod
     def cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -101,7 +101,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
 
     @abstractmethod
     def inverse_cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -148,7 +148,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
         self.scipy_fit_kwargs = scipy_fit_kwargs
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -158,6 +158,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         def _check_scipy_kwargs(kwargs, _scipy_rv):
@@ -279,7 +280,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
         return self.rv_.logpdf(X.ravel()).reshape((-1, 1))
 
     def cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -288,6 +289,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -295,7 +297,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
         return self.rv_.cdf(X.ravel()).reshape((-1, 1))
 
     def inverse_cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -304,6 +306,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -481,7 +484,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return np.log(f_X).reshape((-1, 1))
 
     def cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -490,6 +493,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -507,7 +511,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return F_X.reshape((-1, 1))
 
     def inverse_cdf(self, X, y=None):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -516,6 +520,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         self._check_is_fitted()
@@ -603,7 +608,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.alpha = alpha
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -613,6 +618,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         X = self._check_X(X)
@@ -628,7 +634,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         return self._fit(hist, bin_edges)
 
     def fit_from_probabilities(self, prob):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -636,6 +642,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         bounds = self._check_bounds()
@@ -682,7 +689,7 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.bounds = bounds
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -692,6 +699,7 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
         Returns
         -------
+        obj : object
 
         """
         # Validate parameters

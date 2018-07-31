@@ -28,7 +28,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, **fit_params):
-        """
+        """[Placeholder].
 
         Parameters
         ----------
@@ -38,6 +38,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
 
         Returns
         -------
+        obj : object
 
         """
         self.fit_transform(X, y, **fit_params)
