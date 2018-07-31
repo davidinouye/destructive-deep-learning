@@ -1,3 +1,4 @@
+"""ICML 2018 experiment for MNIST and CIFAR-10."""
 import argparse
 import logging
 import os
@@ -36,6 +37,18 @@ logger = logging.getLogger(__name__)
 
 
 def run_experiment(data_name, model_name, model_kwargs=None):
+    """
+
+    Parameters
+    ----------
+    data_name :
+    model_name :
+    model_kwargs :
+
+    Returns
+    -------
+
+    """
     if model_kwargs is None:
         model_kwargs = {}
     # Setup
@@ -106,6 +119,19 @@ def run_experiment(data_name, model_name, model_kwargs=None):
 
 
 def load_experiment_results(data_name, model_name=None, model_kwargs=None, notebook=False):
+    """
+
+    Parameters
+    ----------
+    data_name :
+    model_name :
+    model_kwargs :
+    notebook :
+
+    Returns
+    -------
+
+    """
     experiment_filename, _ = _get_experiment_filename_and_label(data_name, model_name=model_name,
                                                                 model_kwargs=model_kwargs)
     if notebook:

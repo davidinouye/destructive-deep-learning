@@ -1,3 +1,4 @@
+"""Private module for loading mlpack estimators."""
 from __future__ import division, print_function
 
 import logging
@@ -16,12 +17,26 @@ logger = logging.getLogger(__name__)
 
 
 class MlpackDensityTreeEstimator(BaseEstimator):
+    """Mlpack density tree estimator.
+
+    """
     def __init__(self, max_leaf_nodes=None, max_depth=None, min_samples_leaf=1):
         self.max_leaf_nodes = max_leaf_nodes
         self.max_depth = max_depth
         self.min_samples_leaf = min_samples_leaf
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         fit_params = dict()  # Leave as defaults unless overriden
         if self.max_leaf_nodes is not None:
             fit_params['max_leaf_nodes'] = self.max_leaf_nodes

@@ -1,3 +1,4 @@
+"""Module for independent densities and destructors."""
 from __future__ import division, print_function
 
 import itertools
@@ -18,16 +19,36 @@ logger = logging.getLogger(__name__)
 
 
 class IndependentDestructor(BaseDensityDestructor):
+    """Independent destructor.
+
+    """
     def __init__(self, independent_density=None):
         self.independent_density = independent_density
 
     def get_density_estimator(self):
+        """
+
+        Returns
+        -------
+
+        """
         if self.independent_density is None:
             return IndependentDensity()
         else:
             return clone(self.independent_density)
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         # Standard checks
         self._check_is_fitted()
         X = check_array(X)
@@ -44,6 +65,17 @@ class IndependentDestructor(BaseDensityDestructor):
         return Z
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         # Standard checks
         self._check_is_fitted()
         X = check_array(X, ensure_min_samples=0)
@@ -66,6 +98,9 @@ class IndependentDestructor(BaseDensityDestructor):
 
 
 class IndependentDensity(BaseEstimator, ScoreMixin):
+    """Independent density.
+
+    """
     def __init__(self, univariate_estimators=None):
         """Default assumes that univariate_estimators are Gaussian.
         `univariate_estimators` should be:
@@ -77,6 +112,18 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         self.univariate_estimators = univariate_estimators
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         def _check_univariate(estimators, n_features):
             if estimators is None:
                 return [IndependentDensity._get_default_univariate() for _ in range(n_features)]
@@ -105,6 +152,17 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return self
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         rng = check_random_state(random_state)
         X = np.array([
@@ -114,6 +172,17 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return X
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         # Extract log-likelihood for all dimensions
@@ -125,10 +194,32 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return independent_scores.sum(axis=1)
 
     def conditional_densities(self, X, cond_idx, not_cond_idx):
+        """
+
+        Parameters
+        ----------
+        X :
+        cond_idx :
+        not_cond_idx :
+
+        Returns
+        -------
+
+        """
         # Since independent, the conditional is equal to the marginal
         return self.marginal_density(not_cond_idx)
 
     def marginal_density(self, marginal_idx):
+        """
+
+        Parameters
+        ----------
+        marginal_idx :
+
+        Returns
+        -------
+
+        """
         marginal_density = clone(self)
         marginal_density.univariate_densities_ = self.univariate_densities_[marginal_idx]
         marginal_density.n_features_ = len(marginal_idx)
@@ -137,14 +228,42 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return marginal_density
 
     def marginal_cdf(self, x, target_idx):
+        """
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        Returns
+        -------
+
+        """
         return self.univariate_densities_[target_idx].cdf(np.array(x).reshape(-1, 1)).reshape(
             np.array(x).shape)
 
     def marginal_inverse_cdf(self, x, target_idx):
+        """
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        Returns
+        -------
+
+        """
         return self.univariate_densities_[target_idx].inverse_cdf(
             np.array(x).reshape(-1, 1)).reshape(np.array(x).shape)
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         def _unwrap_support(est):
             # Univariate density estimators should return [[a,b]] because there is only one
             # dimension, thus this unwraps this even if the default is returned of [a,b]
@@ -201,6 +320,17 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return self
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         self._check_dim(X)
@@ -218,6 +348,17 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return independent_scores.sum(axis=1)
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         self._check_dim(X)
@@ -230,6 +371,17 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return X
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         self._check_dim(X)
@@ -242,6 +394,12 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return X
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         return _UNIT_SPACE
 
     def _get_density_support(self):

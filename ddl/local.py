@@ -1,3 +1,4 @@
+"""Module for local destructors such as adjacent-pixel-pair destructors."""
 from __future__ import division, print_function
 
 import logging
@@ -18,16 +19,43 @@ logger = logging.getLogger(__name__)
 
 
 class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
+    """Feature groups destructor.
+
+    """
     def __init__(self, groups_estimator=None, group_canonical_destructor=None, n_jobs=1):
         self.groups_estimator = groups_estimator
         self.group_canonical_destructor = group_canonical_destructor
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         self.fit_transform(X, y, **fit_params)
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         # Validate parameters
         groups_estimator = (
             clone(self.groups_estimator) if self.groups_estimator is not None
@@ -89,6 +117,17 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, copy=True)
         Z = np.asfortranarray(X)  # Convert to column-major
@@ -103,6 +142,17 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, copy=True)
         Z = np.asfortranarray(X)  # Convert to column-major
@@ -117,10 +167,27 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         # We assume canonical destructors
         return _UNIT_SPACE
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, copy=True)
         X = np.asfortranarray(X)
@@ -152,10 +219,24 @@ def _score_samples(X_group, d):
 
 
 class RandomFeaturePairs(BaseEstimator):
+    """Random feature pairs estimator.
+
+    """
     def __init__(self, random_state=None):
         self.random_state = random_state
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         rng = check_random_state(self.random_state)
 
@@ -199,6 +280,17 @@ class ImageFeaturePairs(BaseEstimator):
         self.wrap = wrap
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         def _check_image_shape(shape, x):
             if shape is None:
                 return x.shape

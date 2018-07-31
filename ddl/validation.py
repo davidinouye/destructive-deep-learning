@@ -1,3 +1,4 @@
+"""Module for validating destructor interface and testing properties."""
 from __future__ import division, print_function
 
 import logging
@@ -557,6 +558,17 @@ def check_invertibility(trans, random_state=0):
 
 @_ignore_boundary_warnings
 def check_canonical_domain(trans, random_state=0):
+    """
+
+    Parameters
+    ----------
+    trans :
+    random_state :
+
+    Returns
+    -------
+
+    """
     # Setup functions to test
     rng = check_random_state(random_state)
     fitted = clone(trans).fit(np.array([[0], [1], [0], [1], [0], [1]]))
@@ -621,22 +633,27 @@ def check_identity_element(trans, random_state=0):
 
 
 class DestructorError(RuntimeError):
+    """Destructor property error."""
     pass
 
 
 class UniformabilityError(DestructorError):
+    """Uniformability property error."""
     pass
 
 
 class InvertibilityError(DestructorError):
+    """Invertibility property error."""
     pass
 
 
 class CanonicalDomainError(DestructorError):
+    """Canonical domain property error."""
     pass
 
 
 class IdentityElementError(DestructorError):
+    """Identity element property error."""
     pass
 
 

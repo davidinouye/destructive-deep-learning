@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Setup for ddl package."""
 from __future__ import division, print_function
 
 import os

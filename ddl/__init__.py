@@ -1,3 +1,4 @@
+"""Init file for ddl package."""
 # Nothing needed in here for now
 import logging
 
@@ -8,7 +9,14 @@ except ImportError:
 
     # Simple class for backwards compatibility with Python 2
     class NullHandler(Handler):
+        """Null logging handler."""
         def emit(self, record):
+            """
+
+            Parameters
+            ----------
+            record :
+            """
             pass
 
 

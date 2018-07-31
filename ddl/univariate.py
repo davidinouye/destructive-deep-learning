@@ -1,3 +1,4 @@
+"""Module for univariate densities (see also :mod:`ddl.independent`)."""
 from __future__ import division, print_function
 
 import logging
@@ -47,27 +48,71 @@ def _check_univariate_X(X, support, inverse=False):
 
 
 class UnivariateDensity(BaseEstimator, ScoreMixin):
+    """Univariate density (abstract class)."""
+
     @abstractmethod
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+        """
         pass
 
     @abstractmethod
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+        """
         pass
 
     @abstractmethod
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        """
         pass
 
     @abstractmethod
     def cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        """
         pass
 
     @abstractmethod
     def inverse_cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        """
         pass
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         return np.array([_DEFAULT_SUPPORT])
 
     def _check_X(self, X, inverse=False):
@@ -92,6 +137,18 @@ class ScipyUnivariateDensity(UnivariateDensity):
         self.scipy_fit_kwargs = scipy_fit_kwargs
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         def _check_scipy_kwargs(kwargs, _scipy_rv):
             if kwargs is None:
                 if self._is_special(SCIPY_RV_UNIT_SUPPORT):
@@ -164,26 +221,76 @@ class ScipyUnivariateDensity(UnivariateDensity):
                                       % str(self._get_scipy_rv_or_default()))
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         rng = check_random_state(random_state)
         return np.array(self.rv_.rvs(size=n_samples, random_state=rng)).reshape((n_samples, 1))
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X)
         return self.rv_.logpdf(X.ravel()).reshape((-1, 1))
 
     def cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X)
         return self.rv_.cdf(X.ravel()).reshape((-1, 1))
 
     def inverse_cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X, inverse=True)
         return self.rv_.ppf(X.ravel()).reshape((-1, 1))
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Assumes density is univariate
         try:
             self._check_is_fitted()
@@ -270,12 +377,25 @@ with warnings.catch_warnings():
 
 
 class PiecewiseConstantUnivariateDensity(UnivariateDensity):
+    """Piecewise constant univariate density (e.g. histogram and tree)."""
+
     @abstractmethod
     def fit(self, X, y=None, **fit_params):
         """Should fit parameters of piecewise constant estimator."""
         raise NotImplementedError()
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         # Inverse cdf sampling via uniform samples
         rng = check_random_state(random_state)
         u = rng.rand(n_samples)
@@ -286,6 +406,17 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return x.reshape((-1, 1))
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X)
         X = X.ravel()
@@ -303,6 +434,17 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return np.log(f_X).reshape((-1, 1))
 
     def cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         self._check_X(X)
         X = X.ravel()
@@ -318,6 +460,17 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return F_X.reshape((-1, 1))
 
     def inverse_cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         self._check_X(X)
         X = X.ravel()
@@ -333,6 +486,12 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return Finv_X.reshape((-1, 1))
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Make [[a,b]] so that it is explicitly a univariate density
         return np.array([self._check_bounds()])
 
@@ -391,6 +550,18 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.alpha = alpha
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         X = self._check_X(X)
         # Get percent extension but do not modify bounds
         bounds = self._check_bounds(X)
@@ -404,6 +575,16 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         return self._fit(hist, bin_edges)
 
     def fit_from_probabilities(self, prob):
+        """
+
+        Parameters
+        ----------
+        prob :
+
+        Returns
+        -------
+
+        """
         bounds = self._check_bounds()
         bins = self.bins if self.bins is not None else 'auto'
         prob = column_or_1d(prob)
@@ -448,6 +629,18 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.bounds = bounds
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         # Validate parameters
         X = self._check_X(X)
         bounds = self._check_bounds(X)
@@ -457,6 +650,16 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
         # Fit density for each dimension
         def unwrap_estimator(est):
+            """
+
+            Parameters
+            ----------
+            est :
+
+            Returns
+            -------
+
+            """
             # Unwrap CV estimator
             if hasattr(est, 'best_estimator_'):
                 return est.best_estimator_
@@ -496,6 +699,10 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
 
 
 class KernelUnivariateDensity(ApproximateUnivariateDensity):
+    """Kernel univariate density.
+
+    """
+
     def __init__(self, bandwidth=None, n_query=1000, bounds=0.1):
         super(KernelUnivariateDensity, self).__init__()
         self.bandwidth = bandwidth

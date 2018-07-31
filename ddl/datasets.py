@@ -1,3 +1,4 @@
+"""Simple module to generate toy datasets."""
 import warnings
 
 import numpy as np
@@ -6,6 +7,19 @@ from sklearn.utils import check_random_state, shuffle
 
 
 def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
+    """
+
+    Parameters
+    ----------
+    data_name :
+    n_samples :
+    random_state :
+    maker_kwargs :
+
+    Returns
+    -------
+
+    """
     try:
         maker = _makers_dict['_make_%s' % data_name]
     except KeyError:
@@ -94,6 +108,18 @@ def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_
         is_bounded = False
 
         def sample(pos, n, d):
+            """
+
+            Parameters
+            ----------
+            pos :
+            n :
+            d :
+
+            Returns
+            -------
+
+            """
             return sigma * rng.randn(n, d) + pos
     elif kind == 'uniform':
         if sigma is not None:
@@ -103,6 +129,18 @@ def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_
         is_bounded = True
 
         def sample(pos, n, d):
+            """
+
+            Parameters
+            ----------
+            pos :
+            n :
+            d :
+
+            Returns
+            -------
+
+            """
             return scale * rng.rand(n, d) + pos
     else:
         raise ValueError('kind should be "gaussian" or "uniform"')

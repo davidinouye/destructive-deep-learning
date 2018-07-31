@@ -1,3 +1,4 @@
+"""Module to handle linear projectors and destructors."""
 from __future__ import division, print_function
 
 import logging
@@ -41,6 +42,18 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         self.orthogonal = orthogonal
 
     def fit(self, X, y=None, lin_est_fit_params=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        lin_est_fit_params :
+
+        Returns
+        -------
+
+        """
         # Find linear projection, project X (implicitly checks X)
         if lin_est_fit_params is None:
             lin_est_fit_params = {}
@@ -127,16 +140,44 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return self.A_.logabsdet() * np.ones((X.shape[0],))
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         return self.A_.dot(X.transpose()).transpose()
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X)
         return self.A_inv_.dot(X.transpose()).transpose()
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         return _INF_SPACE
 
     def _check_is_fitted(self):
@@ -157,6 +198,18 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
         self.destructor = destructor
 
     def fit_transform(self, X, y=None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        kwargs :
+
+        Returns
+        -------
+
+        """
         lin_est, destructor = self._get_estimators_or_default()
         lin_proj = LinearProjector(linear_estimator=lin_est, orthogonal=True)
 
@@ -209,6 +262,17 @@ class _BivariateIndependentComponents(BaseEstimator):
         self.random_state = random_state
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         def _get_Q(a):
             ca = np.cos(a)
             sa = np.sin(a)
@@ -261,10 +325,25 @@ class _BivariateIndependentComponents(BaseEstimator):
 
 
 class IdentityLinearEstimator(BaseEstimator):
+    """Identity linear projection.
+
+    """
     def __init__(self):
         pass
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         # This will become the identity matrix in LinearProjector
         self.coef_ = np.eye(X.shape[1], 1).ravel()
@@ -272,11 +351,26 @@ class IdentityLinearEstimator(BaseEstimator):
 
 
 class RandomOrthogonalEstimator(BaseEstimator):
+    """Random linear orthogonal estimator.
+
+    """
     def __init__(self, n_components=None, random_state=None):
         self.random_state = random_state
         self.n_components = n_components
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         rng = check_random_state(self.random_state)
         n_components = self.n_components if self.n_components is not None else X.shape[1]
@@ -302,16 +396,48 @@ class _SimpleMatrix(object):
             self.A = A
 
     def dot(self, X):
+        """
+
+        Parameters
+        ----------
+        X :
+
+        Returns
+        -------
+
+        """
         return self.A.dot(X)
 
     def logabsdet(self):
+        """
+
+        Returns
+        -------
+
+        """
         sign, logdet = np.linalg.slogdet(self.A)
         return logdet
 
     def inv(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        kwargs :
+
+        Returns
+        -------
+
+        """
         return _SimpleMatrix(np.linalg.inv(self.A), copy=False)
 
     def toarray(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self.A.copy()
 
 
@@ -326,12 +452,28 @@ class _IdentityWithScaling(object):
         self.scale = scale
 
     def dot(self, X):
+        """
+
+        Parameters
+        ----------
+        X :
+
+        Returns
+        -------
+
+        """
         Z = np.array(X, copy=True)
         if self.scale != 1:
             Z[0, :] *= self.scale
         return Z
 
     def logabsdet(self):
+        """
+
+        Returns
+        -------
+
+        """
         if self.scale == 1 or self.scale == -1:
             return 0  # = np.log(|1|) = np.log(|-1|)
         else:
@@ -339,11 +481,24 @@ class _IdentityWithScaling(object):
             return np.log(np.abs(self.scale))
 
     def inv(self, copy=True):
+        """
+
+        Parameters
+        ----------
+        copy :
+
+        Returns
+        -------
+
+        """
         # Just in case there is rounding error
         inv_scale = 1.0 / self.scale if self.scale != 1 else 1
         return _IdentityWithScaling(scale=inv_scale)
 
     def toarray(self):
+        """Convert to array. (not implemented yet)
+
+        """
         raise NotImplementedError('This identity matrix does not have the number of dimensions '
                                   'associated with it so we cannot make an equivalent array.')
 
@@ -365,6 +520,16 @@ class _HouseholderWithScaling(_IdentityWithScaling):
             self.u = u
 
     def dot(self, X):
+        """
+
+        Parameters
+        ----------
+        X :
+
+        Returns
+        -------
+
+        """
         # NOTE: X.shape = (d, n), NOT (d, n)
         # u has shape (d,)
         Z = X - np.outer(2 * self.u, np.dot(self.u, X))
@@ -374,14 +539,36 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         return Z
 
     def logabsdet(self):
+        """
+
+        Returns
+        -------
+
+        """
         return super(_HouseholderWithScaling, self).logabsdet()
 
     def inv(self, copy=True):
+        """
+
+        Parameters
+        ----------
+        copy :
+
+        Returns
+        -------
+
+        """
         # Just in case there is rounding error
         inv_scale = 1.0 / self.scale if self.scale != 1 else 1
         return _HouseholderWithScaling(self.u, scale=inv_scale, copy=copy)
 
     def toarray(self):
+        """
+
+        Returns
+        -------
+
+        """
         A = np.eye(len(self.u)) - np.outer(2 * self.u, self.u)
         A[0, :] *= self.scale
         return A

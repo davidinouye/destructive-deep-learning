@@ -1,3 +1,4 @@
+"""Module for very simple autoregressive destructors."""
 from __future__ import division, print_function
 
 import numpy as np
@@ -14,21 +15,54 @@ from .utils import (_UNIT_SPACE, check_X_in_interval, get_domain_or_default,
 
 
 class AutoregressiveDestructor(BaseDensityDestructor):
+    """Autoregressive destructor.
+
+    """
+
     def __init__(self, density_estimator=None, order=None, random_state=None):
         self.density_estimator = density_estimator
         self.order = order
         self.random_state = random_state
 
     def get_density_estimator(self):
+        """Get density estimator.
+
+        Returns
+        -------
+        density : estimator
+
+        """
         if self.density_estimator is None:
             return GaussianDensity()
         else:
             return clone(self.density_estimator)
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return self._autoregress(X, y, inverse=False)
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return self._autoregress(X, y, inverse=True)
 
     def _autoregress(self, X, y=None, inverse=False):

@@ -1,3 +1,4 @@
+"""Simple tests for main destructors."""
 from __future__ import division, print_function
 
 # noinspection PyPackageRequirements

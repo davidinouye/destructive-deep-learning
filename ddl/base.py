@@ -29,14 +29,39 @@ class AutoregressiveMixin(object):
 
     @abstractmethod
     def conditional_densities(self, X, cond_idx_arr, not_cond_idx_arr):
+        """Compute conditional densities. (abstract)
+
+        Parameters
+        ----------
+        X :
+        cond_idx_arr :
+        not_cond_idx_arr :
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def marginal_cdf(self, x, target_idx):
+        """Compute marginal cdf. (abstract)
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def marginal_inverse_cdf(self, x, target_idx):
+        """Compute marginal inverse cdf. (abstract)
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        """
         raise NotImplementedError()
 
 
@@ -44,6 +69,17 @@ class ScoreMixin(object):
     """Mixin for ``score`` that returns mean of ``score_samples``."""
 
     def score(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return np.mean(self.score_samples(X, y))
 
 
@@ -62,6 +98,17 @@ class DestructorMixin(ScoreMixin, TransformerMixin):
     """
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         rng = check_random_state(random_state)
         U = rng.rand(n_samples, self._get_n_features())
         X = self.inverse_transform(U)
@@ -178,17 +225,48 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
 
     @abstractmethod
     def get_density_estimator(self):
+        """Get density estimator (abstract method).
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        """
         raise NotImplementedError()
 
     def fit(self, X, y=None, density_fit_params=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        density_fit_params :
+
+        Returns
+        -------
+
+        """
         if density_fit_params is None:
             density_fit_params = {}
         density = clone(self.get_density_estimator()).fit(X, y, **density_fit_params)
@@ -196,16 +274,43 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def fit_from_density(self, density):
+        """
+
+        Parameters
+        ----------
+        density :
+
+        Returns
+        -------
+
+        """
         self.density_ = density
         return self
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, ensure_min_samples=0)
         X = check_X_in_interval(X, get_domain_or_default(self))
         return self.density_.score_samples(X)
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Either get from the density estimator parameter
         #  or fitted density attribute
         try:
@@ -237,9 +342,27 @@ class IdentityDestructor(BaseDensityDestructor):
     """
 
     def get_density_estimator(self):
+        """
+
+        Returns
+        -------
+
+        """
         return UniformDensity()
 
     def transform(self, X, y=None, copy=True):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        copy :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, ensure_min_samples=0)
         X = check_X_in_interval(X, get_domain_or_default(self))
@@ -249,6 +372,18 @@ class IdentityDestructor(BaseDensityDestructor):
         return X
 
     def inverse_transform(self, X, y=None, copy=True):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        copy :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, ensure_min_samples=0)
         X = check_X_in_interval(X, np.array([0, 1]))
@@ -258,6 +393,12 @@ class IdentityDestructor(BaseDensityDestructor):
         return X
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         return np.array([0, 1])
 
     def _check_dim(self, X):
@@ -288,23 +429,62 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         pass
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         X = check_X_in_interval(X, get_support_or_default(self))
         self.n_features_ = X.shape[1]
         return self
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         generator = check_random_state(random_state)
         return generator.rand(n_samples, self.n_features_)
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, ensure_min_samples=0)
         return np.zeros(X.shape[0])  # Log-likelihood so log(1) = 0
 
     # noinspection PyMethodMayBeStatic
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         return np.array([0, 1])
 
     def _check_is_fitted(self):
@@ -395,6 +575,19 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         return self.fitted_canonical_destructor_
 
     def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        copy :
+        destructor_already_fitted :
+
+        Returns
+        -------
+
+        """
         if destructor_already_fitted:
             self.fitted_canonical_destructor_ = self.canonical_destructor
             if copy:
@@ -408,15 +601,54 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         return _UNIT_SPACE
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return self._get_destructor().inverse_transform(X, y)
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return self._get_destructor().transform(X, y)
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         d = self._get_destructor()
         return -d.score_samples(d.inverse_transform(X, y))
 
@@ -432,6 +664,19 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         return self.fitted_destructor_
 
     def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        copy :
+        destructor_already_fitted :
+
+        Returns
+        -------
+
+        """
         if destructor_already_fitted:
             self.fitted_destructor_ = self.destructor
             if copy:
@@ -441,13 +686,41 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         return self
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         return self._get_destructor().sample(
             n_samples=n_samples, random_state=random_state)
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         return self._get_destructor().score_samples(X, y)
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         return get_domain_or_default(self.destructor)
 
 
@@ -460,6 +733,18 @@ def _check_global_random_state(f):
     """
     @wraps(f)
     def decorated(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        self :
+        args :
+        kwargs :
+
+        Returns
+        -------
+
+        """
         # If random_state is None then Just call function directly
         if self.random_state is None:
             return f(self, *args, **kwargs)
@@ -522,11 +807,35 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         self.fit_transform(X, y, **fit_params)
         return self
 
     @_check_global_random_state
     def fit_transform(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         Z = check_array(X, copy=True)
 
         # Fit and transform all destructors
@@ -548,6 +857,18 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return d.fit_transform(Z, y)
 
     def transform(self, X, y=None, partial_idx=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        partial_idx :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         Z = check_array(X, copy=True)
 
@@ -557,6 +878,18 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def inverse_transform(self, X, y=None, partial_idx=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        partial_idx :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         Z = check_array(X, copy=True)
 
@@ -579,9 +912,33 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return X
 
     def score_samples(self, X, y=None, partial_idx=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        partial_idx :
+
+        Returns
+        -------
+
+        """
         return np.sum(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=1)
 
     def score_samples_layers(self, X, y=None, partial_idx=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        partial_idx :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = check_array(X, copy=True)
 
@@ -603,6 +960,12 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return np.mean(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=0)
 
     def get_domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Get the domain of the first destructor (or relative destructor like LinearProjector)
         return next(iter(self._get_destructor_iterable())).get_domain()
 

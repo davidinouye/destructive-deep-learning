@@ -31,6 +31,13 @@ from create_api import create_api_rst
 
 
 def copy_and_overwrite(from_path, to_path):
+    """
+
+    Parameters
+    ----------
+    from_path :
+    to_path :
+    """
     if os.path.exists(to_path):
         shutil.rmtree(to_path)
     shutil.copytree(from_path, to_path)
@@ -208,4 +215,10 @@ todo_include_todos = True
 
 
 def setup(app):
+    """
+
+    Parameters
+    ----------
+    app :
+    """
     app.add_stylesheet('custom.css')

@@ -1,3 +1,4 @@
+"""Module for Gaussian density."""
 from __future__ import division, print_function
 
 import numpy as np
@@ -48,6 +49,17 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return self
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._fit_auxiliary()
         X = check_array(X)
         return _estimate_log_gaussian_prob(
@@ -58,6 +70,17 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         ).ravel()
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         rng = check_random_state(random_state)
         if self.covariance_type == 'full' or self.covariance_type == 'tied':
             X = rng.multivariate_normal(self.mean_, self.covariance_, n_samples)
@@ -151,6 +174,17 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return conditionals
 
     def marginal_cdf(self, x, target_idx):
+        """
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        Returns
+        -------
+
+        """
         self._fit_auxiliary()
         if len(np.array(x).shape) != 0:
             x = column_or_1d(x)
@@ -169,6 +203,17 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return scipy.stats.norm.pdf(x, **params)
 
     def marginal_inverse_cdf(self, x, target_idx):
+        """
+
+        Parameters
+        ----------
+        x :
+        target_idx :
+
+        Returns
+        -------
+
+        """
         self._fit_auxiliary()
         if len(np.array(x).shape) != 0:
             x = column_or_1d(x)

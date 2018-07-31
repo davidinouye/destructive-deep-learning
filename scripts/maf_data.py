@@ -1,3 +1,4 @@
+"""Module for loading data from MAF paper."""
 import argparse
 import errno
 import gzip
@@ -41,6 +42,16 @@ _DOWNLOAD_DIR = os.path.join(
 
 # noinspection PyShadowingNames
 def get_maf_data(data_name):
+    """
+
+    Parameters
+    ----------
+    data_name :
+
+    Returns
+    -------
+
+    """
     if data_name == 'mnist':
         return _get_maf_mnist()
     elif data_name == 'cifar10':
@@ -363,9 +374,27 @@ def _save_mnist_recreation_indices():
     print('Checking if the datasets are the same (should all be 0)')
 
     def n_diff(X, Y):
+        """
+
+        Parameters
+        ----------
+        X :
+        Y :
+
+        Returns
+        -------
+
+        """
         return np.count_nonzero(X - Y)
 
     def print_n_diff(X, Y):
+        """
+
+        Parameters
+        ----------
+        X :
+        Y :
+        """
         print('Number different = %d' % n_diff(X, Y))
 
     print_n_diff(X_all[mnist_ind], X_maf[maf_ind])

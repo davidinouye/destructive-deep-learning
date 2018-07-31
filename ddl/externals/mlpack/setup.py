@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Setup for mlpack destructor extension."""
 import os
 import subprocess
 import sys
@@ -12,6 +13,12 @@ from sklearn.externals.six.moves import urllib
 
 
 def build_mlpack():
+    """
+
+    Returns
+    -------
+
+    """
     # Setup mlpack paths
     version = '3.0.2'
     package_path = os.path.dirname(os.path.realpath(__file__))
@@ -74,6 +81,17 @@ def build_mlpack():
 
 
 def configuration(parent_package='', top_path=None):
+    """
+
+    Parameters
+    ----------
+    parent_package :
+    top_path :
+
+    Returns
+    -------
+
+    """
     build_path = build_mlpack()
     config = Configuration('mlpack', parent_package, top_path)
     libraries = ['mlpack', 'boost_serialization']

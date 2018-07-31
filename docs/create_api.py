@@ -10,6 +10,17 @@ INDENT = '    '
 
 
 def create_api_rst(package, generated_dir):
+    """
+
+    Parameters
+    ----------
+    package :
+    generated_dir :
+
+    Returns
+    -------
+
+    """
     # Build list of packages
     module_names = [
         module_name

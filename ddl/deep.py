@@ -223,6 +223,19 @@ class DeepDestructorCV(DeepDestructor):
 
     @_check_global_random_state
     def fit(self, X, y=None, X_test=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        X_test :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         # Setup parameters
         if self.n_extend < 1:
             raise ValueError('n_extend should be greater than or equal to 1')
@@ -284,6 +297,18 @@ class DeepDestructorCV(DeepDestructor):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         self.fit(X, y, **fit_params)
         return self.transform(X, y)
 

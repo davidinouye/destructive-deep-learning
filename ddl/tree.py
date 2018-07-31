@@ -1,3 +1,4 @@
+"""Module for tree densities and destructors."""
 from __future__ import division, print_function
 
 import logging
@@ -19,21 +20,52 @@ logger = logging.getLogger(__name__)
 
 
 class TreeDestructor(BaseDensityDestructor):
+    """Tree destructor.
+
+    """
     def __init__(self, tree_density=None):
         self.tree_density = tree_density
 
     def get_density_estimator(self):
+        """
+
+        Returns
+        -------
+
+        """
         if self.tree_density is None:
             return TreeDensity()
         else:
             return clone(self.tree_density)
 
     def transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X, copy=True)
         return _tree_transform(self.density_.tree_, X, y)
 
     def inverse_transform(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X, copy=True, inverse=True)
         tree_inverse = _get_inverse_tree(self.density_.tree_)
@@ -52,6 +84,9 @@ class TreeDestructor(BaseDensityDestructor):
 
 
 class TreeDensity(BaseEstimator, ScoreMixin):
+    """Tree density.
+
+    """
     def __init__(self, tree_estimator=None, get_tree=None, node_destructor=None,
                  uniform_weight=1e-6):
         self.tree_estimator = tree_estimator
@@ -151,6 +186,18 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         _absolute_to_relative_probability(iter(tree))
 
     def sample(self, n_samples=1, random_state=None, shuffle=True):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+        shuffle :
+
+        Returns
+        -------
+
+        """
         # Randomly sample leaf nodes based on their node_value
         # NOTE: This is slightly inefficient because there are
         #  binomial samples of O(n_samples) at each level of the
@@ -185,6 +232,17 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         return X
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         def _update_stack(child):
             """Add left or right child to stack"""
             sel_new = sel.copy()
@@ -237,6 +295,12 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         return X
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         return _UNIT_SPACE
 
     def _get_node_destructor_or_default(self):
@@ -254,12 +318,27 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
 
 class RandomTreeEstimator(BaseEstimator):
+    """Random tree estimator via :class:`~sklearn.tree.ExtraTreeRegressor`.
+
+    """
     def __init__(self, min_samples_leaf=0.1, max_leaf_nodes=None, random_state=None):
         self.min_samples_leaf = min_samples_leaf
         self.max_leaf_nodes = max_leaf_nodes
         self.random_state = random_state
 
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         # Just make y a random gaussian variable
         X = check_array(X)
         rng = check_random_state(self.random_state)
@@ -330,6 +409,12 @@ class _ArrayedTreeWrapper:
         self.node_values = [None for _ in range(len(tree.feature))]
 
     def set_node_destructor(self, node_destructor):
+        """
+
+        Parameters
+        ----------
+        node_destructor :
+        """
         if node_destructor is None:
             self.node_destructors = [None for _ in range(len(self.wrapped_tree.feature))]
         else:
@@ -397,6 +482,12 @@ class _SklearnNode:
         return 'node_i = %d, value = %g' % (self.node_i, self.value)
 
     def is_leaf(self):
+        """
+
+        Returns
+        -------
+
+        """
         if np.isnan(self.left_child_index):
             return True
         elif self.left_child_index < 0:
@@ -411,19 +502,43 @@ class _SklearnNode:
     # Read only properties
     @property
     def feature(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._tree.feature[self._node_i]
 
     @property
     def left_child_index(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._tree.children_left[self._node_i]
 
     @property
     def right_child_index(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._tree.children_right[self._node_i]
 
     # Read/write properties
     @property
     def node_i(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._node_i
 
     @node_i.setter
@@ -432,6 +547,12 @@ class _SklearnNode:
 
     @property
     def domain(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._domain
 
     @domain.setter
@@ -440,6 +561,12 @@ class _SklearnNode:
 
     @property
     def value(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._node_values[self._node_i]
 
     @value.setter
@@ -462,6 +589,12 @@ class _SklearnNode:
 
     @property
     def value_out(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Extract necessary variables
         (a, b) = self.domain[self.feature]
         t = self.threshold
@@ -469,6 +602,12 @@ class _SklearnNode:
 
     @property
     def threshold(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._tree.threshold[self._node_i]
 
     @threshold.setter
@@ -491,6 +630,12 @@ class _SklearnNode:
 
     @property
     def threshold_out(self):
+        """
+
+        Returns
+        -------
+
+        """
         # Extract necessary variables
         (a, b) = self.domain[self.feature]
         p = self.value
@@ -498,6 +643,12 @@ class _SklearnNode:
 
     @property
     def destructor(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._node_destructors[self._node_i]
 
     @destructor.setter

@@ -1,3 +1,4 @@
+"""Simple but fast tests for ICML 2018 toy experiment."""
 # Simple and fast (but not comprehensive) tests
 # to sanity check that ICML 2018 experiments will run the same
 # *** Mostly copied from demo_toy_experiment.py notebook ***

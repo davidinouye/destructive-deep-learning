@@ -1,3 +1,4 @@
+"""Module for mixture densities and destructors."""
 from __future__ import division, print_function
 
 import logging
@@ -43,6 +44,17 @@ class _MixtureMixin(ScoreMixin):
         return mixture
 
     def score_samples(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         components = self._get_component_densities()
         component_log_likelihood = np.array([
@@ -53,6 +65,17 @@ class _MixtureMixin(ScoreMixin):
         return scipy_logsumexp(weighted_log_likelihood, axis=0)
 
     def sample(self, n_samples=1, random_state=None):
+        """
+
+        Parameters
+        ----------
+        n_samples :
+        random_state :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
 
         rng = check_random_state(random_state)
@@ -173,6 +196,17 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
         self.component_density_estimator = component_density_estimator
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         cluster_estimator = self._get_cluster_or_default()
         density_estimator = self._get_density_estimator_or_default()
@@ -215,6 +249,17 @@ class _GaussianMixtureMixin(object):
     adds a few methods. """
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         super(_GaussianMixtureMixin, self).fit(X, y)
         self.n_features_ = X.shape[1]
         return self
@@ -319,10 +364,33 @@ class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMix
 
 class _MixtureUnivariateMixin(object):
     def fit(self, X, y=None, **fit_params):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+        fit_params :
+
+        Returns
+        -------
+
+        """
         X = self._check_X(X)
         return super(_MixtureUnivariateMixin, self).fit(X, y, **fit_params)
 
     def cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X)
         u = self.marginal_cdf(X.ravel(), 0)
@@ -330,11 +398,28 @@ class _MixtureUnivariateMixin(object):
         return u.reshape(-1, 1)
 
     def inverse_cdf(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         self._check_is_fitted()
         X = self._check_X(X, inverse=True)
         return self.marginal_inverse_cdf(X.ravel(), 0).reshape(-1, 1)
 
     def get_support(self):
+        """
+
+        Returns
+        -------
+
+        """
         return np.array([_DEFAULT_SUPPORT])
 
     def _check_X(self, X, inverse=False):
@@ -362,6 +447,17 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
         self.alpha = alpha
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         rng = check_random_state(self.random_state)
         n_samples, n_features = X.shape
         n_components = self.n_components
@@ -411,6 +507,10 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
 
 
 class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
+    """Mixture density where one component is fixed as the standard normal.
+
+    """
+
     def __init__(self, fixed_weight=0.5, n_components=1, covariance_type='full'):
         self.fixed_weight = fixed_weight
         super(FirstFixedGaussianMixtureDensity, self).__init__(
@@ -447,6 +547,17 @@ class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
             pass
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         # Fit with one less component
         self.n_components -= 1
         self._second_stage = False
@@ -509,6 +620,17 @@ class _RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
         )
 
     def fit(self, X, y=None):
+        """
+
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         super(_RegularizedGaussianMixtureDensity, self).fit(X, y)
 
         # Update means, etc. with single Gaussian component
@@ -562,7 +684,17 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
         self.means_[1, :] = m
 
     def fit(self, X, y=None):
+        """
 
+        Parameters
+        ----------
+        X :
+        y :
+
+        Returns
+        -------
+
+        """
         X = check_array(X)
         n_samples, n_features = X.shape
         rng = check_random_state(self.random_state)

@@ -1,3 +1,4 @@
+"""Module for utility functions and classes."""
 from __future__ import division, print_function
 
 import itertools
@@ -108,6 +109,19 @@ def check_X_in_interval_decorator(func):
     """Decorator utility for destructors to check domain."""
 
     def wrapper(trans, X, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        trans :
+        X :
+        args :
+        kwargs :
+
+        Returns
+        -------
+
+        """
         X = check_X_in_interval(X, get_domain_or_default(trans))
         return func(trans, X, *args, **kwargs)
 
@@ -115,6 +129,18 @@ def check_X_in_interval_decorator(func):
 
 
 def has_method(est, method_name, warn=True):
+    """
+
+    Parameters
+    ----------
+    est :
+    method_name :
+    warn :
+
+    Returns
+    -------
+
+    """
     if hasattr(est, method_name) and callable(getattr(est, method_name)):
         return True
     elif hasattr(est, method_name) and not callable(getattr(est, method_name)):
@@ -132,16 +158,47 @@ def has_method(est, method_name, warn=True):
 
 
 def make_finite(X):
+    """
+
+    Parameters
+    ----------
+    X :
+
+    Returns
+    -------
+
+    """
     X = _check_floating(X)
     return np.minimum(np.maximum(X, np.finfo(X.dtype).min), np.finfo(X.dtype).max)
 
 
 def make_positive(X):
+    """
+
+    Parameters
+    ----------
+    X :
+
+    Returns
+    -------
+
+    """
     X = _check_floating(X)
     return np.maximum(X, np.finfo(X.dtype).tiny)
 
 
 def make_interior_probability(X, eps=None):
+    """
+
+    Parameters
+    ----------
+    X :
+    eps :
+
+    Returns
+    -------
+
+    """
     X = _check_floating(X)
     if eps is None:
         eps = np.finfo(X.dtype).eps
