@@ -131,19 +131,44 @@ class _UnivariateDensity(BaseEstimator, ScoreMixin):
 
 
 class ScipyUnivariateDensity(_UnivariateDensity):
-    """Density estimator based on random variables defined by
-    `scipy.stats`.
+    """Density estimator via random variables defined in :mod:`scipy.stats`.
+
+    A univariate density estimator that can fit any distribution defined in
+    :mod:`scipy.stats`.  This includes common distributions such as Gaussian,
+    laplace, beta, gamma and log-normal distributions but also many other
+    distributions as well.
+
+    Note that this density estimator is strictly univariate and therefore
+    expects the input data to be a single array with shape (n_samples, 1).
+
+    Parameters
+    ----------
+    scipy_rv : object or None, default=None
+        Default random variable is a Gaussian (i.e.
+        :func:`scipy.stats.norm`) if `scipy_rv=None`. Other examples include
+        :func:`scipy.stats.gamma` or :func:`scipy.stats.beta`.
+
+    scipy_fit_kwargs : dict or None, optional
+        Keyword arguments as a dictionary for the fit function of the scipy
+        random variable (e.g. ``dict(floc=0, fscale=1)`` to fix the location
+        and scale parameters to 0 and 1 respectively). Defaults are
+        different depending on `scipy_rv` parameter. For example for the
+        `scipy.stats.beta` we set `floc=0` and `fscale=1`, i.e. fix the
+        location and scale of the beta distribution.
+
+    Attributes
+    ----------
+    rv_ : object
+        Frozen :mod:`scipy.stats` random variable object. Fitted parameters
+        of distribution can be accessed via `args` property.
+
+    See Also
+    --------
+    scipy.stats
+
     """
 
     def __init__(self, scipy_rv=None, scipy_fit_kwargs=None):
-        """Default random variable is a Gaussian (i.e.
-        `scipy.stats.norm`) if `scipy_rv=None`.
-
-        scipy_fit_kwargs defaults differently depending on `scipy_rv`.
-        For example for the `scipy.stats.beta` we set `floc=0` and
-        `fscale=1`, i.e. fix the location and scale of the beta
-        distribution.
-        """
         self.scipy_rv = scipy_rv
         self.scipy_fit_kwargs = scipy_fit_kwargs
 
@@ -152,9 +177,10 @@ class ScipyUnivariateDensity(_UnivariateDensity):
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
+        X : array-like, shape (n_samples, 1)
+            Training data, where `n_samples` is the number of samples. Note
+            that the shape must have a second dimension of 1 since this is a
+            univariate density estimator.
 
         y : None, default=None
             Not used in the fitting process but kept for compatibility.
@@ -592,6 +618,7 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
         f_query /= query_width  # Adjust by bin width to make valid pdf
         return f_query
 
+    # noinspection PyPep8Naming
     def _compute_F_query(self, f_query):
         F_query = np.cumsum(f_query)
         F_query = F_query / F_query[-1]  # Normalize to sum to 1
@@ -605,8 +632,82 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
 
 
 class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
-    """Bounds can be percentage extension or a specified interval [a,b].
-    Parameter `bins` can take any value as the same parameter of `numpy.histogram`
+    """Histogram univariate density estimator.
+
+    Parameters
+    ----------
+    bins : int or sequence of scalars or str, optional
+        Same ase the parameter of :func:`numpy.histogram`. Copied from numpy
+        documentation:
+
+        If `bins` is an int, it defines the number of equal-width
+        bins in the given range (10, by default). If `bins` is a
+        sequence, it defines the bin edges, including the rightmost
+        edge, allowing for non-uniform bin widths.
+        .. versionadded:: 1.11.0
+        If `bins` is a string from the list below, `histogram` will use
+        the method chosen to calculate the optimal bin width and
+        consequently the number of bins (see `Notes` for more detail on
+        the estimators) from the data that falls within the requested
+        range. While the bin width will be optimal for the actual data
+        in the range, the number of bins will be computed to fill the
+        entire range, including the empty portions. For visualisation,
+        using the 'auto' option is suggested. Weighted data is not
+        supported for automated bin size selection.
+        'auto'
+            Maximum of the 'sturges' and 'fd' estimators. Provides good
+            all around performance.
+        'fd' (Freedman Diaconis Estimator)
+            Robust (resilient to outliers) estimator that takes into
+            account data variability and data size.
+        'doane'
+            An improved version of Sturges' estimator that works better
+            with non-normal datasets.
+        'scott'
+            Less robust estimator that that takes into account data
+            variability and data size.
+        'rice'
+            Estimator does not take variability into account, only data
+            size. Commonly overestimates number of bins required.
+        'sturges'
+            R's default method, only accounts for data size. Only
+            optimal for gaussian data and underestimates number of bins
+            for large non-gaussian datasets.
+        'sqrt'
+            Square root (of data size) estimator, used by Excel and
+            other programs for its speed and simplicity.
+
+    bounds : float or array-like of shape (2,)
+        Specification for the finite bounds of the histogram. Bounds can be
+        percentage extension or a specified interval [a,b].
+
+    alpha : float
+        Regularization parameter corresponding to the number of
+        pseudo-counts to add to each bin of the histogram. This can be seen
+        as putting a Dirichlet prior on the empirical bin counts with
+        Dirichlet parameter alpha.
+
+    Attributes
+    ----------
+    bounds_ : array of shape (2,)
+        Fitted bounds for the histogram where `bounds_[0]` is the minimum and
+        `bounds_[1]` is the maximum.
+
+    x_query_ : array of shape (n_bins + 1,)
+        Query points along domain corresponding to the middle of bins.
+
+    query_width_ : array of shape (n_bins + 1,)
+        Bin width or spacing between query points. Used with linear
+        interpolation to compute pdf, cdf and inverse cdf.
+
+    pdf_query_ : array of shape (n_bins + 1,)
+        pdf values at query points. Note that histograms have a constant pdf
+        value within each bin.
+
+    cdf_query_ : array of shape (n_bins + 1,)
+        cdf values at query points. Used with linear interpolation to
+        compute pdf, cdf and inverse cdf.
+
     """
 
     def __init__(self, bins=None, bounds=0.1, alpha=1e-6):
@@ -619,9 +720,10 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
+        X : array-like, shape (n_samples, 1)
+            Training data, where `n_samples` is the number of samples. Note
+            that the shape must have a second dimension of 1 since this is a
+            univariate density estimator.
 
         y : None, default=None
             Not used in the fitting process but kept for compatibility.
@@ -673,6 +775,7 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
 
     def _fit(self, hist, bin_edges):
         """Fit given probabilities for histogram and bin edges."""
+
         bounds = np.array([bin_edges[0], bin_edges[-1]])
         bin_width = bin_edges[1] - bin_edges[0]
         x_query = bin_edges[:-1] + bin_width / 2.0
