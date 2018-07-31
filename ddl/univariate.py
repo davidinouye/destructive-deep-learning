@@ -59,6 +59,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         X :
         y :
         fit_params :
+
         """
         pass
 
@@ -70,6 +71,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         ----------
         n_samples :
         random_state :
+
         """
         pass
 
@@ -81,6 +83,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         ----------
         X :
         y :
+
         """
         pass
 
@@ -92,6 +95,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         ----------
         X :
         y :
+
         """
         pass
 
@@ -103,6 +107,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         ----------
         X :
         y :
+
         """
         pass
 

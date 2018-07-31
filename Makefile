@@ -39,3 +39,7 @@ sing-experiment:
 	singularity exec --pwd ~/ /home/dinouye/davidinouye-research-latest.simg "cd research/destructive-deep-learning/scripts && python large_experiment.py --tree_alpha=0.5 --min_samples_leaf=1 tree mnist"
 show-all-files:
 	find . -type f | grep -v ".git" | grep -v "un~" | grep -v ".pyc"
+add-blank-line-docstrings:
+	# Reads everything into buffer and then replaces 
+	# Remove one dollar sign if running directly from command line
+	sed -i ':a;N;$$!ba;s/ :\n        """/ :\n\n        """/g' ddl/*.py

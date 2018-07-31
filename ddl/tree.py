@@ -414,6 +414,7 @@ class _ArrayedTreeWrapper:
         Parameters
         ----------
         node_destructor :
+
         """
         if node_destructor is None:
             self.node_destructors = [None for _ in range(len(self.wrapped_tree.feature))]
