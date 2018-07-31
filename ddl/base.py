@@ -69,7 +69,7 @@ class ScoreMixin(object):
     """Mixin for :func:`score` that returns mean of :func:`score_samples`."""
 
     def score(self, X, y=None):
-        """Returns the mean log likelihood (or log(det(Jacobian))).
+        """Return the mean log likelihood (or log(det(Jacobian))).
 
         Parameters
         ----------
@@ -83,7 +83,7 @@ class ScoreMixin(object):
         Returns
         -------
         log_likelihood : float
-            Meand log likelihood data points in X.
+            Mean log likelihood data points in X.
 
         """
         return np.mean(self.score_samples(X, y))
