@@ -920,7 +920,6 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
     """
 
     def __init__(self, destructors=None, random_state=None):
-        """Initialize composite destructor."""
         self.destructors = destructors
         self.random_state = random_state
 
