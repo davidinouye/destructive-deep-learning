@@ -26,7 +26,7 @@ class TreeDestructor(BaseDensityDestructor):
     def __init__(self, tree_density=None):
         self.tree_density = tree_density
 
-    def get_density_estimator(self):
+    def _get_density_estimator(self):
         """Get the *unfitted* density associated with this destructor.
 
         NOTE: The returned estimator is NOT fitted but is a clone or new

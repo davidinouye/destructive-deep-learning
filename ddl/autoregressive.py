@@ -24,7 +24,7 @@ class AutoregressiveDestructor(BaseDensityDestructor):
         self.order = order
         self.random_state = random_state
 
-    def get_density_estimator(self):
+    def _get_density_estimator(self):
         """Get density estimator.
 
         Returns

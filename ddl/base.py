@@ -234,7 +234,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
     """
 
     @abstractmethod
-    def get_density_estimator(self):
+    def _get_density_estimator(self):
         """(Abstract) Get density estimator."""
         raise NotImplementedError()
 
@@ -278,7 +278,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         """
         if density_fit_params is None:
             density_fit_params = {}
-        density = clone(self.get_density_estimator()).fit(X, y, **density_fit_params)
+        density = clone(self._get_density_estimator()).fit(X, y, **density_fit_params)
         self.fit_from_density(density)
         return self
 
@@ -338,7 +338,7 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         try:
             self._check_is_fitted()
         except NotFittedError:
-            return get_support_or_default(self.get_density_estimator())
+            return get_support_or_default(self._get_density_estimator())
         else:
             return get_support_or_default(self.density_)
 
@@ -363,7 +363,7 @@ class IdentityDestructor(BaseDensityDestructor):
 
     """
 
-    def get_density_estimator(self):
+    def _get_density_estimator(self):
         """Get the *unfitted* density associated with this destructor.
 
         NOTE: The returned estimator is NOT fitted but is a clone or new

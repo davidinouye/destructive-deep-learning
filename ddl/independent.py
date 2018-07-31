@@ -25,7 +25,7 @@ class IndependentDestructor(BaseDensityDestructor):
     def __init__(self, independent_density=None):
         self.independent_density = independent_density
 
-    def get_density_estimator(self):
+    def _get_density_estimator(self):
         """Get the *unfitted* density associated with this destructor.
 
         NOTE: The returned estimator is NOT fitted but is a clone or new
