@@ -26,6 +26,7 @@ Changed
 - Fixed functionality of ``ddl.base.CompositeDestructor``, ``ddl.deep.DeepDestructor`` and
   ``ddl.deep.DeepDestructorCV`` to use the ``random_state`` parameter to set the global random state
   so that the random state for each sub destructor does not need to be set manually.
+- Made several univariate densities private since not used outside of module.
 - Merged ``ddl.deep.DeepCVMixin`` into ``ddl.deep.DeepDestructorCV`` since no useful case for mixin.
 - Removed explicit dependency on pre-built mlpack and updated docker/singularity images.
 - Updated build system especially for circleci to make it simpler to build mlpack extension.

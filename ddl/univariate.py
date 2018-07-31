@@ -47,7 +47,7 @@ def _check_univariate_X(X, support, inverse=False):
     return np.array(X)
 
 
-class UnivariateDensity(BaseEstimator, ScoreMixin):
+class _UnivariateDensity(BaseEstimator, ScoreMixin):
     """Univariate density (abstract class)."""
 
     @abstractmethod
@@ -130,7 +130,7 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         return _check_univariate_X(X, self.get_support(), inverse=inverse)
 
 
-class ScipyUnivariateDensity(UnivariateDensity):
+class ScipyUnivariateDensity(_UnivariateDensity):
     """Density estimator based on random variables defined by
     `scipy.stats`.
     """
@@ -411,7 +411,7 @@ with warnings.catch_warnings():
     ).fit(np.array([[0]]))
 
 
-class PiecewiseConstantUnivariateDensity(UnivariateDensity):
+class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
     """Piecewise constant univariate density (e.g. histogram and tree)."""
 
     @abstractmethod
@@ -555,7 +555,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
 
     def _check_X(self, X, inverse=False):
         # Check that X is univariate or warn otherwise
-        X = super(PiecewiseConstantUnivariateDensity, self)._check_X(X, inverse)
+        X = super(_PiecewiseConstantUnivariateDensity, self)._check_X(X, inverse)
         return X
 
     def _check_bounds(self, X=None, extend=True):
@@ -597,7 +597,7 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
                                'pdf_query_', 'cdf_query_'])
 
 
-class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
+class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
     """Bounds can be percentage extension or a specified interval [a,b].
     Parameter `bins` can take any value as the same parameter of `numpy.histogram`
     """
@@ -680,7 +680,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         return self
 
 
-class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
+class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
     """Bounds can be percentage extension or a specified interval [a,b]."""
 
     def __init__(self, univariate_density=None, n_query=1000, bounds=0.1):
@@ -759,13 +759,13 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
         raise NotImplementedError()
 
 
-class KernelUnivariateDensity(ApproximateUnivariateDensity):
+class _KernelUnivariateDensity(_ApproximateUnivariateDensity):
     """Kernel univariate density.
 
     """
 
     def __init__(self, bandwidth=None, n_query=1000, bounds=0.1):
-        super(KernelUnivariateDensity, self).__init__()
+        super(_KernelUnivariateDensity, self).__init__()
         self.bandwidth = bandwidth
         self.n_query = n_query
         self.bounds = bounds
