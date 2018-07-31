@@ -431,6 +431,46 @@ replacements = [
         \"\"\"
         """,
     ),
+    # Shifted over 4 spaces
+    (
+        """
+    \"\"\"
+
+    Returns
+    """,
+    """
+    \"\"\"[Placeholder].
+
+    Returns
+    """,
+    ),
+    (
+        """
+    \"\"\"
+
+    Parameters
+    """,
+    """
+    \"\"\"[Placeholder].
+
+    Parameters
+    """,
+    ),
+    (
+        """
+    Returns
+    -------
+
+    \"\"\"
+        """,
+        """
+    Returns
+    -------
+    obj : object
+
+    \"\"\"
+        """,
+    ),
     (
         """
     def score_samples(self, X, y=None, partial_idx=None):

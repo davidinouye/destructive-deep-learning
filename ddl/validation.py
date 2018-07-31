@@ -558,7 +558,7 @@ def check_invertibility(trans, random_state=0):
 
 @_ignore_boundary_warnings
 def check_canonical_domain(trans, random_state=0):
-    """
+    """[Placeholder].
 
     Parameters
     ----------

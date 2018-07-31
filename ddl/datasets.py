@@ -7,7 +7,7 @@ from sklearn.utils import check_random_state, shuffle
 
 
 def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
-    """
+    """[Placeholder].
 
     Parameters
     ----------

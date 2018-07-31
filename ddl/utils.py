@@ -130,7 +130,7 @@ def check_X_in_interval_decorator(func):
 
 
 def has_method(est, method_name, warn=True):
-    """
+    """[Placeholder].
 
     Parameters
     ----------
@@ -159,7 +159,7 @@ def has_method(est, method_name, warn=True):
 
 
 def make_finite(X):
-    """
+    """[Placeholder].
 
     Parameters
     ----------
@@ -174,7 +174,7 @@ def make_finite(X):
 
 
 def make_positive(X):
-    """
+    """[Placeholder].
 
     Parameters
     ----------
@@ -189,7 +189,7 @@ def make_positive(X):
 
 
 def make_interior_probability(X, eps=None):
-    """
+    """[Placeholder].
 
     Parameters
     ----------

@@ -13,7 +13,7 @@ from sklearn.externals.six.moves import urllib
 
 
 def build_mlpack():
-    """
+    """[Placeholder].
 
     Returns
     -------
@@ -81,7 +81,7 @@ def build_mlpack():
 
 
 def configuration(parent_package='', top_path=None):
-    """
+    """[Placeholder].
 
     Parameters
     ----------
