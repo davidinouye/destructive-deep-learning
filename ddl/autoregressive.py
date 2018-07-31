@@ -38,29 +38,41 @@ class AutoregressiveDestructor(BaseDensityDestructor):
             return clone(self.density_estimator)
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         return self._autoregress(X, y, inverse=False)
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         return self._autoregress(X, y, inverse=True)

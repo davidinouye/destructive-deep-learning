@@ -112,10 +112,16 @@ class UnivariateDensity(BaseEstimator, ScoreMixin):
         pass
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return np.array([_DEFAULT_SUPPORT])
@@ -226,15 +232,24 @@ class ScipyUnivariateDensity(UnivariateDensity):
                                       % str(self._get_scipy_rv_or_default()))
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         self._check_is_fitted()
@@ -242,15 +257,21 @@ class ScipyUnivariateDensity(UnivariateDensity):
         return np.array(self.rv_.rvs(size=n_samples, random_state=rng)).reshape((n_samples, 1))
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -290,10 +311,16 @@ class ScipyUnivariateDensity(UnivariateDensity):
         return self.rv_.ppf(X.ravel()).reshape((-1, 1))
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         # Assumes density is univariate
@@ -390,15 +417,24 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         raise NotImplementedError()
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         # Inverse cdf sampling via uniform samples
@@ -411,15 +447,21 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return x.reshape((-1, 1))
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -491,10 +533,16 @@ class PiecewiseConstantUnivariateDensity(UnivariateDensity):
         return Finv_X.reshape((-1, 1))
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         # Make [[a,b]] so that it is explicitly a univariate density

@@ -44,16 +44,24 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
-        """
+        """Fit estimator to X and then transform X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Parameters to pass to the fit method.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         # Validate parameters
@@ -117,15 +125,21 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -142,15 +156,21 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -167,25 +187,37 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         # We assume canonical destructors
         return _UNIT_SPACE
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -226,15 +258,21 @@ class RandomFeaturePairs(BaseEstimator):
         self.random_state = random_state
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         X = check_array(X)
@@ -280,15 +318,21 @@ class ImageFeaturePairs(BaseEstimator):
         self.wrap = wrap
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         def _check_image_shape(shape, x):

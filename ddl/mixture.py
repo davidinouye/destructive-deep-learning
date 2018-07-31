@@ -44,15 +44,21 @@ class _MixtureMixin(ScoreMixin):
         return mixture
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -65,15 +71,24 @@ class _MixtureMixin(ScoreMixin):
         return scipy_logsumexp(weighted_log_likelihood, axis=0)
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         self._check_is_fitted()
@@ -196,15 +211,21 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
         self.component_density_estimator = component_density_estimator
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         X = check_array(X)
@@ -249,15 +270,21 @@ class _GaussianMixtureMixin(object):
     adds a few methods. """
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         super(_GaussianMixtureMixin, self).fit(X, y)
@@ -414,10 +441,16 @@ class _MixtureUnivariateMixin(object):
         return self.marginal_inverse_cdf(X.ravel(), 0).reshape(-1, 1)
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return np.array([_DEFAULT_SUPPORT])
@@ -447,15 +480,21 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
         self.alpha = alpha
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         rng = check_random_state(self.random_state)
@@ -547,15 +586,21 @@ class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
             pass
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         # Fit with one less component
@@ -620,15 +665,21 @@ class _RegularizedGaussianMixtureDensity(GaussianMixtureDensity):
         )
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         super(_RegularizedGaussianMixtureDensity, self).fit(X, y)
@@ -684,15 +735,21 @@ class _AugmentedGaussianDensity(GaussianMixtureDensity):
         self.means_[1, :] = m
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         X = check_array(X)

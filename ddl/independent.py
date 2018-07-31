@@ -26,10 +26,18 @@ class IndependentDestructor(BaseDensityDestructor):
         self.independent_density = independent_density
 
     def get_density_estimator(self):
-        """
+        """Get the *unfitted* density associated with this destructor.
+
+        NOTE: The returned estimator is NOT fitted but is a clone or new
+        instantiation of the underlying density estimator. This is just
+        a helper function that needs to be overridden by subclasses of
+        :class:`~ddl.base.BaseDensityDestructor`.
 
         Returns
         -------
+        density : estimator
+            The *unfitted* density estimator associated wih this
+            destructor.
 
         """
         if self.independent_density is None:
@@ -38,15 +46,21 @@ class IndependentDestructor(BaseDensityDestructor):
             return clone(self.independent_density)
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         # Standard checks
@@ -65,15 +79,21 @@ class IndependentDestructor(BaseDensityDestructor):
         return Z
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         # Standard checks
@@ -152,15 +172,24 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return self
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         self._check_is_fitted()
@@ -172,15 +201,21 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         return X
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -258,10 +293,16 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
             np.array(x).reshape(-1, 1)).reshape(np.array(x).shape)
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         def _unwrap_support(est):
@@ -320,15 +361,21 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return self
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -348,15 +395,21 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return independent_scores.sum(axis=1)
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -371,15 +424,21 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return X
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -394,10 +453,16 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         return X
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return _UNIT_SPACE

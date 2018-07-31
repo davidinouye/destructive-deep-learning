@@ -140,15 +140,21 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return self.A_.logabsdet() * np.ones((X.shape[0],))
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -156,15 +162,21 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return self.A_.dot(X.transpose()).transpose()
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -172,10 +184,16 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return self.A_inv_.dot(X.transpose()).transpose()
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return _INF_SPACE
@@ -262,15 +280,21 @@ class _BivariateIndependentComponents(BaseEstimator):
         self.random_state = random_state
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         def _get_Q(a):

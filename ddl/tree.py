@@ -27,10 +27,18 @@ class TreeDestructor(BaseDensityDestructor):
         self.tree_density = tree_density
 
     def get_density_estimator(self):
-        """
+        """Get the *unfitted* density associated with this destructor.
+
+        NOTE: The returned estimator is NOT fitted but is a clone or new
+        instantiation of the underlying density estimator. This is just
+        a helper function that needs to be overridden by subclasses of
+        :class:`~ddl.base.BaseDensityDestructor`.
 
         Returns
         -------
+        density : estimator
+            The *unfitted* density estimator associated wih this
+            destructor.
 
         """
         if self.tree_density is None:
@@ -39,15 +47,21 @@ class TreeDestructor(BaseDensityDestructor):
             return clone(self.tree_density)
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -55,15 +69,21 @@ class TreeDestructor(BaseDensityDestructor):
         return _tree_transform(self.density_.tree_, X, y)
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self._check_is_fitted()
@@ -232,15 +252,21 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         return X
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         def _update_stack(child):
@@ -295,10 +321,16 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         return X
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return _UNIT_SPACE

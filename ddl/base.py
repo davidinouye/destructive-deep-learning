@@ -98,15 +98,24 @@ class DestructorMixin(ScoreMixin, TransformerMixin):
     """
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         rng = check_random_state(random_state)
@@ -288,15 +297,21 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -305,10 +320,16 @@ class BaseDensityDestructor(BaseEstimator, DestructorMixin):
         return self.density_.score_samples(X)
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         # Either get from the density estimator parameter
@@ -342,10 +363,18 @@ class IdentityDestructor(BaseDensityDestructor):
     """
 
     def get_density_estimator(self):
-        """
+        """Get the *unfitted* density associated with this destructor.
+
+        NOTE: The returned estimator is NOT fitted but is a clone or new
+        instantiation of the underlying density estimator. This is just
+        a helper function that needs to be overridden by subclasses of
+        :class:`~ddl.base.BaseDensityDestructor`.
 
         Returns
         -------
+        density : estimator
+            The *unfitted* density estimator associated wih this
+            destructor.
 
         """
         return UniformDensity()
@@ -393,10 +422,16 @@ class IdentityDestructor(BaseDensityDestructor):
         return X
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return np.array([0, 1])
@@ -429,15 +464,21 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         pass
 
     def fit(self, X, y=None):
-        """
+        """Fit estimator to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
 
         Returns
         -------
+        self : estimator
+            Returns the instance itself.
 
         """
         X = check_array(X)
@@ -446,15 +487,24 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         return self
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         self._check_is_fitted()
@@ -462,15 +512,21 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         return generator.rand(n_samples, self.n_features_)
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._check_is_fitted()
@@ -479,10 +535,16 @@ class UniformDensity(BaseEstimator, ScoreMixin):
 
     # noinspection PyMethodMayBeStatic
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return np.array([0, 1])
@@ -601,52 +663,76 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         return self
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return _UNIT_SPACE
 
     def transform(self, X, y=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         return self._get_destructor().inverse_transform(X, y)
 
     def inverse_transform(self, X, y=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         return self._get_destructor().transform(X, y)
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         d = self._get_destructor()
@@ -686,39 +772,60 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         return self
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         return self._get_destructor().sample(
             n_samples=n_samples, random_state=random_state)
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         return self._get_destructor().score_samples(X, y)
 
     def get_support(self):
-        """
+        """Get the support of this density (i.e. the positive density region).
 
         Returns
         -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         return get_domain_or_default(self.destructor)
@@ -824,16 +931,24 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
 
     @_check_global_random_state
     def fit_transform(self, X, y=None, **fit_params):
-        """
+        """Fit estimator to X and then transform X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Parameters to pass to the fit method.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         Z = check_array(X, copy=True)
@@ -857,16 +972,27 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return d.fit_transform(Z, y)
 
     def transform(self, X, y=None, partial_idx=None):
-        """
+        """Apply destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
-        partial_idx :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
+
+        partial_idx : list or None, default=None
+            List of indices of the fitted destructor to use in
+            the transformation. The default of None uses all
+            the fitted destructors. Mainly used for visualization
+            or debugging.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data (possibly only partial transformation).
 
         """
         self._check_is_fitted()
@@ -878,16 +1004,27 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return Z
 
     def inverse_transform(self, X, y=None, partial_idx=None):
-        """
+        """Apply inverse destructive transformation to X.
 
         Parameters
         ----------
-        X :
-        y :
-        partial_idx :
+        X : array-like, shape (n_samples, n_features)
+            New data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the transformation but kept for compatibility.
+
+        partial_idx : list or None, default=None
+            List of indices of the fitted destructor to use in
+            the transformation. The default of None uses all
+            the fitted destructors. Mainly used for visualization
+            or debugging.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data (possibly only partial transformation).
 
         """
         self._check_is_fitted()
@@ -960,10 +1097,16 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         return np.mean(self.score_samples_layers(X, y, partial_idx=partial_idx), axis=0)
 
     def get_domain(self):
-        """
+        """Get the domain of this destructor.
 
         Returns
         -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
 
         """
         # Get the domain of the first destructor (or relative destructor like LinearProjector)

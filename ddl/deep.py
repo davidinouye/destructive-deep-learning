@@ -297,16 +297,24 @@ class DeepDestructorCV(DeepDestructor):
         return self
 
     def fit_transform(self, X, y=None, **fit_params):
-        """
+        """Fit estimator to X and then transform X.
 
         Parameters
         ----------
-        X :
-        y :
-        fit_params :
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fit_params : dict, optional
+            Parameters to pass to the fit method.
 
         Returns
         -------
+        X_new : array-like, shape (n_samples, n_features)
+            Transformed data.
 
         """
         self.fit(X, y, **fit_params)

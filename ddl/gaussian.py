@@ -49,15 +49,21 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         return self
 
     def score_samples(self, X, y=None):
-        """
+        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
 
         Parameters
         ----------
-        X :
-        y :
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
 
         Returns
         -------
+        log_likelihood : array, shape (n_samples,)
+            Log likelihood of each data point in X.
 
         """
         self._fit_auxiliary()
@@ -70,15 +76,24 @@ class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
         ).ravel()
 
     def sample(self, n_samples=1, random_state=None):
-        """
+        """Generate random samples from this density/destructor.
 
         Parameters
         ----------
-        n_samples :
-        random_state :
+        n_samples : int, default=1
+            Number of samples to generate. Defaults to 1.
+
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, `random_state` is the seed used by the random number
+            generator; If :class:`~numpy.random.RandomState` instance,
+            `random_state` is the random number generator; If None, the random
+            number generator is the :class:`~numpy.random.RandomState` instance
+            used by :mod:`numpy.random`.
 
         Returns
         -------
+        X : array, shape (n_samples, n_features)
+            Randomly generated sample.
 
         """
         rng = check_random_state(random_state)
