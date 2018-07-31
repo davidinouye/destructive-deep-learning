@@ -20,7 +20,28 @@ logger = logging.getLogger(__name__)
 
 
 class TreeDestructor(BaseDensityDestructor):
-    """Tree destructor.
+    """Canonical tree destructor based on an underlying tree density.
+
+    This canonical destructor assumes that the underlying density is a tree
+    density ( i.e. :class:`~ddl.tree.TreeDensity`).  The destructor is
+    canonical because the tree density is defined on the unit hypercube and
+    thus the domain of this destructor is also the unit hypercube. See
+    :class:`~ddl.tree.TreeDensity` for information on possible estimator
+    parameters.
+
+    Parameters
+    ----------
+    tree_density : TreeDensity
+        The tree density estimator for this destructor.
+
+    Attributes
+    ----------
+    density_ : TreeDensity
+        Fitted underlying tree density.
+
+    See Also
+    --------
+    TreeDensity
 
     """
     def __init__(self, tree_density=None):
@@ -104,7 +125,46 @@ class TreeDestructor(BaseDensityDestructor):
 
 
 class TreeDensity(BaseEstimator, ScoreMixin):
-    """Tree density.
+    """Tree density estimator defined on the unit hypercube.
+
+    This density estimator first estimates the tree *structure* via the
+    `tree_estimator` parameter. Then the estimator constructs a density tree
+    by counting the number of training data points that fall into the
+    leaves. The empirical counts are regularized by the `uniform_weight`
+    which regularizes the tree towards the uniform density---essentially a
+    mixture between the empirical tree and a uniform density. Optionally,
+    a node destructor can be specified to be estimated and applied at each
+    leaf node.
+
+    Parameters
+    ----------
+    tree_estimator : estimator, defaults to RandomTreeEstimator
+        Tree estimator defaults to :class:`RandomTreeEstimator` but other
+        estimators could be used or developed such as the mlpack density
+        estimation tree (DET) estimator
+        :class:`ddl.externals.mlpack.MlpackDensityTreeEstimator`.
+
+    get_tree : func
+        Function that extracts the tree structure from the fitted tree
+        estimator: ``tree = get_tree(fitted_tree_estimator)``. Default is to
+        extract an :mod:`sklearn.tree` arrayed tree from the estimator such
+        as from the estimator :class:`sklearn.tree.ExtraTreeRegressor`.
+
+    node_destructor : estimator, optional
+        Optional destructor that can be fitted and applied at each leaf node
+        of the tree. For example, this could be an independent histogram
+        density (via :class:`~ddl.independent.IndependentDestructor` with
+        :class:`~ddl.univariate.HistogramUnivariateDensity` densities). With
+        a node destructor, the tree destructor is no longer  piecewise
+        uniform but rather a more general piecewise density.
+
+    uniform_weight : float, between 0 and 1
+        The mixture weight of a uniform density used to regularize the
+        empirical tree density. For example, if ``uniform_weight=1``,
+        the density estimate trivially reduces to the uniform density. On
+        the other hand, if ``uniform_weight=0``, no regularization is
+        performed on the empirical density estimate. Anything in between 0
+        and 1 regularizes the density partially.
 
     """
     def __init__(self, tree_estimator=None, get_tree=None, node_destructor=None,

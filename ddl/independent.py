@@ -26,14 +26,15 @@ class IndependentDestructor(BaseDensityDestructor):
     transformation merely applys a univariate CDF to each feature
     independently of other features. The user can specify the univariate
     densities for each feature using the random variables defined in
-    :mod:`scipy.stats`.  The fit method merely fits an independent density,
-    and then uses the corresponding CDFs to transform each coordinate
+    :mod:`scipy.stats`.  The fit method merely fits an independent density.
+    For transform and inverse transform, this destrcutor mereley applies the
+    corresponding CDFs and inverse CDFs to transform each feature
     independently.
 
     Parameters
     ----------
     independent_density : IndependentDensity
-        The independent density for this destructor.
+        The independent density estimator for this destructor.
 
     Attributes
     ----------
@@ -171,6 +172,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
 
     See Also
     --------
+    TreeDestructor
     ddl.univariate
     ddl.univariate.ScipyUnivariateDensity
     ddl.univariate.HistogramUnivariateDensity
