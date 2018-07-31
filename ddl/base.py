@@ -623,12 +623,6 @@ def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
     ).fit(None, y=None, copy=copy, destructor_already_fitted=True)
 
 
-class ShouldOnlyBeInTestWarning(UserWarning):
-    """Warning that should only occur in testing."""
-
-    pass
-
-
 class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
     """An inverse canonical destructor which is also a destructor.
 

@@ -10,7 +10,7 @@ from sklearn.base import clone
 from sklearn.utils import check_random_state
 
 # noinspection PyProtectedMember
-from .base import BoundaryWarning, ShouldOnlyBeInTestWarning, UniformDensity, _NumDimWarning
+from .base import BoundaryWarning, UniformDensity, _NumDimWarning
 from .utils import (check_domain, check_X_in_interval, get_domain_or_default,
                     get_support_or_default, has_method)
 
@@ -34,6 +34,10 @@ logger = logging.getLogger(__name__)
 # Sample from learned model and see if we can relearn current model?? -- shows how stable it is...
 # Compare samples of "assumed" model with samples from relearned model
 # Is this learnable from the number of samples given (vs null distribution)?
+class _ShouldOnlyBeInTestWarning(UserWarning):
+    """Warning that should only occur in testing."""
+
+    pass
 
 
 def _ignore_boundary_warnings(func):
@@ -801,7 +805,7 @@ def _assert_no_warnings(func, *args, allow_these_warnings=None, **kw):
     Asserts that no warnings are issued when calling function `func`.
     """
     if allow_these_warnings is None:
-        allow_these_warnings = [BoundaryWarning, ShouldOnlyBeInTestWarning]
+        allow_these_warnings = [BoundaryWarning, _ShouldOnlyBeInTestWarning]
     _clean_warning_registry()
     with warnings.catch_warnings(record=True) as w_arr:
         warnings.simplefilter('always')
@@ -871,7 +875,7 @@ def _assert_unit_domain(rng, func, n_features=1):
     # Attempt to fit data inside the canonical domain (should not raise warning)
     for X in X_good:
         _assert_no_warnings(func, X,
-                            allow_these_warnings=[BoundaryWarning, ShouldOnlyBeInTestWarning,
+                            allow_these_warnings=[BoundaryWarning, _ShouldOnlyBeInTestWarning,
                                                   _NumDimWarning])
 
     # Attempt to fit data outside the canonical domain (should raise warning)
