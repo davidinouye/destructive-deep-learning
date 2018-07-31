@@ -69,8 +69,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.intersphinx',
-    'numpydoc', # numpy doc strings
-    'nbsphinx', # Jupyter notebook extension
+    'numpydoc',  # numpy doc strings
+    'nbsphinx',  # Jupyter notebook extension
 ]
 
 # Copied the below hack from scikit-learn
