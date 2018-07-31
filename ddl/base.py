@@ -924,7 +924,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         self.destructors = destructors
         self.random_state = random_state
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

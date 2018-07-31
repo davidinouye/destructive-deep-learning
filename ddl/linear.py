@@ -357,7 +357,7 @@ class IdentityLinearEstimator(BaseEstimator):
     def __init__(self):
         pass
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters
@@ -392,7 +392,7 @@ class RandomOrthogonalEstimator(BaseEstimator):
         self.random_state = random_state
         self.n_components = n_components
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

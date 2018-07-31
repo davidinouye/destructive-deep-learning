@@ -131,7 +131,7 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         """
         self.univariate_estimators = univariate_estimators
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

@@ -27,7 +27,7 @@ class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
         self.group_canonical_destructor = group_canonical_destructor
         self.n_jobs = n_jobs
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

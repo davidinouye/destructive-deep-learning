@@ -359,7 +359,7 @@ class RandomTreeEstimator(BaseEstimator):
         self.max_leaf_nodes = max_leaf_nodes
         self.random_state = random_state
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

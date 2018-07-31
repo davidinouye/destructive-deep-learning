@@ -147,7 +147,7 @@ class ScipyUnivariateDensity(UnivariateDensity):
         self.scipy_rv = scipy_rv
         self.scipy_fit_kwargs = scipy_fit_kwargs
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters
@@ -614,7 +614,7 @@ class HistogramUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.bounds = bounds
         self.alpha = alpha
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters
@@ -702,7 +702,7 @@ class ApproximateUnivariateDensity(PiecewiseConstantUnivariateDensity):
         self.n_query = n_query
         self.bounds = bounds
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters

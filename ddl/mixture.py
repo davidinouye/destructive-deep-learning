@@ -390,7 +390,7 @@ class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMix
 
 
 class _MixtureUnivariateMixin(object):
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
 
         Parameters
