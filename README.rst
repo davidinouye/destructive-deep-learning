@@ -29,9 +29,10 @@ Please cite the following paper if you use this code:
 Documentation
 -------------
 
-Please see the `API reference`_ for basic documentation.
+UPDATED: Please see the `updated documentation`_ for an API reference and tutorials/demos including
+a Quickstart tutorial and MNIST demo.
 
-.. _`API reference`: https://destructive-deep-learning.readthedocs.io/en/latest/
+.. _`updated documentation`: https://destructive-deep-learning.readthedocs.io/en/latest/
 
 Environment Setup
 -----------------

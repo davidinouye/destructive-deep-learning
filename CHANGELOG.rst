@@ -13,9 +13,9 @@ adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__.
 Added
 ^^^^^
 
--  Placeholder @davidinouye.
-
-   -  Subitem placeholder @davidinouye
+- Significant documentation has been added including:
+   - New demo notebooks
+   - Docstrings for many classes and functions
 
 Changed
 ^^^^^^^
