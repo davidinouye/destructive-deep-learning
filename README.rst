@@ -21,7 +21,7 @@ Please cite the following paper if you use this code:
 
     | `Deep Density Destructors`_ (`pdf`_)
     | David I. Inouye, Pradeep Ravikumar
-    | To appear in *International Conference on Machine Learning* (ICML), 2018.
+    | In *International Conference on Machine Learning* (ICML), 2018.
 
 .. _`Deep Density Destructors`: http://www.cs.cmu.edu/~dinouye/papers/inouye2018-deep-density-destructors-icml2018.pdf
 .. _`pdf`: http://www.cs.cmu.edu/~dinouye/papers/inouye2018-deep-density-destructors-icml2018.pdf
