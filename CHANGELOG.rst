@@ -34,5 +34,4 @@ Changed
 Removed
 ^^^^^^^
 
--  Placeholder @davidinouye.
-
+- Removed :class:`ddl.base.AutoregressiveMixin` because it was not needed.

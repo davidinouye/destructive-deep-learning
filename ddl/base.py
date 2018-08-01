@@ -19,52 +19,6 @@ from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_
 logger = logging.getLogger(__name__)
 
 
-class AutoregressiveMixin(object):
-    """
-    Abstract mixin for autoregressive densities.
-
-    Abstract methods for ``conditional_densities``, ``marginal_cdf`` and
-    ``marginal_inverse_cdf``.
-    """
-
-    @abstractmethod
-    def conditional_densities(self, X, cond_idx_arr, not_cond_idx_arr):
-        """(Abstract) Compute conditional densities.
-
-        Parameters
-        ----------
-        X :
-        cond_idx_arr :
-        not_cond_idx_arr :
-
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def marginal_cdf(self, x, target_idx):
-        """(Abstract) Compute marginal cdf.
-
-        Parameters
-        ----------
-        x :
-        target_idx :
-
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def marginal_inverse_cdf(self, x, target_idx):
-        """(Abstract) Compute marginal inverse cdf.
-
-        Parameters
-        ----------
-        x :
-        target_idx :
-
-        """
-        raise NotImplementedError()
-
-
 class ScoreMixin(object):
     """Mixin for :func:`score` that returns mean of :func:`score_samples`."""
 

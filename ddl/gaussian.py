@@ -9,10 +9,11 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import row_norms
 from sklearn.utils.validation import check_array, column_or_1d
 
-from .base import AutoregressiveMixin, ScoreMixin
+# noinspection PyProtectedMember
+from .base import ScoreMixin
 
 
-class GaussianDensity(BaseEstimator, AutoregressiveMixin, ScoreMixin):
+class GaussianDensity(BaseEstimator, ScoreMixin):
     """Allow for conditioning that will return a new proxy density.
     Also allows for marginal density computation.
     """
