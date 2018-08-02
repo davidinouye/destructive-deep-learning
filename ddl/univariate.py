@@ -15,6 +15,7 @@ from sklearn.neighbors import KernelDensity
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
 
 from .base import BoundaryWarning, ScoreMixin
+from .tree import TreeDensity
 # noinspection PyProtectedMember
 from .utils import (_DEFAULT_SUPPORT, check_X_in_interval, make_finite, make_interior_probability,
                     make_positive)
@@ -447,11 +448,6 @@ with warnings.catch_warnings():
 class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
     """Piecewise constant univariate density (e.g. histogram and tree)."""
 
-    @abstractmethod
-    def fit(self, X, y=None, **fit_params):
-        """Should fit parameters of piecewise constant estimator."""
-        raise NotImplementedError()
-
     def sample(self, n_samples=1, random_state=None):
         """Generate random samples from this density/destructor.
 
@@ -476,11 +472,7 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
         # Inverse cdf sampling via uniform samples
         rng = check_random_state(random_state)
         u = rng.rand(n_samples)
-        # Find insertion point
-        idx = np.searchsorted(self.cdf_query_, u)
-        # Sample uniformly from that bar
-        x = (rng.rand(n_samples) - 0.5) * self.query_width_ + self.x_query_[idx]
-        return x.reshape((-1, 1))
+        return self.inverse_cdf(u.reshape(-1, 1))
 
     def score_samples(self, X, y=None):
         """Compute log-likelihood (or log(det(Jacobian))) for each sample.
@@ -505,13 +497,8 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
         X = X.ravel()
 
         # Interp nearest neighbor
-        f_X = np.zeros(X.shape)
-        interp_callable = interp1d(
-            self.x_query_, self.pdf_query_,
-            kind='nearest', copy=False,
-            bounds_error=False, fill_value=(0, 0), assume_sorted=True
-        )
-        f_X = interp_callable(X)
+        idx = np.searchsorted(self.bin_edges_, X)
+        f_X = self.pdf_bin_[idx - 1]
         # Bump away from zero to avoid error in np.log
         f_X = np.maximum(f_X, np.finfo(f_X.dtype).tiny)
         return np.log(f_X).reshape((-1, 1))
@@ -536,7 +523,7 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
         # Interp nearest neighbor
         F_X = np.zeros(X.shape)
         interp_callable = interp1d(
-            self.x_query_[:-1] + self.query_width_ / 2.0, self.cdf_query_[:-1],
+            self.bin_edges_, self.cdf_bin_,
             kind='linear', copy=False,
             bounds_error=False, fill_value=(0, 1), assume_sorted=True
         )
@@ -563,7 +550,7 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
         # Interp nearest neighbor
         Finv_X = np.zeros(X.shape)
         interp_callable = interp1d(
-            self.cdf_query_[:-1], self.x_query_[:-1] + self.query_width_ / 2.0,
+            self.cdf_bin_, self.bin_edges_,
             kind='linear', copy=False,
             bounds_error=False, fill_value=(0, 1), assume_sorted=True
         )
@@ -612,23 +599,22 @@ class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
                                  ' scalar indicating percentage extension of domain')
             return _domain
 
-    def _normalize_f_query(self, f_query, query_width):
+    def _normalize_pdf_bin(self, f_bin, bin_edges):
         # noinspection PyAugmentAssignment
-        f_query = f_query / np.sum(f_query)  # Normalize to 1
-        f_query /= query_width  # Adjust by bin width to make valid pdf
-        return f_query
+        bin_widths = bin_edges[1:] - bin_edges[:-1]
+        f_bin = f_bin / np.sum(f_bin * bin_widths)  # Normalize to sum to 1
+        return f_bin
 
-    # noinspection PyPep8Naming
-    def _compute_F_query(self, f_query):
-        F_query = np.cumsum(f_query)
-        F_query = F_query / F_query[-1]  # Normalize to sum to 1
-        F_query[0] = 0  # Ensure initial point is exact
-        F_query[-2:-1] = 1  # Ensure last points are exact
-        return F_query
+    def _compute_cdf_bin(self, f_bin, bin_edges):
+        F_bin = np.zeros(len(bin_edges))
+        bin_widths = bin_edges[1:] - bin_edges[:-1]
+        F_bin[1:] = np.cumsum(f_bin * bin_widths)
+        F_bin = F_bin / F_bin[-1]  # Normalize to sum to 1
+        F_bin[-1] = 1  # Ensure last point is exactly 1
+        return F_bin
 
     def _check_is_fitted(self):
-        check_is_fitted(self, ['bounds_', 'x_query_', 'query_width_',
-                               'pdf_query_', 'cdf_query_'])
+        check_is_fitted(self, ['bin_edges_', 'pdf_bin_', 'cdf_bin_'])
 
 
 class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
@@ -689,23 +675,15 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
 
     Attributes
     ----------
-    bounds_ : array of shape (2,)
-        Fitted bounds for the histogram where `bounds_[0]` is the minimum and
-        `bounds_[1]` is the maximum.
+    bin_edges_ : array of shape (n_bins + 1,)
+        Edges of bins.
 
-    x_query_ : array of shape (n_bins + 1,)
-        Query points along domain corresponding to the middle of bins.
-
-    query_width_ : array of shape (n_bins + 1,)
-        Bin width or spacing between query points. Used with linear
-        interpolation to compute pdf, cdf and inverse cdf.
-
-    pdf_query_ : array of shape (n_bins + 1,)
-        pdf values at query points. Note that histograms have a constant pdf
+    pdf_bin_ : array of shape (n_bins,)
+        pdf values of bins. Note that histograms have a constant pdf
         value within each bin.
 
-    cdf_query_ : array of shape (n_bins + 1,)
-        cdf values at query points. Used with linear interpolation to
+    cdf_bin_ : array of shape (n_bins + 1,)
+        cdf values at bin edges. Used with linear interpolation to
         compute pdf, cdf and inverse cdf.
 
     """
@@ -749,52 +727,92 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
 
         return self._fit(hist, bin_edges)
 
-    def fit_from_probabilities(self, prob):
+    def fit_from_pdf_bin(self, pdf_bin, bin_edges=None):
         """[Placeholder].
 
         Parameters
         ----------
-        prob :
+        pdf_bin : array, shape (n_bins,) or shape (n_bins, 1)
+            Density value of each bin (if bins are different widths than
+            this is not proportional to the total bin probability.
+
+        bin_edges : array, shape (n_bins + 1,)
+            Edges of bins. Note that this must be of shape (n_bins + 1,).
 
         Returns
         -------
-        obj : object
+        self : estimator
+            Returns the instance itself.
 
         """
-        bounds = self._check_bounds()
-        bins = self.bins if self.bins is not None else 'auto'
-        prob = column_or_1d(prob)
+        pdf_bin = column_or_1d(pdf_bin)
 
-        # Fit numpy histogram
-        n_features = prob.shape[0]
-        X_temp = np.mean(self.bounds) * np.ones((1, n_features))
-        hist, bin_edges = np.histogram(X_temp, bins=bins, range=bounds)
-        hist = prob
+        # Get bin_edges by fitting dummy histogram
+        if bin_edges is None:
+            bounds = self._check_bounds()
+            bins = self.bins if self.bins is not None else 'auto'
+            _, bin_edges = np.histogram([np.mean(self.bounds)], bins=bins, range=bounds)
 
-        return self._fit(hist, bin_edges)
+        return self._fit(pdf_bin, bin_edges)
 
-    def _fit(self, hist, bin_edges):
+    def _fit(self, unnormalized_pdf, bin_edges):
         """Fit given probabilities for histogram and bin edges."""
 
-        bounds = np.array([bin_edges[0], bin_edges[-1]])
-        bin_width = bin_edges[1] - bin_edges[0]
-        x_query = bin_edges[:-1] + bin_width / 2.0
-
         # Add endpoints fixed at 0
-        x_query = np.concatenate(([bin_edges[0] - bin_width / 2.0],
-                                  x_query,
-                                  [bin_edges[-1] + bin_width / 2.0]))
-        hist = np.concatenate(([0], hist, [0]))
+        pdf_bin = self._normalize_pdf_bin(unnormalized_pdf, bin_edges)
+        cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
 
-        f_query = self._normalize_f_query(hist, bin_width)
-        F_query = self._compute_F_query(f_query)
-
-        self.bounds_ = bounds
-        self.x_query_ = x_query
-        self.query_width_ = bin_width
-        self.pdf_query_ = f_query
-        self.cdf_query_ = F_query
+        self.bin_edges_ = bin_edges
+        self.pdf_bin_ = pdf_bin
+        self.cdf_bin_ = cdf_bin
         return self
+
+
+class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
+    """Tree univariate density, i.e. histogram with variable bin widths."""
+
+    def __init__(self, tree_estimator=None, get_tree=None,
+                 uniform_weight=1e-6):
+        self.tree_estimator = tree_estimator
+        self.get_tree = get_tree
+        self.uniform_weight = uniform_weight
+
+    def fit(self, X, y, **fit_params):
+        tree_density = TreeDensity(
+            tree_estimator=self.tree_estimator,
+            get_tree=self.get_tree,
+            uniform_weight=self.uniform_weight,
+            node_destructor=None,  # Assume constant density
+        )
+        tree_density.fit(X, y, **fit_params)
+
+        # Get bin edges
+        splits = [node.threshold for i, node in enumerate(tree_density.tree_)]
+        splits.extend([0, 1])  # Add zero and 1 as edge points
+        bin_edges = np.sort(splits)
+
+        # Get pdf values of bins
+        bin_widths = bin_edges[1:] - bin_edges[:-1]
+        x_query = bin_edges[:-1] + bin_widths / 2.0
+        pdf_bin = tree_density.score_samples(x_query)
+
+        self._fit(pdf_bin, bin_edges)
+        return self
+
+    def get_support(self):
+        """Get the support of this density (i.e. the positive density region).
+
+        Returns
+        -------
+        support : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``support[0]`` is the minimum and
+            ``support[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's support (which could
+            be different for each feature) is given similar to the first
+            case.
+
+        """
+        return np.array([[0, 1]])
 
 
 class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
@@ -804,6 +822,8 @@ class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         self.univariate_density = univariate_density
         self.n_query = n_query
         self.bounds = bounds
+        raise RuntimeError('This class has not been updated/checked since '
+                           'updating univariate estimators.')
 
     def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
@@ -864,9 +884,9 @@ class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         # Skip endpoints which should be 0
         X_query_without_ends = x_query[1:-1].reshape((-1, 1))
         f_query[1:-1] = np.exp(density.score_samples(X_query_without_ends))
-        f_query = self._normalize_f_query(f_query, query_width)
+        f_query = self._normalize_pdf_bin(f_query, query_width)
 
-        F_query = self._compute_F_query(f_query)
+        F_query = self._compute_cdf_bin(f_query)
 
         # Save important fitted values
         self.density_estimator_ = density
@@ -893,6 +913,8 @@ class _KernelUnivariateDensity(_ApproximateUnivariateDensity):
         self.bandwidth = bandwidth
         self.n_query = n_query
         self.bounds = bounds
+        raise RuntimeError('This class has not been updated/checked since '
+                           'updating univariate estimators.')
 
     def _get_univariate_density_or_default(self):
         if self.bandwidth is None:
