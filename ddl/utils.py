@@ -206,6 +206,27 @@ def make_interior_probability(X, eps=None):
     return np.minimum(np.maximum(X, eps), 1-eps)
 
 
+def make_interior(X, bounds, eps=None):
+    """[Placeholder].
+
+    Parameters
+    ----------
+    X :
+    bounds :
+    eps :
+
+    Returns
+    -------
+
+    """
+    X = _check_floating(X)
+    if eps is None:
+        eps = np.finfo(X.dtype).eps
+    left = bounds[0] + np.abs(bounds[0] * eps)
+    right = bounds[1] - np.abs(bounds[1] * eps)
+    return np.minimum(np.maximum(X, left), right)
+
+
 def _check_floating(X):
     if not np.issubdtype(X.dtype, np.floating):
         X = np.array(X, dtype=np.float)

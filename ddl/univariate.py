@@ -3,28 +3,23 @@ from __future__ import division, print_function
 
 import logging
 import warnings
-from abc import abstractmethod
 
 import numpy as np
 import scipy.stats
-from scipy.interpolate import interp1d
-from sklearn.base import BaseEstimator, clone
+from sklearn.base import BaseEstimator
 from sklearn.exceptions import DataConversionWarning, NotFittedError
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state, column_or_1d
 
 from .base import BoundaryWarning, ScoreMixin
-from .tree import TreeDensity
 # noinspection PyProtectedMember
-from .utils import (_DEFAULT_SUPPORT, check_X_in_interval, make_finite, make_interior_probability,
-                    make_positive)
+from .utils import (_DEFAULT_SUPPORT, check_X_in_interval, make_finite, make_interior,
+                    make_interior_probability, make_positive)
 
 logger = logging.getLogger(__name__)
 
 SCIPY_RV_NON_NEGATIVE = ['expon', 'chi']
 SCIPY_RV_STRICLTY_POSITIVE = ['gamma', 'invgamma', 'chi2', 'lognorm']
-SCIPY_RV_UNIT_SUPPORT = ['uniform', 'beta']
+SCIPY_RV_UNIT_SUPPORT = ['rv_histgoram', 'uniform', 'beta']
 
 
 def _check_univariate_X(X, support, inverse=False):
@@ -48,90 +43,7 @@ def _check_univariate_X(X, support, inverse=False):
     return np.array(X)
 
 
-class _UnivariateDensity(BaseEstimator, ScoreMixin):
-    """Univariate density (abstract class)."""
-
-    @abstractmethod
-    def fit(self, X, y=None, **fit_params):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-        fit_params :
-
-        """
-        pass
-
-    @abstractmethod
-    def sample(self, n_samples=1, random_state=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        n_samples :
-        random_state :
-
-        """
-        pass
-
-    @abstractmethod
-    def score_samples(self, X, y=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-
-        """
-        pass
-
-    @abstractmethod
-    def cdf(self, X, y=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-
-        """
-        pass
-
-    @abstractmethod
-    def inverse_cdf(self, X, y=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-
-        """
-        pass
-
-    def get_support(self):
-        """Get the support of this density (i.e. the positive density region).
-
-        Returns
-        -------
-        support : array-like, shape (2,) or shape (n_features, 2)
-            If shape is (2, ), then ``support[0]`` is the minimum and
-            ``support[1]`` is the maximum for all features. If shape is
-            (`n_features`, 2), then each feature's support (which could
-            be different for each feature) is given similar to the first
-            case.
-
-        """
-        return np.array([_DEFAULT_SUPPORT])
-
-    def _check_X(self, X, inverse=False):
-        return _check_univariate_X(X, self.get_support(), inverse=inverse)
-
-
-class ScipyUnivariateDensity(_UnivariateDensity):
+class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
     """Density estimator via random variables defined in :mod:`scipy.stats`.
 
     A univariate density estimator that can fit any distribution defined in
@@ -388,7 +300,7 @@ class ScipyUnivariateDensity(_UnivariateDensity):
 
     def _check_X(self, X, inverse=False):
         # Check that X is univariate or warn otherwise
-        X = super(ScipyUnivariateDensity, self)._check_X(X, inverse)
+        X = _check_univariate_X(X, self.get_support(), inverse=inverse)
 
         # Move away from support/domain boundaries if necessary
         if inverse and (np.any(X <= 0) or np.any(X >= 1)):
@@ -428,8 +340,13 @@ class ScipyUnivariateDensity(_UnivariateDensity):
 
     def _is_special(self, scipy_str_set):
         scipy_rv = self._get_scipy_rv_or_default()
+        # Modify string set for special case of rv_histogram
+        scipy_str_set = [
+            '.' + dstr + '_gen' if dstr != 'rv_histogram' else '.' + dstr
+            for dstr in scipy_str_set
+        ]
         return np.any([
-            '.' + dstr + '_gen' in str(scipy_rv)
+            dstr in str(scipy_rv)
             for dstr in scipy_str_set
         ])
 
@@ -445,179 +362,7 @@ with warnings.catch_warnings():
     ).fit(np.array([[0]]))
 
 
-class _PiecewiseConstantUnivariateDensity(_UnivariateDensity):
-    """Piecewise constant univariate density (e.g. histogram and tree)."""
-
-    def sample(self, n_samples=1, random_state=None):
-        """Generate random samples from this density/destructor.
-
-        Parameters
-        ----------
-        n_samples : int, default=1
-            Number of samples to generate. Defaults to 1.
-
-        random_state : int, RandomState instance or None, optional (default=None)
-            If int, `random_state` is the seed used by the random number
-            generator; If :class:`~numpy.random.RandomState` instance,
-            `random_state` is the random number generator; If None, the random
-            number generator is the :class:`~numpy.random.RandomState` instance
-            used by :mod:`numpy.random`.
-
-        Returns
-        -------
-        X : array, shape (n_samples, n_features)
-            Randomly generated sample.
-
-        """
-        # Inverse cdf sampling via uniform samples
-        rng = check_random_state(random_state)
-        u = rng.rand(n_samples)
-        return self.inverse_cdf(u.reshape(-1, 1))
-
-    def score_samples(self, X, y=None):
-        """Compute log-likelihood (or log(det(Jacobian))) for each sample.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_samples, n_features)
-            New data, where n_samples is the number of samples and n_features
-            is the number of features.
-
-        y : None, default=None
-            Not used but kept for compatibility.
-
-        Returns
-        -------
-        log_likelihood : array, shape (n_samples,)
-            Log likelihood of each data point in X.
-
-        """
-        self._check_is_fitted()
-        X = self._check_X(X)
-        X = X.ravel()
-
-        # Interp nearest neighbor
-        idx = np.searchsorted(self.bin_edges_, X)
-        f_X = self.pdf_bin_[idx - 1]
-        # Bump away from zero to avoid error in np.log
-        f_X = np.maximum(f_X, np.finfo(f_X.dtype).tiny)
-        return np.log(f_X).reshape((-1, 1))
-
-    def cdf(self, X, y=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-
-        Returns
-        -------
-        obj : object
-
-        """
-        self._check_is_fitted()
-        self._check_X(X)
-        X = X.ravel()
-
-        # Interp nearest neighbor
-        F_X = np.zeros(X.shape)
-        interp_callable = interp1d(
-            self.bin_edges_, self.cdf_bin_,
-            kind='linear', copy=False,
-            bounds_error=False, fill_value=(0, 1), assume_sorted=True
-        )
-        F_X = interp_callable(X)
-        return F_X.reshape((-1, 1))
-
-    def inverse_cdf(self, X, y=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        X :
-        y :
-
-        Returns
-        -------
-        obj : object
-
-        """
-        self._check_is_fitted()
-        self._check_X(X)
-        X = X.ravel()
-
-        # Interp nearest neighbor
-        Finv_X = np.zeros(X.shape)
-        interp_callable = interp1d(
-            self.cdf_bin_, self.bin_edges_,
-            kind='linear', copy=False,
-            bounds_error=False, fill_value=(0, 1), assume_sorted=True
-        )
-        Finv_X = interp_callable(X)
-        return Finv_X.reshape((-1, 1))
-
-    def get_support(self):
-        """Get the support of this density (i.e. the positive density region).
-
-        Returns
-        -------
-        support : array-like, shape (2,) or shape (n_features, 2)
-            If shape is (2, ), then ``support[0]`` is the minimum and
-            ``support[1]`` is the maximum for all features. If shape is
-            (`n_features`, 2), then each feature's support (which could
-            be different for each feature) is given similar to the first
-            case.
-
-        """
-        # Make [[a,b]] so that it is explicitly a univariate density
-        return np.array([self._check_bounds()])
-
-    def _check_X(self, X, inverse=False):
-        # Check that X is univariate or warn otherwise
-        X = super(_PiecewiseConstantUnivariateDensity, self)._check_X(X, inverse)
-        return X
-
-    def _check_bounds(self, X=None, extend=True):
-        # If bounds is extension
-        if np.isscalar(self.bounds):
-            if X is None:
-                # If no X than just return -inf, inf
-                return _DEFAULT_SUPPORT
-            else:
-                # If X is not None than extract bounds and extend as necessary
-                perc_extension = self.bounds
-                _domain = np.array([np.min(X), np.max(X)])
-                center = np.mean(_domain)
-                _domain = (1 + perc_extension) * (_domain - center) + center
-                return _domain
-        # If bounds is just an array then directly return it
-        else:
-            _domain = column_or_1d(self.bounds).copy()
-            if _domain.shape[0] != 2:
-                raise ValueError('Domain should either be a two element array-like or a'
-                                 ' scalar indicating percentage extension of domain')
-            return _domain
-
-    def _normalize_pdf_bin(self, f_bin, bin_edges):
-        # noinspection PyAugmentAssignment
-        bin_widths = bin_edges[1:] - bin_edges[:-1]
-        f_bin = f_bin / np.sum(f_bin * bin_widths)  # Normalize to sum to 1
-        return f_bin
-
-    def _compute_cdf_bin(self, f_bin, bin_edges):
-        F_bin = np.zeros(len(bin_edges))
-        bin_widths = bin_edges[1:] - bin_edges[:-1]
-        F_bin[1:] = np.cumsum(f_bin * bin_widths)
-        F_bin = F_bin / F_bin[-1]  # Normalize to sum to 1
-        F_bin[-1] = 1  # Ensure last point is exactly 1
-        return F_bin
-
-    def _check_is_fitted(self):
-        check_is_fitted(self, ['bin_edges_', 'pdf_bin_', 'cdf_bin_'])
-
-
-class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
+class HistogramUnivariateDensity(ScipyUnivariateDensity):
     """Histogram univariate density estimator.
 
     Parameters
@@ -693,7 +438,7 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         self.bounds = bounds
         self.alpha = alpha
 
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, X, y=None, histogram_params=None):
         """Fit estimator to X.
 
         Parameters
@@ -706,8 +451,9 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         y : None, default=None
             Not used in the fitting process but kept for compatibility.
 
-        fit_params : dict, optional
-            Optional extra fit parameters.
+        histogram_params : list or tuple of size 2
+            Tuple or list of values of bins and bin edges. For example,
+            from :func:`numpy.histogram`.
 
         Returns
         -------
@@ -715,94 +461,23 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
             Returns the instance itself.
 
         """
-        X = self._check_X(X)
-        # Get percent extension but do not modify bounds
-        bounds = self._check_bounds(X)
-        bins = self.bins if self.bins is not None else 'auto'
-
-        # Fit numpy histogram
-        hist, bin_edges = np.histogram(X, bins=bins, range=bounds)
-        hist = np.array(hist, dtype=float)  # Make float so we can add non-integer alpha
-        hist += self.alpha  # Smooth histogram by alpha so no areas have 0 probability
-
-        return self._fit(hist, bin_edges)
-
-    def fit_from_pdf_bin(self, pdf_bin, bin_edges=None):
-        """[Placeholder].
-
-        Parameters
-        ----------
-        pdf_bin : array, shape (n_bins,) or shape (n_bins, 1)
-            Density value of each bin (if bins are different widths than
-            this is not proportional to the total bin probability.
-
-        bin_edges : array, shape (n_bins + 1,)
-            Edges of bins. Note that this must be of shape (n_bins + 1,).
-
-        Returns
-        -------
-        self : estimator
-            Returns the instance itself.
-
-        """
-        pdf_bin = column_or_1d(pdf_bin)
-
-        # Get bin_edges by fitting dummy histogram
-        if bin_edges is None:
-            bounds = self._check_bounds()
+        if X is not None and histogram_params is not None:
+            raise ValueError('Either X or histogram_params can be provided (i.e. not None) '
+                             'but not both.')
+        if histogram_params is not None:
+            hist, bin_edges = histogram_params
+        else:
+            X = self._check_X(X)
+            # Get percent extension but do not modify bounds
+            bounds = self._check_bounds(X)
             bins = self.bins if self.bins is not None else 'auto'
-            _, bin_edges = np.histogram([np.mean(self.bounds)], bins=bins, range=bounds)
 
-        return self._fit(pdf_bin, bin_edges)
+            # Fit numpy histogram
+            hist, bin_edges = np.histogram(X, bins=bins, range=bounds)
+            hist = np.array(hist, dtype=float)  # Make float so we can add non-integer alpha
+            hist += self.alpha  # Smooth histogram by alpha so no areas have 0 probability
 
-    def _fit(self, unnormalized_pdf, bin_edges):
-        """Fit given probabilities for histogram and bin edges."""
-
-        # Get normalized cdf and pdf
-        pdf_bin = self._normalize_pdf_bin(unnormalized_pdf, bin_edges)
-        cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
-
-        self.bin_edges_ = bin_edges
-        self.pdf_bin_ = pdf_bin
-        self.cdf_bin_ = cdf_bin
-        return self
-
-
-class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
-    """Tree univariate density, i.e. histogram with variable bin widths."""
-
-    def __init__(self, tree_estimator=None, get_tree=None,
-                 uniform_weight=1e-6):
-        self.tree_estimator = tree_estimator
-        self.get_tree = get_tree
-        self.uniform_weight = uniform_weight
-
-    def fit(self, X, y=None, **fit_params):
-        tree_density = TreeDensity(
-            tree_estimator=self.tree_estimator,
-            get_tree=self.get_tree,
-            uniform_weight=self.uniform_weight,
-            node_destructor=None,  # Assume constant density
-        )
-        tree_density.fit(X, y, **fit_params)
-
-        # Get bin edges
-        splits = [node.threshold for i, node in enumerate(tree_density.tree_) if not np.isnan(node.threshold)]
-        splits.extend([0, 1])  # Add zero and 1 as edge points
-        bin_edges = np.sort(splits)
-
-        # Get pdf values of bins
-        bin_widths = bin_edges[1:] - bin_edges[:-1]
-        x_query = bin_edges[:-1] + bin_widths / 2.0
-        pdf_bin = np.exp(tree_density.score_samples(x_query.reshape(-1, 1)))
-
-        # Get normalized pdf and cdf
-        pdf_bin = self._normalize_pdf_bin(pdf_bin, bin_edges)
-        cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
-
-        self.bin_edges_ = bin_edges
-        self.pdf_bin_ = pdf_bin
-        self.cdf_bin_ = cdf_bin
+        self.rv_ = scipy.stats.rv_histogram((hist, bin_edges))
         return self
 
     def get_support(self):
@@ -818,122 +493,40 @@ class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
             case.
 
         """
-        return np.array([[0, 1]])
+        # Make [[a,b]] so that it is explicitly a univariate density
+        return np.array([self._check_bounds()])
 
-
-class _ApproximateUnivariateDensity(_PiecewiseConstantUnivariateDensity):
-    """Bounds can be percentage extension or a specified interval [a,b]."""
-
-    def __init__(self, univariate_density=None, n_query=1000, bounds=0.1):
-        self.univariate_density = univariate_density
-        self.n_query = n_query
-        self.bounds = bounds
-        raise RuntimeError('This class has not been updated/checked since '
-                           'updating univariate estimators.')
-
-    def fit(self, X, y=None, **fit_params):
-        """Fit estimator to X.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
-
-        y : None, default=None
-            Not used in the fitting process but kept for compatibility.
-
-        fit_params : dict, optional
-            Optional extra fit parameters.
-
-        Returns
-        -------
-        self : estimator
-            Returns the instance itself.
-
-        """
-        # Validate parameters
-        X = self._check_X(X)
-        bounds = self._check_bounds(X)
-        univariate_density = self._get_univariate_density_or_default()
-        if not (float(self.n_query).is_integer() and self.n_query > 0):
-            raise ValueError('n_query must be positive whole number')
-
-        # Fit density for each dimension
-        def unwrap_estimator(est):
-            """
-
-            Parameters
-            ----------
-            est :
-
-            Returns
-            -------
-
-            """
-            # Unwrap CV estimator
-            if hasattr(est, 'best_estimator_'):
-                return est.best_estimator_
-            return est
-
-        density = unwrap_estimator(clone(univariate_density).fit(X))
-
-        # Find query points based on domain and number query points
-        domain_size = bounds[1] - bounds[0]
-        query_width = domain_size / self.n_query
-        # Add 2 more points that are fixed to 0 outside of the domain
-        x_query = np.linspace(bounds[0] - query_width / 2.0,
-                              bounds[1] + query_width / 2.0,
-                              self.n_query + 2)
-
-        f_query = np.zeros(x_query.shape)
-        # Skip endpoints which should be 0
-        X_query_without_ends = x_query[1:-1].reshape((-1, 1))
-        f_query[1:-1] = np.exp(density.score_samples(X_query_without_ends))
-        f_query = self._normalize_pdf_bin(f_query, query_width)
-
-        F_query = self._compute_cdf_bin(f_query)
-
-        # Save important fitted values
-        self.density_estimator_ = density
-        self.bounds_ = bounds
-        self.x_query_ = x_query
-        self.query_width_ = query_width
-        self.pdf_query_ = f_query
-        self.cdf_query_ = F_query
-
-        return self
-
-    @abstractmethod
-    def _get_univariate_density_or_default(self):
-        raise NotImplementedError()
-
-
-class _KernelUnivariateDensity(_ApproximateUnivariateDensity):
-    """Kernel univariate density.
-
-    """
-
-    def __init__(self, bandwidth=None, n_query=1000, bounds=0.1):
-        super(_KernelUnivariateDensity, self).__init__()
-        self.bandwidth = bandwidth
-        self.n_query = n_query
-        self.bounds = bounds
-        raise RuntimeError('This class has not been updated/checked since '
-                           'updating univariate estimators.')
-
-    def _get_univariate_density_or_default(self):
-        if self.bandwidth is None:
-            # bandwidth = np.logspace(-3, 4, 50)
-            bandwidth = 0.1
+    def _check_bounds(self, X=None, extend=True):
+        # If bounds is extension
+        if np.isscalar(self.bounds):
+            if X is None:
+                # If no X than just return -inf, inf
+                return _DEFAULT_SUPPORT
+            else:
+                # If X is not None than extract bounds and extend as necessary
+                perc_extension = self.bounds
+                _domain = np.array([np.min(X), np.max(X)])
+                center = np.mean(_domain)
+                _domain = (1 + perc_extension) * (_domain - center) + center
+                return _domain
+        # If bounds is just an array then directly return it
         else:
-            bandwidth = self.bandwidth
+            _domain = column_or_1d(self.bounds).copy()
+            if _domain.shape[0] != 2:
+                raise ValueError('Domain should either be a two element array-like or a'
+                                 ' scalar indicating percentage extension of domain')
+            return _domain
 
-        # Grid search if bandwidth is given
-        if len(np.array(bandwidth).shape) > 0:
-            return GridSearchCV(
-                estimator=KernelDensity(),
-                param_grid={'bandwidth': bandwidth},
-            )
-        else:
-            return KernelDensity(bandwidth=bandwidth)
+    def _check_X(self, X, inverse=False):
+        X = super(HistogramUnivariateDensity, self)._check_X(X, inverse)
+        bounds = self._check_bounds()
+        if np.any(X <= bounds[0]) or np.any(X >= bounds[1]):
+            warnings.warn(BoundaryWarning(
+                'Input to random variable function has at least one value outside of bounds '
+                'but all input should be in (bounds[0], bounds[1]) exclusive. Bounding '
+                'values away from bounds[0] or bounds[1]'))
+            X = make_interior(X, bounds)
+        return X
+
+    def _get_scipy_rv_or_default(self):
+        return scipy.stats.rv_histogram
