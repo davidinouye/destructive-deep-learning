@@ -146,8 +146,8 @@ class ScipyUnivariateDensity(_UnivariateDensity):
     ----------
     scipy_rv : object or None, default=None
         Default random variable is a Gaussian (i.e.
-        :func:`scipy.stats.norm`) if `scipy_rv=None`. Other examples include
-        :func:`scipy.stats.gamma` or :func:`scipy.stats.beta`.
+        :class:`scipy.stats.norm`) if `scipy_rv=None`. Other examples include
+        :class:`scipy.stats.gamma` or :class:`scipy.stats.beta`.
 
     scipy_fit_kwargs : dict or None, optional
         Keyword arguments as a dictionary for the fit function of the scipy
@@ -790,21 +790,15 @@ class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         splits = [node.threshold for i, node in enumerate(tree_density.tree_) if not np.isnan(node.threshold)]
         splits.extend([0, 1])  # Add zero and 1 as edge points
         bin_edges = np.sort(splits)
-        #print('bin_edges')
-        #print(bin_edges)
 
         # Get pdf values of bins
         bin_widths = bin_edges[1:] - bin_edges[:-1]
         x_query = bin_edges[:-1] + bin_widths / 2.0
         pdf_bin = np.exp(tree_density.score_samples(x_query.reshape(-1, 1)))
-        #print('pdf_bin')
-        #print(pdf_bin)
 
         # Get normalized pdf and cdf
         pdf_bin = self._normalize_pdf_bin(pdf_bin, bin_edges)
         cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
-        #print('cdf_bin')
-        #print(cdf_bin)
 
         self.bin_edges_ = bin_edges
         self.pdf_bin_ = pdf_bin
