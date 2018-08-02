@@ -758,7 +758,7 @@ class HistogramUnivariateDensity(_PiecewiseConstantUnivariateDensity):
     def _fit(self, unnormalized_pdf, bin_edges):
         """Fit given probabilities for histogram and bin edges."""
 
-        # Add endpoints fixed at 0
+        # Get normalized cdf and pdf
         pdf_bin = self._normalize_pdf_bin(unnormalized_pdf, bin_edges)
         cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
 
@@ -777,7 +777,7 @@ class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         self.get_tree = get_tree
         self.uniform_weight = uniform_weight
 
-    def fit(self, X, y, **fit_params):
+    def fit(self, X, y=None, **fit_params):
         tree_density = TreeDensity(
             tree_estimator=self.tree_estimator,
             get_tree=self.get_tree,
@@ -787,16 +787,28 @@ class _TreeUnivariateDensity(_PiecewiseConstantUnivariateDensity):
         tree_density.fit(X, y, **fit_params)
 
         # Get bin edges
-        splits = [node.threshold for i, node in enumerate(tree_density.tree_)]
+        splits = [node.threshold for i, node in enumerate(tree_density.tree_) if not np.isnan(node.threshold)]
         splits.extend([0, 1])  # Add zero and 1 as edge points
         bin_edges = np.sort(splits)
+        #print('bin_edges')
+        #print(bin_edges)
 
         # Get pdf values of bins
         bin_widths = bin_edges[1:] - bin_edges[:-1]
         x_query = bin_edges[:-1] + bin_widths / 2.0
-        pdf_bin = tree_density.score_samples(x_query)
+        pdf_bin = np.exp(tree_density.score_samples(x_query.reshape(-1, 1)))
+        #print('pdf_bin')
+        #print(pdf_bin)
 
-        self._fit(pdf_bin, bin_edges)
+        # Get normalized pdf and cdf
+        pdf_bin = self._normalize_pdf_bin(pdf_bin, bin_edges)
+        cdf_bin = self._compute_cdf_bin(pdf_bin, bin_edges)
+        #print('cdf_bin')
+        #print(cdf_bin)
+
+        self.bin_edges_ = bin_edges
+        self.pdf_bin_ = pdf_bin
+        self.cdf_bin_ = cdf_bin
         return self
 
     def get_support(self):
