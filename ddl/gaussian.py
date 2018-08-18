@@ -14,8 +14,77 @@ from .base import ScoreMixin
 
 
 class GaussianDensity(BaseEstimator, ScoreMixin):
-    """Allow for conditioning that will return a new proxy density.
-    Also allows for marginal density computation.
+    """Gaussian density estimator with conditional and marginal methods.
+
+    Implements necessary functions for use with the mixture and
+    autoregressive module. Estimator implements conditioning that will
+    return a new proxy density and the densities also implement marginal
+    density computations such as cdf and inverse cdf.
+
+    The parameters are based on the parameters from
+    :class:`sklearn.mixture.GaussianMixture`.
+
+    Parameters
+    ----------
+    covariance_type : {'full', 'tied', 'diag', 'spherical'}, default='full'
+        String describing the type of covariance parameters to use.
+        Must be one of::
+            'full' (each component has its own general covariance matrix),
+            'tied' (all components share the same general covariance matrix),
+            'diag' (each component has its own diagonal covariance matrix),
+            'spherical' (each component has its own single variance).
+
+
+    reg_covar : float, default=1e-6.
+        Non-negative regularization added to the diagonal of covariance.
+        Allows to assure that the covariance matrices are all positive.
+
+    Attributes
+    ----------
+    mean_ : array-like, shape (n_features,)
+        The mean of the Gaussian.
+
+    covariance_ : array-like or float
+        The covariance matrix of the Gaussian. The shape depends on
+        `covariance_type`::
+            float                           if 'spherical',
+            (n_features, n_features)        if 'tied',
+            (n_features,)                   if 'diag',
+            (n_features, n_features)        if 'full'
+
+    precision_ : array-like or float
+        The precision matrix. A precision matrix is the inverse of a
+        covariance matrix. A covariance matrix is symmetric positive
+        definite so the mixture of Gaussian can be equivalently
+        parameterized by the precision matrices. Storing the precision
+        matrix instead of the covariance matrices makes it more efficient to
+        compute the log-likelihood of new samples at test time. The shape
+        depends on `covariance_type`::
+            float                           if 'spherical',
+            (n_features, n_features)        if 'tied',
+            (n_features,)                   if 'diag',
+            (n_features, n_features)        if 'full'
+
+    precision_cholesky_ : array-like or float
+        The cholesky decomposition of the precision matrix. A precision
+        matrix is the inverse of a covariance matrix. A covariance matrix is
+        symmetric positive definite so the mixture of Gaussian can be
+        equivalently parameterized by the precision matrices. Storing the
+        precision matrix instead of the covariance matrix makes it more
+        efficient to compute the log-likelihood of new samples at test time.
+        The shape depends on `covariance_type`::
+            float                           if 'spherical',
+            (n_features, n_features)        if 'tied',
+            (n_features,)                   if 'diag',
+            (n_features, n_features)        if 'full'
+
+    See Also
+    --------
+    sklearn.mixture.GaussianMixture
+    ddl.mixture.GaussianMixtureDensity
+    ddl.mixture.BayesianGaussianMixtureDensit
+    ddl.autoregressive.AutoregressiveDestructor
+
     """
 
     def __init__(self, covariance_type='full', reg_covar=1e-06):
@@ -23,7 +92,23 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
         self.covariance_type = covariance_type
 
     def fit(self, X, y=None):
-        """Should do a simple regularized fit."""
+        """Fit estimator to X.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        Returns
+        -------
+        self : estimator
+            Returns the instance itself.
+
+        """
         X = check_array(X)
         self.mean_ = np.mean(X, axis=0)
         _, n_features = X.shape
@@ -109,7 +194,6 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
 
     def marginal_density(self, marginal_idx):
         """Return a single marginal density based on `marginal_idx`."""
-
         def _get_covariance():
             if self.covariance_type == 'full' or self.covariance_type == 'tied':
                 return self.covariance_[np.ix_(marginal_idx, marginal_idx)]
@@ -130,8 +214,26 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
         return dens
 
     def conditional_densities(self, X, cond_idx, not_cond_idx):
-        """Should return a either a single density if all the same or a list of Gaussian
-        densities with modified variance and means. """
+        """Compute conditional densities.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Data to condition on based on `cond_idx`.
+
+        cond_idx : array-like of int
+            Indices to condition on.
+
+        not_cond_idx :
+            Indices not to condition on.
+
+        Returns
+        -------
+        conditional_densities : array-like of estimators
+            Either a single density if all the same or a list of Gaussian
+            densities with conditional variances and means.
+
+        """
         # Get new precision which is constant w.r.t. X
         self._fit_auxiliary()
         if len(cond_idx) + len(not_cond_idx) != X.shape[1]:
@@ -209,9 +311,11 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
         return scipy.stats.norm.cdf(x, **params)
 
     def marginal_pdf(self, x, target_idx):
-        """Should return marginal log-likelihood of a each dimension or
-        a particular dimension specified by target_idx.
-        x can be either a scalar or vector.
+        """Return marginal log-likelihood.
+
+        Either of a each dimension or a particular dimension specified by
+        target_idx. `x` can be either a scalar or vector.
+
         """
         self._fit_auxiliary()
         if len(np.array(x).shape) != 0:
@@ -240,10 +344,10 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
 
     def _fit_direct(self, mean=None, covariance=None,
                     precision=None, precision_cholesky=None, copy=True):
-        """Should directly fit the estimator with the given parameters.
+        """Fit the estimator directly with the given parameters.
+
         Note that some parameters do not need to be set.
         """
-
         def _copy(X):
             if X is not None:
                 return X.copy()
@@ -323,10 +427,10 @@ def _compute_covariance_cholesky(precisions, precision_type):
 
 
 def _compute_precision_cholesky(covariances, covariance_type):
-    """
+    """Compute the Cholesky decomposition of the precisions.
+
     (Edited from sklearn.mixture.gaussian_mixture.py v. 0.19.1)
 
-    Compute the Cholesky decomposition of the precisions.
     Parameters
     ----------
     covariances : array-like
@@ -339,6 +443,7 @@ def _compute_precision_cholesky(covariances, covariance_type):
     precisions_cholesky : array-like
         The cholesky decomposition of sample precisions of the current
         components. The shape depends of the covariance_type.
+
     """
     estimate_precision_error_message = (
         "Fitting the mixture model failed because some components have "
@@ -362,10 +467,10 @@ def _compute_precision_cholesky(covariances, covariance_type):
 
 
 def _estimate_log_gaussian_prob(X, means, precisions_chol, covariance_type):
-    """
+    """Estimate the log Gaussian probability.
+
     (Edited from sklearn.mixture.gaussian_mixture.py v. 0.19.1)
 
-    Estimate the log Gaussian probability.
     Parameters
     ----------
     X : array-like, shape (n_samples, n_features)
@@ -377,9 +482,11 @@ def _estimate_log_gaussian_prob(X, means, precisions_chol, covariance_type):
         'diag' : shape of (n_components, n_features)
         'spherical' : shape of (n_components,)
     covariance_type : {'full', 'tied', 'diag', 'spherical'}
+
     Returns
     -------
     log_prob : array, shape (n_samples, n_components)
+
     """
     if covariance_type == 'full':
         covariance_type = 'tied'
@@ -418,10 +525,10 @@ def _estimate_log_gaussian_prob(X, means, precisions_chol, covariance_type):
 
 
 def _compute_log_det_cholesky(matrix_chol, covariance_type, n_features):
-    """
+    """Compute the log-det of the cholesky decomposition of matrices.
+
     (Edited from sklearn.mixture.gaussian_mixture.py v. 0.19.1)
 
-    Compute the log-det of the cholesky decomposition of matrices.
     Parameters
     ----------
     matrix_chol : array-like,
@@ -433,10 +540,12 @@ def _compute_log_det_cholesky(matrix_chol, covariance_type, n_features):
     covariance_type : {'full', 'tied', 'diag', 'spherical'}
     n_features : int
         Number of features.
+
     Returns
     -------
     log_det_precision_chol : array-like, shape (n_components,)
         The determinant of the precision matrix for each component.
+
     """
     if covariance_type == 'full':
         covariance_type = 'tied'

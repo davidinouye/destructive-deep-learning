@@ -17,18 +17,23 @@ from .utils import (_UNIT_SPACE, check_X_in_interval, get_domain_or_default,
 class AutoregressiveDestructor(BaseDensityDestructor):
     """Autoregressive destructor using densities that can compute conditionals.
 
-    The density estimator should implement the method :func:`conditional_densities` that will return conditional densities,
-    :func:`marginal_cdf` that will return the marginal cdf for a particular feature index, and :func:`marginal_inverse_cdf` that will
-    return the marginal inverse cdf for a particular feature index. For an example of this type of density, see :class:`ddl.gaussian.GaussianDensity`
-    or :class:`ddl.mixture.GaussianMixtureDensity`.
+    The density estimator should implement the method
+    :func:`conditional_densities` that will return conditional densities,
+    :func:`marginal_cdf` that will return the marginal cdf for a particular
+    feature index, and :func:`marginal_inverse_cdf` that will return the
+    marginal inverse cdf for a particular feature index. For an example of
+    this type of density, see :class:`ddl.gaussian.GaussianDensity` or
+    :class:`ddl.mixture.GaussianMixtureDensity`.
 
-    Note that this interface has not been fully standardized yet and is likely to change in the future.
+    Note that this interface has not been fully standardized yet and is
+    likely to change in the future.
 
     Parameters
     ----------
     density_estimator : estimator
-        Density estimator to be used for the autoregressive destructor. Note that this estimator must implement
-        :func:`conditional_densities`, :func:`marginal_cdf`, and :func:`marginal_inverse_cdf`.
+        Density estimator to be used for the autoregressive destructor. Note
+        that this estimator must implement :func:`conditional_densities`,
+        :func:`marginal_cdf`, and :func:`marginal_inverse_cdf`.
 
     order : {None, 'random', array-like with shape (n_features,)}, default=None
         If None, then simply choose the original index order. If 'random',
@@ -45,6 +50,11 @@ class AutoregressiveDestructor(BaseDensityDestructor):
         `random_state` is the random number generator; If None, the random
         number generator is the :class:`~numpy.random.RandomState` instance
         used by :mod:`numpy.random`.
+
+    Attributes
+    ----------
+    density_ : estimator
+        Fitted underlying density.
 
     """
 
