@@ -7,17 +7,34 @@ from sklearn.utils import check_random_state, shuffle
 
 
 def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
-    """[Placeholder].
+    """Make simple toy datasets.
+
+    Useful for illustrating density destructors.
 
     Parameters
     ----------
-    data_name :
-    n_samples :
-    random_state :
-    maker_kwargs :
+    data_name : str
+        Should be one of the following strings: ``{'concentric_circles',
+        'grid', 'gaussian_grid', 'uniform_grid', 'rotated_uniform',
+        'autoregressive', 'sin_wave', 'rbig_sin_wave', 'quadratic'}``.
+
+    n_samples : int, default=1000
+        Number of samples to make.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
+
+    maker_kwargs : dict, optional
+        Other keyword arguments to pass to the associated maker.
 
     Returns
     -------
+    X_sample : array-like with shape (n_samples, n_features)
+        Sample data matrix. Usually, `n_features` is 2.
 
     """
     try:
@@ -29,7 +46,7 @@ def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
 
 
 class _Data(object):
-    """Simple class to hold data values and attributes"""
+    """Simple class to hold data values and attributes."""
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -108,18 +125,6 @@ def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_
         is_bounded = False
 
         def sample(pos, n, d):
-            """
-
-            Parameters
-            ----------
-            pos :
-            n :
-            d :
-
-            Returns
-            -------
-
-            """
             return sigma * rng.randn(n, d) + pos
     elif kind == 'uniform':
         if sigma is not None:
@@ -129,18 +134,6 @@ def _make_grid(n_samples, n_grid=5, sigma=None, Q=None, perc_filled=0.5, random_
         is_bounded = True
 
         def sample(pos, n, d):
-            """
-
-            Parameters
-            ----------
-            pos :
-            n :
-            d :
-
-            Returns
-            -------
-
-            """
             return scale * rng.rand(n, d) + pos
     else:
         raise ValueError('kind should be "gaussian" or "uniform"')
