@@ -46,6 +46,7 @@ class IndependentDestructor(BaseDensityDestructor):
     IndependentDensity
 
     """
+
     def __init__(self, independent_density=None):
         self.independent_density = independent_density
 
@@ -429,6 +430,7 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
 
     def fit(self, X, y=None, fitted_densities=None, **fit_params):
         """
+
         X is only used to get the number of features.
         Default assumes that `fitted_densities` are standard Gaussian.
         `fitted_densities` should be fitted versions of the following

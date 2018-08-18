@@ -30,6 +30,7 @@ Changed
 - Merged ``ddl.deep.DeepCVMixin`` into ``ddl.deep.DeepDestructorCV`` since no useful case for mixin.
 - Removed explicit dependency on pre-built mlpack and updated docker/singularity images.
 - Updated build system especially for circleci to make it simpler to build mlpack extension.
+- Simplified :class:`ddl.univariate.HistogramUnivariateDensity` implementation by merely using scipy's :func:`scipy.stats.rv_histogram`
 
 Removed
 ^^^^^^^

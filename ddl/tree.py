@@ -44,6 +44,7 @@ class TreeDestructor(BaseDensityDestructor):
     TreeDensity
 
     """
+
     def __init__(self, tree_density=None):
         self.tree_density = tree_density
 
@@ -167,6 +168,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         and 1 regularizes the density partially.
 
     """
+
     def __init__(self, tree_estimator=None, get_tree=None, node_destructor=None,
                  uniform_weight=1e-6):
         self.tree_estimator = tree_estimator
@@ -175,7 +177,26 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         self.uniform_weight = uniform_weight
 
     def fit(self, X, y=None, fitted_tree_estimator=None):
-        """Should fit and assign attribute `self.root_node_`."""
+        """Fit estimator to X.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fitted_tree_estimator : estimator
+            [Placeholder].
+
+        Returns
+        -------
+        self : estimator
+            Returns the instance itself.
+
+        """
         # Should have internal checks for X
         X = self._check_X(X)
         get_tree = _check_get_tree(self.get_tree)
@@ -201,11 +222,11 @@ class TreeDensity(BaseEstimator, ScoreMixin):
             random_state=0)
 
     def _fit_tree_density(self, tree, X, y):
-        """Fits the probability values for each leaf and each leaf destructor."""
+        """Fit the probability values for each leaf and each leaf destructor."""
         node_destructor = self.node_destructor
 
         def _update_stack(child):
-            """Add left or right child to stack"""
+            """Add left or right child to stack."""
             sel_new = sel.copy()
             if child == 'left':
                 sel_new[sel] = X[sel, node.feature] < node.threshold
@@ -245,7 +266,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         return tree
 
     def _add_uniform_component(self, tree):
-        """Adds a uniform mixture component modifying the tree in-place."""
+        """Add a uniform mixture component modifying the tree in-place."""
         uniform_weight = self.uniform_weight
         if uniform_weight < 0 or uniform_weight > 1:
             raise ValueError('uniform_weight should be between 0 and 1')
@@ -331,7 +352,7 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
         """
         def _update_stack(child):
-            """Add left or right child to stack"""
+            """Add left or right child to stack."""
             sel_new = sel.copy()
             if child == 'left':
                 sel_new[sel] = X[sel, node.feature] < node.threshold
@@ -411,9 +432,8 @@ class TreeDensity(BaseEstimator, ScoreMixin):
 
 
 class RandomTreeEstimator(BaseEstimator):
-    """Random tree estimator via :class:`~sklearn.tree.ExtraTreeRegressor`.
+    """Random tree estimator via :class:`~sklearn.tree.ExtraTreeRegressor`."""
 
-    """
     def __init__(self, min_samples_leaf=0.1, max_leaf_nodes=None, random_state=None):
         self.min_samples_leaf = min_samples_leaf
         self.max_leaf_nodes = max_leaf_nodes
@@ -458,8 +478,9 @@ class RandomTreeEstimator(BaseEstimator):
 
 
 def _absolute_to_relative_probability(tree_depth_iter):
-    """Changes from absolute probabilities at the leaves to relative
-    probabilities on non-leaves modifying the tree in-place.
+    """Change from absolute to relative probabilities at the leaves.
+
+    Modifies the tree in place.
     """
     node = next(tree_depth_iter)
     if node.is_leaf():
@@ -479,8 +500,9 @@ def _absolute_to_relative_probability(tree_depth_iter):
 
 
 def _relative_to_absolute_probability(tree_depth_iter, prob):
-    """Changes from relative probabilities at internal nodes to absolute
-    probabilities at the leaves modifying the tree in-place.
+    """Change from relative to relative probabilities at the leaves.
+
+    Modifies the tree in place.
     """
     node = next(tree_depth_iter)
     if node.is_leaf():
@@ -494,8 +516,9 @@ def _relative_to_absolute_probability(tree_depth_iter, prob):
 
 class _ArrayedTreeWrapper:
     """A simple wrapper for an array-based tree like in scikit-learn.
-    Note this is not an estimator but just a good wrapper object to expose iterators etc.
-    Fitting will need to take this object or iterator as input.
+
+    Note this is not an estimator but just a good wrapper object to expose
+    iterators etc. Fitting will need to take this object or iterator as input.
     """
 
     def __init__(self, tree):
@@ -790,8 +813,7 @@ def _from_unit(U, bounding_box):
 
 
 def _tree_transform(tree, X, y=None):
-    """Transforms X based on generic tree object."""
-
+    """Transform X based on generic tree object."""
     def _compose_linear(scale_shift_inner, scale_shift_outer):
         scale_inner, shift_inner = scale_shift_inner
         scale_outer, shift_outer = scale_shift_outer
@@ -802,10 +824,11 @@ def _tree_transform(tree, X, y=None):
 
     def _update_stack(child):
         """Add left or right child by computing scale, shift and selection.
-        Note this is late binding for outer variables so it should only be called
-        when sel, node, a, b, t, t_out, etc have been defined (i.e. inside
-        the node loop.
-        Defined here so that the compiler doesn't keep creating new functions each time.
+
+        Note this is late binding for outer variables so it should only be
+        called when sel, node, a, b, t, t_out, etc have been defined (i.e.
+        inside the node loop. Defined here so that the compiler doesn't keep
+        creating new functions each time.
         """
         sel_new = sel.copy()
         if child == 'left':
@@ -864,7 +887,7 @@ def _tree_transform(tree, X, y=None):
 
 
 def _get_inverse_tree(tree):
-    """Computes the tree corresponding to the inverse of the transformation."""
+    """Compute the tree corresponding to the inverse of the transformation."""
     tree_out = deepcopy(tree)
     # Iterator starting at root (can be depth-first or breadth-first)
     for node_in, node_out in zip(tree, tree_out):
