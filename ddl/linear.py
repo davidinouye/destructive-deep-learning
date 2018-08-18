@@ -22,12 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
-    """
-    A linear projector based on an underlying linear estimator.
+    """A linear projector based on an underlying linear estimator.
+
     (Somewhat like a *relative* destructor with an implicit but unknown
     underlying density.)
 
-    Two important notes:
+    A few notes:
         1. By construction, `LinearProjector` is density-agnostic
         and therefore is not a valid destructor.
         2. However, if attached before any valid destructor, the
@@ -35,6 +35,32 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         valid joint density.
         3. Thus, `LinearProjector` can be seen as a *relative*
         destructor that requires a base density to be useful.
+
+    Parameters
+    ----------
+    linear_estimator : estimator, default=IdentityLinearEstimator
+        A linear estimator that has either a `coef_` attribute or a
+        `components_`. For example, :class:`sklearn.decomposition.PCA`.
+
+    orthogonal : bool, default=False
+        Whether to issue a warning if the matrix is not orthogonal.
+
+    Attributes
+    ----------
+    A_ : object
+        Representation of linear transformation, i.e. a matrix. The linear
+        object that implements :func:`dot(X)`, :func:`logabsdet`,
+        and :func:`inv`. Note that this can be a compact representation of a
+        matrix such as merely storing the diagonal elements or a Householder
+        transformation matrix.
+
+    A_inv_ :
+        Representation of the inverse linear transformation, i.e. a matrix.
+        The linear object that implements :func:`dot(X)`, :func:`logabsdet`,
+        and :func:`inv`. Note that this can be a compact representation of a
+        matrix such as merely storing the diagonal elements or a Householder
+        transformation matrix.
+
     """
 
     def __init__(self, linear_estimator=None, orthogonal=False):
@@ -132,10 +158,27 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return self
 
     def score_samples(self, X, y=None):
-        """Score is log|det(A)| (i.e. the relative density
-        transformation). This score is constant for all samples because
-        the Jacobian is constant for linear operations and depends only
-        on the transformation matrix.
+        """Compute log(det(Jacobian)) for each sample.
+
+        Note that this is not the log-likelihood since this is not a
+        destructor. This score is constant for all samples because the
+        Jacobian is constant for linear operations and depends only on the
+        transformation matrix.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            New data, where n_samples is the number of samples and n_features
+            is the number of features.
+
+        y : None, default=None
+            Not used but kept for compatibility.
+
+        Returns
+        -------
+        log_det_jacobian : array, shape (n_samples,)
+            Log determinant of the Jacobian for each data point in X.
+
         """
         X = check_array(X)
         return self.A_.logabsdet() * np.ones((X.shape[0],))
@@ -204,12 +247,35 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
 
 class BestLinearReconstructionDestructor(CompositeDestructor):
-    """Class that converts a linear -> destructor combination
-    into a combination that returns the data to as close to
-    the original space as possible.
-    For example, if the linear projector was PCA and the destructor
-    was a independent Gaussian, then this would correspond to ZCA
-    whitening."""
+    """Best linear reconstruction after a linear destructor.
+
+    Class that converts a linear -> destructor combination into a
+    combination that returns the data to as close to the original space as
+    possible. Essentially, linear -> destructor -> independent Gaussian
+    inverse cdf -> inverse linear -> independent Gaussian cdf. For example,
+    if the linear projector was PCA and the destructor was a independent
+    Gaussian, then this would correspond to ZCA whitening.
+
+    Parameters
+    ----------
+    linear_estimator : estimator, default=IdentityLinearEstimator
+        A linear estimator that has either a `coef_` attribute or a
+        `components_`. For example, :class:`sklearn.decomposition.PCA`.
+
+    destructor : estimator
+        Density destructor to use in between linear projections.
+
+    Attributes
+    ----------
+    fitted_destructors_ : list
+        List of fitted (sub)destructors. (Note that these objects are cloned
+        via ``sklearn.base.clone`` from the ``destructors`` parameter so as
+        to avoid mutating the ``destructors`` parameter.)
+
+    density_ : estimator
+        *Implicit* density of composite destructor.
+
+    """
 
     def __init__(self, linear_estimator=None, destructor=None):
         super(BestLinearReconstructionDestructor, self).__init__()
@@ -353,7 +419,13 @@ class _BivariateIndependentComponents(BaseEstimator):
 class IdentityLinearEstimator(BaseEstimator):
     """Identity linear projection.
 
+    Attributes
+    ----------
+    coef_ : array-like, shape (n_features, n_features)
+        Just sets the identity matrix
+
     """
+
     def __init__(self):
         pass
 
@@ -387,10 +459,33 @@ class IdentityLinearEstimator(BaseEstimator):
 class RandomOrthogonalEstimator(BaseEstimator):
     """Random linear orthogonal estimator.
 
+    Parameters
+    ----------
+    n_components : int, default=n_features
+        Number of components to return from random orthogonal estimator. If
+        `n_components` is 1, then a random direction is returned. Otherwise,
+        return an truncated orthogonal matrix by only returning the first
+        `n_components` columns.
+
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
+
+    Attributes
+    ----------
+    components_ : array, shape (n_components, n_features)
+        Random matrix that is orthogonal if n_components = n_features.
+        Otherwise, an orthogonal matrix that has been truncated to the first
+        `n_components` columns.
+
     """
+
     def __init__(self, n_components=None, random_state=None):
-        self.random_state = random_state
         self.n_components = n_components
+        self.random_state = random_state
 
     def fit(self, X, y=None, **fit_params):
         """Fit estimator to X.
@@ -426,8 +521,9 @@ class RandomOrthogonalEstimator(BaseEstimator):
 
 
 class _SimpleMatrix(object):
-    """Thin wrapper around np.array that provides `dot(X)`,
-    `logabsdet()`, and `inv()`.
+    """Thin wrapper around np.array.
+
+    Implements `dot(X)`, `logabsdet()`, and `inv()`.
     """
 
     def __init__(self, A, copy=True):
@@ -488,10 +584,6 @@ class _SimpleMatrix(object):
 
 
 class _IdentityWithScaling(object):
-    """Thin wrapper around np.array that provides `dot(X)`,
-    `logabsdet()`, and `inv()`.
-    """
-
     def __init__(self, scale=1):
         if not np.isscalar(scale):
             raise ValueError('Parameter `scale` should be a scalar value.')
@@ -545,16 +637,16 @@ class _IdentityWithScaling(object):
         return _IdentityWithScaling(scale=inv_scale)
 
     def toarray(self):
-        """Convert to array. (not implemented yet)
-
-        """
+        """Convert to array, but not implemented yet."""
         raise NotImplementedError('This identity matrix does not have the number of dimensions '
                                   'associated with it so we cannot make an equivalent array.')
 
 
 class _HouseholderWithScaling(_IdentityWithScaling):
-    """Interface to a Householder reflector providing the important
-    methods.
+    """Linear object interface to a Householder reflector.
+
+    Only stores the value of the `u` vector. Implements `dot(X)`,
+    `logabsdet()`, and `inv()` in a computationally simple way.
     """
 
     def __init__(self, u, scale=1, copy=True):
