@@ -429,16 +429,34 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
     """
 
     def fit(self, X, y=None, fitted_densities=None, **fit_params):
-        """
+        """Fit estimator to X.
 
         X is only used to get the number of features.
-        Default assumes that `fitted_densities` are standard Gaussian.
-        `fitted_densities` should be fitted versions of the following
-        similar to the `univariate_estimators` parameter of `IndependentDensity`:
 
-            #. None (defaults to fitted `ScipyUnivariateDensity()`),
-            #. univariate density estimator,
-            #. array-like of univariate density estimators.
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : None, default=None
+            Not used in the fitting process but kept for compatibility.
+
+        fitted_densities : array-like of estimators
+            Default assumes that `fitted_densities` are standard Gaussian.
+            `fitted_densities` should be fitted versions of the following
+            similar to the `univariate_estimators` parameter of
+            `IndependentDensity`:
+
+                #. None (defaults to fitted `ScipyUnivariateDensity()`),
+                #. univariate density estimator,
+                #. array-like of univariate density estimators.
+
+        Returns
+        -------
+        self : estimator
+            Returns the instance itself.
+
         """
         X = check_array(X)
 
