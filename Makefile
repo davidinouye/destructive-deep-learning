@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 PYTEST_FLAGS=--cov=ddl --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
-PYDOCSTYLE_FILES=ddl/base.py ddl/deep.py ddl/tree.py ddl/independent.py
+PYDOCSTYLE_FILES=ddl/base.py ddl/deep.py ddl/tree.py ddl/independent.py ddl/univariate.py ddl/__init__.py ddl/autoregressive.py
 #ddl/independent.py ddl/univariate.py
 PYDOCSTYLE_FLAGS=--add-ignore D103,D102,D107
 

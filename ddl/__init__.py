@@ -10,12 +10,14 @@ except ImportError:
     # Simple class for backwards compatibility with Python 2
     class NullHandler(Handler):
         """Null logging handler."""
+
         def emit(self, record):
-            """
+            """Do not emit anything for this null handler.
 
             Parameters
             ----------
             record :
+
             """
             pass
 

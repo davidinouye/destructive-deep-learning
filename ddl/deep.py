@@ -91,7 +91,10 @@ class DeepDestructor(CompositeDestructor):
         self.random_state = random_state
 
     def _get_canonical_destructors(self):
-        """Get canonical destructors as list and if only a single one then wrap in a list."""
+        """Get canonical destructors as list and handle single case.
+
+        If only a single one then wrap in a list.
+        """
         if self.canonical_destructor is not None:
             canonical_destructors = self.canonical_destructor
         else:
