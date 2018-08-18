@@ -19,9 +19,39 @@ logger = logging.getLogger(__name__)
 
 
 class FeatureGroupsDestructor(BaseEstimator, DestructorMixin):
-    """Feature groups destructor.
+    """Destructor that transforms groups of features independently.
+
+    Parameters
+    ----------
+    groups_estimator : estimator, default=RandomFeaturePairs
+        Estimator that determines grouping.
+
+    group_canonical_destructor : estimator
+        Destructor that will be fitted and applied to each group of features
+        independently.
+
+    n_jobs : int
+        Number of jobs to use when fitting or transforming. Leverages joblib.
+
+    Attributes
+    ----------
+    groups_ : array-like, shape (n_groups, n_feature_per_group)
+        Feature indices for each group.  Note that there should be no
+        duplicate indices so that each group can be transformed independently.
+
+    group_destructors_ : array of estimators, shape (n_groups,)
+        Array of destructors for each feature group.
+
+    n_features_ : int
+        Number of features of the training data.
+
+    See Also
+    --------
+    ImageFeaturePairs
+    RandomFeaturePairs
 
     """
+
     def __init__(self, groups_estimator=None, group_canonical_destructor=None, n_jobs=1):
         self.groups_estimator = groups_estimator
         self.group_canonical_destructor = group_canonical_destructor
@@ -259,9 +289,31 @@ def _score_samples(X_group, d):
 
 
 class RandomFeaturePairs(BaseEstimator):
-    """Random feature pairs estimator.
+    """Random feature pairs estimator for use with FeatureGroupsDestructor.
+
+    Randomly groups features into pairs.
+
+    Parameters
+    ----------
+    random_state : int, RandomState instance or None, optional (default=None)
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
+
+    Attributes
+    ----------
+    groups_ : array-like, shape (n_groups, 2)
+        Feature indices for each group.  Note that there should be no
+        duplicate indices so that each group can be transformed independently.
+
+    See Also
+    --------
+    FeatureGroupsDestructor
 
     """
+
     def __init__(self, random_state=None):
         self.random_state = random_state
 
@@ -298,23 +350,44 @@ class RandomFeaturePairs(BaseEstimator):
 
 
 class ImageFeaturePairs(BaseEstimator):
-    """Generate pairs of features for FeatureGroupsDestructor based on image layout.
+    """Generate pairs of pixels based on image layout.
 
-    `image_shape` is the shape such that X[0,:].reshape(image_shape) is converted to an image.
-        Note that image_shape could have any length depending on the number of image channels.
+    For use with :class:`~ddl.local.FeatureGroupsDestructor`.
 
-    `relative_position` is length len(image_shape) and is a relative relative_position to pair
-    with a selected feature. For example, if `relative_position` = (1, 0), then the pixels will
-    be paired horizontally whereas if `relative_position` = (0, 1), then the pixels will be
-    paired vertically.
+    Parameters
+    ----------
+    image_shape : array-like, shape (n_image_dimensions,)
+        The shape such that ``X[0,:].reshape(image_shape)`` is converted to
+        an image. Note that image_shape could have any length depending on
+        the number of image channels, e.g. color images with rgb channels.
 
-    `init_offset` is the amount to init_offset in all directions on the image. For example,
-    one might first do a init_offset of (0, 0) and then a init_offset of (1, 0) to couple the all
-    horizontal pixels.
+    relative_position : array-like, shape (n_image_dimensions,)
+        A relative position to pair with a selected feature. For example,
+        if `relative_position` = (1, 0), then the pixels will be paired
+        horizontally whereas if `relative_position` = (0, 1), then the pixels
+        will be paired vertically.
 
-    `wrap` means whether to wrap the pixels to the other side so that all features are paired.
-    For example, if `relative_position = (1,0)` and `init_offset = (1,0)`, the last pixel on the
-    row will match with the first pixel on the row.
+    init_offset: array-like, shape (n_image_dimensions,)
+        The amount to offset in all directions on the image. For example,
+        one might first do a init_offset of (0, 0) and then a init_offset of
+        (1, 0) to couple the all horizontal pixels.
+
+    wrap : bool
+        Whether to wrap the pixels to the other side so that all features
+        are paired. For example, if `relative_position = (1,0)` and
+        `init_offset = (1,0)`, the last pixel on the row will match with the
+        first pixel on the row.
+
+    Attributes
+    ----------
+    groups_ : array-like, shape (n_groups, 2)
+        Feature indices for each group.  Note that there should be no
+        duplicate indices so that each group can be transformed independently.
+
+    See Also
+    --------
+    FeatureGroupsDestructor
+
     """
 
     def __init__(self, image_shape=None, relative_position=None, init_offset=None, step=None,
