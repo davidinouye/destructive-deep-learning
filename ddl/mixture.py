@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class _MixtureMixin(ScoreMixin):
     def _get_component_densities(self):
-        """Should return the density components."""
+        """Return the density components."""
         return self.component_densities_
 
     def _check_is_fitted(self):
@@ -107,8 +107,26 @@ class _MixtureMixin(ScoreMixin):
         return X
 
     def conditional_densities(self, X, cond_idx, not_cond_idx):
-        """Should return a either a single density if all the same or a list of GaussianMixtureDensity
-        densities with modified parameters."""
+        """Compute conditional densities.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Data to condition on based on `cond_idx`.
+
+        cond_idx : array-like of int
+            Indices to condition on.
+
+        not_cond_idx :
+            Indices not to condition on.
+
+        Returns
+        -------
+        conditional_densities : array-like of estimators
+            Either a single density if all the same or a list of Gaussian
+            densities with conditional variances and means.
+
+        """
         if len(cond_idx) + len(not_cond_idx) != X.shape[1]:
             raise ValueError('`cond_idx_arr` and `not_cond_idx_arr` should be complements that '
                              'have the a total of X.shape[1] number of values.')
@@ -151,7 +169,7 @@ class _MixtureMixin(ScoreMixin):
         return conditional_densities
 
     def marginal_cdf(self, x, target_idx):
-        """Should return the marginal cdf of `x` at the dimension given by `target_idx`."""
+        """Return the marginal cdf of `x` at feature `target_idx`."""
         cdf_components = np.array([
             np.reshape(comp.marginal_cdf(x, target_idx), (-1,))
             for j, comp in enumerate(self._get_component_densities())
@@ -162,7 +180,7 @@ class _MixtureMixin(ScoreMixin):
             return np.dot(cdf_components, self.weights_)  # (n_samples,)
 
     def marginal_inverse_cdf(self, x, target_idx):
-        """Should return the marginal inverse cdf of `x` at the dimension given by `target_idx`."""
+        """Return the marginal inverse cdf of `x` at feature `target_idx`."""
         # Get bounds on left and right from min and max of components
         # Note that these are global bounds for given x so they only have to be computed once
         components = self._get_component_densities()
@@ -266,8 +284,10 @@ class _MixtureDensity(BaseEstimator, _MixtureMixin):
 
 
 class _GaussianMixtureMixin(object):
-    """Overrides several methods in GaussianMixture to comply with density specifications and
-    adds a few methods. """
+    """Overrides several methods in GaussianMixture.
+
+    Needed to comply with density specifications and adds a few methods.
+    """
 
     def fit(self, X, y=None):
         """Fit estimator to X.
@@ -292,9 +312,7 @@ class _GaussianMixtureMixin(object):
         return self
 
     def sample(self, n_samples=1, random_state=None):
-        """Modification from GaussianMixture to just return X instead of
-        (X,y) tuple.
-        """
+        """Sample from GaussianMixture and return only X instead of (X, y)."""
         # Set random state of this object before calling sample
         old_random_state = self.random_state
         self.random_state = random_state
@@ -350,7 +368,7 @@ class _GaussianMixtureMixin(object):
         return _get_component_array(self.precisions_cholesky_, component_idx, self.covariance_type)
 
     def _check_X(self, X):
-        """Taken mostly from sklearn.mixture.base._check_X"""
+        """Taken mostly from `sklearn.mixture.base._check_X`."""
         X = check_array(X, dtype=[np.float64, np.float32])
 
         # Try to get shape from fitted means
@@ -375,17 +393,53 @@ class _GaussianMixtureMixin(object):
 
 
 class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMixin):
-    """Simple class for Gaussian mixtures.
-    Note that _GaussianMixtureMixin must override some things in GaussianMixture
-    but _MixtureMixin should not override GaussianMixture.  Thus, the order of multiple
-    inheritance should remain _GaussianMixtureMixin, GaussianMixture, _MixtureMixin.
+    """Gaussian mixture density that can be used with AutoregressiveDestructor.
+
+    This subclasses off of :class:`sklearn.mixture.GaussianMixture`. It
+    overrides several methods such as :func:`sample` and :func:`score` to
+    ensure that the interface conforms to the other density estimators. In
+    addition, the necessary conditional and marginal distribution methods
+    needed for :class:`ddl.autoregressive.AutoregressiveDestructor` were
+    added. See :class:`sklearn.mixture.GaussianMixture` for parameters and
+    attributes.
+
+    Note that _GaussianMixtureMixin must override some things in
+    GaussianMixture but _MixtureMixin should not override GaussianMixture.
+    Thus, the order of multiple inheritance should remain
+    _GaussianMixtureMixin, GaussianMixture, _MixtureMixin.
+
+    See Also
+    --------
+    sklearn.mixture.GaussianMixture
+    ddl.autoregressive.AutoregressiveDestructor
+    BayesianGaussianMixtureDensity
+
     """
 
 
 class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture,
                                       _MixtureMixin):
-    """Simple class for Bayesian Gaussian mixtures.
-    See note for GaussianMixtureDensity.
+    """Gaussian mixture density that can be used with AutoregressiveDestructor.
+
+    This subclasses off of :class:`sklearn.mixture.BayesianGaussianMixture`.
+    It overrides several methods such as :func:`sample` and :func:`score` to
+    ensure that the interface conforms to the other density estimators. In
+    addition, the necessary conditional and marginal distribution methods
+    needed for :class:`ddl.autoregressive.AutoregressiveDestructor` were
+    added. See :class:`sklearn.mixture.BayesianGaussianMixture` for
+    parameters and attributes.
+
+    Note that _GaussianMixtureMixin must override some things in
+    GaussianMixture but _MixtureMixin should not override GaussianMixture.
+    Thus, the order of multiple inheritance should remain
+    _GaussianMixtureMixin, GaussianMixture, _MixtureMixin.
+
+    See Also
+    --------
+    sklearn.mixture.BayesianGaussianMixture
+    ddl.autoregressive.AutoregressiveDestructor
+    GaussianMixtureDensity
+
     """
 
 
@@ -558,6 +612,43 @@ class _RandomGaussianMixtureDensity(GaussianMixtureDensity):
 class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
     """Mixture density where one component is fixed as the standard normal.
 
+    This is useful for creating a regularized Gaussian mixture destructor.
+    In particular, if this is paired with an inverse Gaussian cdf (i.e.
+    :class:`~ddl.independent.IndependentInverseCdf`), and the weight of the
+    fixed standard normal approaches 1, then the composite destructor
+    approaches an identity. Thus, the `fixed_weight` parameter can be used
+    to control the amount of regularization.
+
+    Note this is implemented by overriding the :func:`_m_step` private
+    method of :class:`sklearn.mixture.GaussianMixture` so it may not be
+    compatible with future releases of sklearn.
+
+    More specifically first n_components-1 Gaussian components are fit using
+    the standard Gaussian mixture estimator. Then, we manually add a fixed
+    standard normal component with the desired fixed weight. Then, we refit
+    but override the M step so that the fixed weight component does not
+    change.
+
+    Parameters
+    ----------
+    fixed_weight : float, default=0.5
+        The fixed weight between 0 and 1 that is given to the first Gaussian
+        component. As this weight approaches 1, there is full regularization
+        and no learning from the data. If the weight approaches 0,
+        then there is no regularization and the fitting is determined
+        entirely from the data.
+
+    n_components : int, default=1
+        The number of mixture components to fit.
+
+    covariance_type : {'full', 'tied', 'diag', 'spherical'}, default='full'
+        String describing the type of covariance parameters to use.
+        Must be one of::
+            'full' (each component has its own general covariance matrix),
+            'tied' (all components share the same general covariance matrix),
+            'diag' (each component has its own diagonal covariance matrix),
+            'spherical' (each component has its own single variance).
+
     """
 
     def __init__(self, fixed_weight=0.5, n_components=1, covariance_type='full'):
@@ -655,13 +746,19 @@ class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
         return self
 
     def _append_standard_covariance(self, cov):
-        """Only works for standard covariance (i.e. identity covariance)"""
+        """Append standard covariance matrix.
+
+        Only works for standard covariance (i.e. identity covariance).
+        """
         self.covariances_ = np.append(self.covariances_, cov, axis=0)
         self.precisions_ = np.append(self.precisions_, cov, axis=0)
         self.precisions_cholesky_ = np.append(self.precisions_cholesky_, cov, axis=0)
 
     def _set_first_standard_covariance(self, cov):
-        """Only works for standard covariance (i.e. identity covariance)"""
+        """Set first to standard covariance.
+
+        Only works for standard covariance (i.e. identity covariance).
+        """
         self.covariances_[0] = cov
         self.precisions_[0] = cov
         self.precisions_cholesky_[0] = cov

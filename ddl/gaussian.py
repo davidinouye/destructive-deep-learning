@@ -34,7 +34,6 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
             'diag' (each component has its own diagonal covariance matrix),
             'spherical' (each component has its own single variance).
 
-
     reg_covar : float, default=1e-6.
         Non-negative regularization added to the diagonal of covariance.
         Allows to assure that the covariance matrices are all positive.
