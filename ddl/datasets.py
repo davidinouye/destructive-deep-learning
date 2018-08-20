@@ -33,8 +33,12 @@ def make_toy_data(data_name, n_samples=1000, random_state=None, **maker_kwargs):
 
     Returns
     -------
-    X_sample : array-like with shape (n_samples, n_features)
-        Sample data matrix. Usually, `n_features` is 2.
+    data : object
+        Data object with the following attributes::
+
+            X : array-like with shape (n_samples, n_features)
+            y : array-like with shape (n_samples,) or None
+            is_canonical_domain : bool, whether domain is [0, 1]
 
     """
     try:
@@ -68,6 +72,8 @@ def _make_autoregressive(
         n_samples, func=None, x_scale=2, y_std=1, flip_x_y=False,
         x_distribution='uniform', random_state=0
 ):
+    if func is None:
+        func = np.sin
     rng = check_random_state(random_state)
     # Get x values
     if x_distribution == 'gaussian':
@@ -94,7 +100,7 @@ def _make_autoregressive(
 def _make_sin_wave(n_samples, x_scale=2 * np.pi, y_std=0.2, **kwargs):
     if 'func' in kwargs:
         raise ValueError('func is overridden by _make_sin_wave')
-    return _make_autoregressive(n_samples, func=lambda x: np.sin(x),
+    return _make_autoregressive(n_samples, func=np.sin,
                                 x_scale=x_scale, y_std=y_std, **kwargs)
 
 
