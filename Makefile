@@ -23,7 +23,7 @@ test/experiments/toy:
 	pytest $(PYTEST_FLAGS) scripts/test_toy_experiment.py
 test/experiments/mnist:
 	# Need capture=no flag to enable output so that test will not time out in circleci
-	pytest --capture=no $(PYTEST_FLAGS) scripts/icml_2018_experiment.py
+	pytest --cov-append --capture=no $(PYTEST_FLAGS) scripts/icml_2018_experiment.py
 codecov:
 	codecov
 test/special:
