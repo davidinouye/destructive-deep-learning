@@ -5,10 +5,12 @@ from __future__ import division, print_function
 from sklearn.decomposition import PCA
 from sklearn.utils import check_random_state
 
+from ddl.autoregressive import AutoregressiveDestructor
 from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canonical_destructor
 from ddl.deep import DeepDestructor, DeepDestructorCV
 from ddl.independent import IndependentDensity, IndependentDestructor
 from ddl.linear import LinearProjector
+from ddl.gaussian import GaussianDensity
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
 from ddl.univariate import HistogramUnivariateDensity
 from ddl.validation import check_density, check_destructor
@@ -142,3 +144,14 @@ def test_deep_destructor_cv_with_tree_destructor():
         cv=2,
     )
     assert check_destructor(destructor)
+
+
+def test_autoregressive_gaussian_destructor():
+    """Currently takes too long for regular testing."""
+    destructor = AutoregressiveDestructor(
+        density_estimator=GaussianDensity(
+            covariance_type='spherical',
+            reg_covar=0.1
+        )
+    )
+    assert check_destructor(destructor, is_canonical=False)

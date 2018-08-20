@@ -29,7 +29,7 @@ test/experiments/mnist:
 codecov:
 	codecov
 test/special:
-	echo -e "from ddl.tests.test_destructors import *\ntest_autoregressive_mixture_destructor()" | python
+	echo -e "from ddl.tests.test_destructors import *\ntest_autoregressive_gaussian_destructor()" | python
 data/mnist: scripts/maf_data.py
 	python scripts/maf_data.py mnist
 data/cifar10: scripts/maf_data.py
