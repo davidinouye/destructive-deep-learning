@@ -8,7 +8,6 @@ import numpy as np
 import scipy.stats
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.decomposition import PCA
-from sklearn.exceptions import DataConversionWarning
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_array, check_is_fitted
 
