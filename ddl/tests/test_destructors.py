@@ -8,9 +8,9 @@ from sklearn.utils import check_random_state
 from ddl.autoregressive import AutoregressiveDestructor
 from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canonical_destructor
 from ddl.deep import DeepDestructor, DeepDestructorCV
+from ddl.gaussian import GaussianDensity
 from ddl.independent import IndependentDensity, IndependentDestructor
 from ddl.linear import LinearProjector
-from ddl.gaussian import GaussianDensity
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
 from ddl.univariate import HistogramUnivariateDensity
 from ddl.validation import check_density, check_destructor

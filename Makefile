@@ -29,7 +29,7 @@ test/experiments/mnist:
 codecov:
 	codecov
 test/special:
-	echo -e "from ddl.tests.test_destructors import *\ntest_autoregressive_gaussian_destructor()" | python
+	echo -e "from ddl.tests.test_mixture import *\ntest_autoregressive_mixture_destructor()" | python
 data/mnist: scripts/maf_data.py
 	python scripts/maf_data.py mnist
 data/cifar10: scripts/maf_data.py
@@ -44,3 +44,6 @@ add-blank-line-docstrings:
 	# Reads everything into buffer and then replaces 
 	# Remove one dollar sign if running directly from command line
 	sed -i ':a;N;$$!ba;s/ :\n        """/ :\n\n        """/g' ddl/*.py
+profile:
+	#pprofile --exclude /Users/dinouye/ --exclude "<frozen" --exclude "<string" --include /Users/dinouye/research/destructive-deep-learning/ddl -o profile.out test_mixture.py
+	pprofile -o profile.out test_mixture.py
