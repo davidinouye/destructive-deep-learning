@@ -161,7 +161,7 @@ def check_density(density, random_state=0):
 @_ignore_boundary_warnings
 def check_destructor(destructor, fitted_density=None, is_canonical=True, properties_to_skip=None,
                      random_state=0):
-    r"""Check for the required interface and properties of a destructor.
+    """Check for the required interface and properties of a destructor.
 
     First, check the interface of the destructor (see below) and then check
     the 4 properties of a destructor (see Inouye & Ravikumar 2018 paper). A
@@ -181,16 +181,16 @@ def check_destructor(destructor, fitted_density=None, is_canonical=True, propert
     Optional methods secondary (warn if does not exist, warn if fails):
 
     * :meth:`fit_from_density` (better for uniformability test than fit)
-    * :meth:`get_domain` (mixin with :attr:`density_`, required to pass tests if \
-            domain is not real-valued unbounded)
-    * :meth:`get_support` (required to pass tests if support is not \
-                                                     real-valued unbounded)
+    * :meth:`get_domain` (mixin with :attr:`density_`, required to pass tests
+      if domain is not real-valued unbounded)
+    * :meth:`get_support` (required to pass tests if support is not
+      real-valued unbounded)
     * :meth:`score` (mixin)
 
     Optional attributes secondary (warn if does not exist, warn if fails):
 
-    * :attr:`density_` attribute (provides default for uniformability test if \
-            fitted_density not given)
+    * :attr:`density_` attribute (provides default for uniformability test if
+      fitted_density not given)
 
     In addition to checking the interface, this function will empirically
     check to see if the destructor seems to have the following 4 properties

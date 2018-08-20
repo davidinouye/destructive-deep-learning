@@ -143,7 +143,7 @@ class IndependentDestructor(BaseDensityDestructor):
 
 
 class IndependentDensity(BaseEstimator, ScoreMixin):
-    r"""Independent density estimator.
+    """Independent density estimator.
 
     This density assumes that the underlying density is independent. The
     user can specify the univariate densities for each feature.
@@ -156,10 +156,10 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         one of the following:
 
         1. None (default, assumes independent Gaussian density).
-        2. Univariate density estimator (assumes all features have \
-        the same density class, but the fitted parameters can be \
-        different, e.g. the means of features 1 and 2 could be \
-        different even though they are both Gaussian estimators.).
+        2. Univariate density estimator (assumes all features have
+           the same density class, but the fitted parameters can be
+           different, e.g. the means of features 1 and 2 could be
+           different even though they are both Gaussian estimators.).
         3. Array-like of univariate density estimators for each feature.
 
     Attributes
