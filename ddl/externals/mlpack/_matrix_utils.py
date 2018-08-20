@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-matrix_utils.py: utilities for matrix conversion
+"""Utilities for matrix conversion.
 
 This file defines the to_matrix() function, which can be used to convert Pandas
 dataframes or other types of array-like objects to numpy ndarrays for use in
@@ -47,9 +46,7 @@ except NameError:
 
 
 def to_matrix(x, dtype=np.double, copy=False):
-    """
-    Given some array-like X, return a numpy ndarray of the same type.
-    """
+    """Given some array-like X, return a numpy ndarray of the same type."""
     # Make sure it's array-like at all.
     if not hasattr(x, '__len__') and \
             not hasattr(x, 'shape') and \
@@ -66,9 +63,9 @@ def to_matrix(x, dtype=np.double, copy=False):
 
 
 def to_matrix_with_info(x, dtype, copy=False):
-    """
-    Given some array-like X (which should be either a numpy ndarray or a pandas
-    DataFrame, convert into a numpy matrix of the given dtype.
+    """Given some array-like X, convert into a numpy matrix of the given dtype.
+
+    Array-like should be either a numpy ndarray or a pandas DataFrame.
     """
     # Make sure it's array-like at all.
     if not hasattr(x, '__len__') and \

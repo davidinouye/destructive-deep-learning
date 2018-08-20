@@ -13,12 +13,7 @@ from sklearn.externals.six.moves import urllib
 
 
 def build_mlpack():
-    """[Placeholder].
-
-    Returns
-    -------
-
-    """
+    """Build mlpack."""
     # Setup mlpack paths
     version = '3.0.2'
     package_path = os.path.dirname(os.path.realpath(__file__))
@@ -90,6 +85,7 @@ def configuration(parent_package='', top_path=None):
 
     Returns
     -------
+    configuration :
 
     """
     build_path = build_mlpack()

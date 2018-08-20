@@ -17,9 +17,52 @@ logger = logging.getLogger(__name__)
 
 
 class MlpackDensityTreeEstimator(BaseEstimator):
-    """Mlpack density tree estimator.
+    """Density tree estimator via mlpack (mlpack.org).
+
+    This estimator leverages the methods for Density Estimation Trees (DET,
+    see Ram & Gray 2011 paper below) that are implemented in mlpack (see the
+    DET method in mlpack's documentation at `mlpack.org`_). Essentially,
+    this class provides a simple wrapper around the C++ functions in mlpack
+    and thus must be compiled with mlpack source code.
+
+    .. _`mlpack.org`: http://mlpack.org/
+
+    Parameters
+    ----------
+    max_leaf_nodes : int or None, default=None
+        Maximum number of leaf nodes in final tree. The tree will be fully
+        grown based on `min_samples_leaf` and then pruned until the number
+        of leaf nodes is less than `max_leaf_nodes`. If None,
+        then `max_leaf_nodes` is considered to be infinite. This parameter
+        can be useful for simple regularization of the density tree.
+
+    max_depth : int or None, default=None
+        Maximum depth of final tree. The tree will be fully grown based on
+        `min_samples_leaf` and then pruned until the depth of the tree is
+        less than `max_depth`. If None, then `max_depth` is considered to be
+        infinite. This parameter can be useful for simple regularization of
+        the density tree.
+
+    min_samples_leaf : int, default=1
+        Minimum number of samples required at all leaf nodes. Main parameter
+        for growing the tree initially before pruning. This parameter is
+        mainly here for computational reasons on large datasets. This
+        parameter could also be used as regularization.
+
+    Attributes
+    ----------
+    tree_ : arrayed_tree
+        The tree structure represented using arrays similar to the trees
+        used in sklearn (e.g. :class:`sklearn.tree.DecisionTreeClassifier`).
+
+    References
+    ----------
+    Ram, P. and Gray, A. G. Density Estimation Trees. In Proceedings of the
+    17th ACM SIGKDD International Conference on Knowledge Discovery and Data
+    Mining, 2011.
 
     """
+
     def __init__(self, max_leaf_nodes=None, max_depth=None, min_samples_leaf=1):
         self.max_leaf_nodes = max_leaf_nodes
         self.max_depth = max_depth
