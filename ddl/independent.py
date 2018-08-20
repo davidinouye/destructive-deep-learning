@@ -143,7 +143,7 @@ class IndependentDestructor(BaseDensityDestructor):
 
 
 class IndependentDensity(BaseEstimator, ScoreMixin):
-    """Independent density estimator.
+    r"""Independent density estimator.
 
     This density assumes that the underlying density is independent. The
     user can specify the univariate densities for each feature.

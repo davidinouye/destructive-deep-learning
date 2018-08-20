@@ -4,6 +4,7 @@ from __future__ import division, print_function
 import logging
 import sys
 import warnings
+from functools import wraps
 
 import numpy as np
 from sklearn.base import clone
@@ -41,6 +42,7 @@ class _ShouldOnlyBeInTestWarning(UserWarning):
 
 
 def _ignore_boundary_warnings(func):
+    @wraps(func)
     def _wrapper(*args, **kwargs):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', BoundaryWarning)
@@ -50,28 +52,65 @@ def _ignore_boundary_warnings(func):
 
 
 @_ignore_boundary_warnings
-def check_density(dens, random_state=0):
-    """Check that estimator implements density methods correctly.
+def check_density(density, random_state=0):
+    """Check that an estimator implements density methods correctly.
+
+    First, check that the estimator implements sklearn's estimator interface
+    via :func:`sklearn.utils.estimator_checks.check_estimator`. Then,
+    check for all of the following methods, and possibly check their basic
+    functionality. Some methods will raise errors and others will issue
+    warnings.
 
     Required methods (error if fails or does not exist):
-        `fit`
 
-    Optional methods (warn if does not exist):
-        Primary (error if fails)
-            `sample`
-            `score_samples`
-        Secondary (warn if fails)
-            `score` (mixin)
-            `get_support` (required to pass tests if support is not real-valued unbounded)
+    * :meth:`fit`
+
+    Optional methods primary (warn if does not exist, error if fails):
+
+    * :meth:`sample`
+    * :meth:`score_samples`
+
+    Optional methods secondary (warn if does not exist, warn if fails):
+
+    * :meth:`score` (mixin)
+    * :meth:`get_support` (required to pass tests if support is not real-valued unbounded)
+
+    Parameters
+    ----------
+    density : estimator
+        Density estimator to check.
+
+    random_state : int, RandomState instance or None, optional (default=0)
+        Note that random_state defaults to 0 so that checks are reproducible
+        by default.
+
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
+
+    Notes
+    -----
+    The :meth:`score` method must be equal to the average of
+    :meth:`score_samples` for consistency. Note that some sklearn density
+    estimators such as :class:`sklearn.mixture.GaussianMixture` return the
+    total log probability instead of the average log probability. Thus,
+    these estimators need to be subclassed and their :meth:`score` method
+    overwritten.
+
+    See Also
+    --------
+    check_destructor
 
     """
     # Standard check
     rng = check_random_state(random_state)
-    dens = clone(dens)  # Remove fitted properties if exist
-    _check_estimator_but_ignore_warnings(dens)
+    density = clone(density)  # Remove fitted properties if exist
+    _check_estimator_but_ignore_warnings(density)
 
     # Attempt to get support (show warning since optional)
-    support = get_support_or_default(dens, warn=True)
+    support = get_support_or_default(density, warn=True)
     logger.info('(Before fitting) Density support is %s' % str(np.array(support).tolist()))
 
     # Sample based on support
@@ -82,18 +121,18 @@ def check_density(dens, random_state=0):
 
     # Check that fit, sample, score_samples and score are implemented
     try:
-        dens.fit(X_train)
+        density.fit(X_train)
     except ValueError:
         raise ValueError('The demo data raised a value error when calling fit. This should not'
                          ' happen if the data is within the density support via the'
                          ' get_support method or the default real-valued support.')
-    support = get_support_or_default(dens, warn=True)
+    support = get_support_or_default(density, warn=True)
     logger.info('(After fitting) Density support is %s' % str(np.array(support).tolist()))
 
     # Run primary optional tests (error on failure)
-    if has_method(dens, 'sample'):
+    if has_method(density, 'sample'):
         # Check multiple samples
-        X_sample = dens.sample(n, random_state=rng)
+        X_sample = density.sample(n, random_state=rng)
         if isinstance(X_sample, tuple) and len(X_sample) == 2:
             raise TypeError('Sample returned tuple of length 2 instead of data matrix.'
                             ' This is likely because the density estimator returned (X,y)'
@@ -102,51 +141,151 @@ def check_density(dens, random_state=0):
             raise RuntimeError('Samples from density.sample() do not match training data shape.')
 
         # Check single sample
-        X_1 = dens.sample(1, random_state=rng)
+        X_1 = density.sample(1, random_state=rng)
         if len(np.array(X_1).shape) != 2:
             raise TypeError(
                 'A single sample should still return a 2D matrix with shape (1,n_features).')
 
     score_vec = None
-    if has_method(dens, 'score_samples'):
-        score_vec = dens.score_samples(X_test)
+    if has_method(density, 'score_samples'):
+        score_vec = density.score_samples(X_test)
         if len(score_vec) != n:
             raise RuntimeError('Output of score_samples is not of length n_samples.')
 
     # Run secondary optional tests (warning on failure)
-    _check_score_method(dens, score_vec, X_test)
+    _check_score_method(density, score_vec, X_test)
     logger.info(_success('check_density'))
     return True
 
 
 @_ignore_boundary_warnings
-def check_destructor(trans, fitted_density=None, is_canonical=True, properties_to_skip=None,
+def check_destructor(destructor, fitted_density=None, is_canonical=True, properties_to_skip=None,
                      random_state=0):
-    """
-    Checks transformer interface (see `check_destructor_interface`)
-    and performs simple checks of core required properties.
+    """Check for the required interface and properties of a destructor.
 
-    Required destructive transformer properties:
-    1) Uniformability
-    2) Invertibility
-    3) Canonical domain (optional if canonical = False)
-    4) Identity element (optional if canonical = False)
+    First, check the interface of the destructor (see below) and then check
+    the 4 properties of a destructor (see Inouye & Ravikumar 2018 paper). A
+    destructor estimator should have the following interface:
 
-    Note that `trans.score_samples(x)` = abs(det(J(x))) should be close
-    to `density.score_samples(x)` and equal if no approximation (such as
-    a piecewise linear function) is made.
+    Required methods (error if fails or does not exist):
 
-    Note that `trans.sample(n_samples)` will produce slightly different samples than
-    `trans.density_.sample(n_samples)` unless no approximation is used.
+    * :meth:`fit`
+    * :meth:`transform`
+    * :meth:`inverse_transform`
 
-    Other fitted parameters other than `density_` should be strictly transformation parameters.
+    Optional methods primary (warn if does not exist, error if fails):
 
-    Note `random_state` defaults to 0 so that this check performs deterministically
-    if the `random_state` is not set.
+    * :meth:`sample` (mixin, uniform->inverse)
+    * :meth:`score_samples`
+
+    Optional methods secondary (warn if does not exist, warn if fails):
+
+    * :meth:`fit_from_density` (better for uniformability test than fit)
+    * :meth:`get_domain` (mixin with :attr:`density_`, required to pass tests if \
+            domain is not real-valued unbounded)
+    * :meth:`get_support` (required to pass tests if support is not \
+                                                     real-valued unbounded)
+    * :meth:`score` (mixin)
+
+    Optional attributes secondary (warn if does not exist, warn if fails):
+
+    * :attr:`density_` attribute (provides default for uniformability test if \
+            fitted_density not given)
+
+    In addition to checking the interface, this function will empirically
+    check to see if the destructor seems to have the following 4 properties
+    (see Inouye & Ravikumar 2018 paper).  Note that these are just empirical
+    sanity checks based on sampling or the like and thus do not ensure that
+    this estimator always has these properties.
+
+    1. Uniformability (required)
+    2. Invertibility (required)
+    3. Canonical domain (optional if canonical = False)
+    4. Identity element (optional if canonical = False)
+
+    Parameters
+    ----------
+    destructor : estimator
+        Destructor estimator to check.
+
+    fitted_density : estimator, optional
+        A fitted density estimator to use in some checks. If None (default),
+        then use simple but interesting distributions based on domain of
+        destructor. Can be used to check a specific density and destructor
+        pair.
+
+    is_canonical : bool, default=True
+        Whether this destructor should be checked for canonical destructor
+        properties including canonical domain and identity element.
+
+    properties_to_skip : list, optional
+        Optional list of properties to skip designated by the following
+        strings ['uniformability', 'invertibility', 'canonical-domain',
+        'identity-element']
+
+    random_state : int, RandomState instance or None, optional (default=0)
+        Note that random_state defaults to 0 so that checks are reproducible
+        by default.
+
+        If int, `random_state` is the seed used by the random number
+        generator; If :class:`~numpy.random.RandomState` instance,
+        `random_state` is the random number generator; If None, the random
+        number generator is the :class:`~numpy.random.RandomState` instance
+        used by :mod:`numpy.random`.
 
     See Also
     --------
-    .check_destructor_interface
+    check_density
+
+    Notes
+    -----
+    *Uniformability check* - Numerically *and* approximately checks one
+    density/destructor pair to determine if the destructor appropriately
+    destroys the density (i.e. transforms the samples to be uniform). Note
+    that this does not mean it will work for all cases but it does provide a
+    basic sanity check on at least one case.
+    This will also run sklearn's estimator checks, i.e.
+    :func:`sklearn.utils.estimator_checks.check_estimator`.
+
+    *Invertibility check* - Simple numerical check for invertiblity by applying the
+    transformation and then applying the inverse transformation, and
+    vice versa to see if the original data is recovered.
+
+    *Canonical domain check* - Simply check if the domain is the unit
+    hypercube. Checks if warnings are issued when data is passed that is not
+    on the unit hypercube.
+
+    *Identity element check* - Numerical approximation for checking if the
+    destructor class includes an identity element. Note this check fits the
+    destructor on uniform samples and then check whether the learned
+    transformation is the identity. Thus, if the test fails, there can be
+    *two* possible causes: 1) The fitting procedure overfitted the uniform
+    samples such that the implied density is far from uniform. 2) The
+    transformation does not appropriately produce an identity
+    transformation. This is a bit stricter than the official property since
+    we train on uniform samples. However, this is probably a better check
+    because we want the destructor to fit an identity transformation if the
+    distribution is truly uniform.
+
+    `destructor.score_samples(x)` = abs(det(J(x))) should be close
+    to `density.score_samples(x)` and equal if no approximation (such as
+    a piecewise linear function) is made.
+
+    `destructor.sample(n_samples)` will produce slightly different samples than
+    `destructor.density_.sample(n_samples)` unless no approximation is used.
+
+    Other fitted parameters other than `density_` should be strictly
+    destructive destructorformation parameters.
+
+    Some of the property tests rely on calculating the Wasserstein distance
+    between two sets of samples and thus the python optimal transport module
+    (pot) is used.
+
+    References
+    ----------
+    D. I. Inouye, P. Ravikumar. Deep Density Destructors. In International
+    Conference on Machine Learning (ICML), 2018.
+
     """
 
     def _check_property(p):
@@ -156,18 +295,26 @@ def check_destructor(trans, fitted_density=None, is_canonical=True, properties_t
             return False
         return True
 
+    possible_properties = ['uniformability', 'invertibility',
+                           'canonical-domain', 'identity-element']
     if properties_to_skip is None:
         properties_to_skip = []
     properties_to_skip = [prop.lower() for prop in properties_to_skip]
+    for prop in properties_to_skip:
+        if prop not in possible_properties:
+            raise ValueError(
+                'Properties to skip must be one of %s but property to skip was %s.'
+                % (prop, str(possible_properties))
+            )
 
     # Check destructive transformer interface
-    check_destructor_interface(trans, fitted_density, random_state=random_state)
+    _check_destructor_interface(destructor, fitted_density, random_state=random_state)
 
     # Check destructive transformer properties
     if _check_property('uniformability'):
-        check_uniformability(trans, fitted_density, random_state=random_state)
+        _check_uniformability(destructor, fitted_density, random_state=random_state)
     if _check_property('invertibility'):
-        check_invertibility(trans, random_state=random_state)
+        _check_invertibility(destructor, random_state=random_state)
 
     if not is_canonical:
         logger.info('Not testing canonical destructive properties because parameter '
@@ -175,10 +322,10 @@ def check_destructor(trans, fitted_density=None, is_canonical=True, properties_t
     else:
         try:
             # Check canonical destructive transformer properties
-            if _check_property('canonical_domain'):
-                check_canonical_domain(trans, random_state=random_state)
-            if _check_property('identity_element'):
-                check_identity_element(trans, random_state=random_state)
+            if _check_property('canonical-domain'):
+                _check_canonical_domain(destructor, random_state=random_state)
+            if _check_property('identity-element'):
+                _check_identity_element(destructor, random_state=random_state)
         except Exception as e:
             warnings.warn('An exception occured while testing for the canonical properties of the '
                           'destructor. Please fix the errors below. (If this is not a '
@@ -189,29 +336,7 @@ def check_destructor(trans, fitted_density=None, is_canonical=True, properties_t
 
 
 @_ignore_boundary_warnings
-def check_destructor_interface(trans, fitted_density=None, random_state=None):
-    """
-    Checks that the estimator implements the destructive transformer
-    interface.
-
-    Interface requirements:
-      Required methods (error if fails or does not exist):
-        `fit`
-        `transform`
-        `inverse_transform`
-      Optional methods/attributes (warn if does not exist):
-        Primary (error if fails)
-          `sample` (mixin, uniform->inverse)
-          `score_samples`
-        Secondary (warn if fails)
-          `fit_from_density` (better for uniformability test than fit)
-          `density_` attribute (provides default for uniformability test
-              if fitted_density not given)
-          `get_domain` (mixin with density_, required to pass tests if
-              domain is not real-valued unbounded)
-          `score` (mixin)
-    """
-
+def _check_destructor_interface(trans, fitted_density=None, random_state=None):
     def _check_density_attr(T, method_name='fit'):
         if hasattr(T, 'density_'):
             logger.info(_checking('transformer.density_'))
@@ -329,26 +454,15 @@ def check_destructor_interface(trans, fitted_density=None, random_state=None):
             % avg_normalized_diff)
 
     _check_score_method(trans, score_vec, X_test)
-    logger.info(_success('check_destructor_interface'))
+    logger.info(_success('_check_destructor_interface'))
     return True
 
 
 @_ignore_boundary_warnings
-def check_uniformability(trans, fitted_density=None, random_state=0):
-    """
-    Numerically *and* approximately checks one density/destructor
-    pair to determine if the destructor appropriately destroys the
-    density (i.e. transforms the samples to be uniform).
-
-    Note that this does not mean it will work for all cases but it
-    does provide a basic sanity check on at least one case.
-
-    Note `random_state` defaults to 0 so that this check performs deterministically
-    if the `random_state` is not set.
-    """
+def _check_uniformability(destructor, fitted_density=None, random_state=0):
     # Init
     n = 100
-    trans = clone(trans)
+    destructor = clone(destructor)
     rng = check_random_state(random_state)
 
     # Create a dummy density by fitting a transformer on demo data and getting the density_
@@ -358,7 +472,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
         logger.info('Fitting a simple density because `fitted_density` was not provided to '
                     '`check_uniformabilty`')
         # Sample demo data based on domain
-        trans_temp = clone(trans)
+        trans_temp = clone(destructor)
         domain = get_domain_or_default(trans_temp)
         d = _get_domain_n_features(domain)
         n_train = n
@@ -379,11 +493,11 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
     n_features = np.array(true_density.sample(1, random_state=rng)).shape[1]
 
     # Fit transformer ideally via `fit_from_density` if it exists
-    if has_method(trans, 'fit_from_density'):
-        trans.fit_from_density(true_density)
+    if has_method(destructor, 'fit_from_density'):
+        destructor.fit_from_density(true_density)
     else:
         X_train = true_density.sample(n, random_state=rng)
-        trans.fit(X_train)
+        destructor.fit(X_train)
         msg = ('Because the `trans.fit_from_density` method does not exist, fitting the '
                'destructor on a separate training set. Note: This is not ideal for numerically '
                'checking uniformability because there are two sources of variability (training '
@@ -392,7 +506,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
 
     k = 30
 
-    fitted_trans_domain = get_domain_or_default(trans)
+    fitted_trans_domain = get_domain_or_default(destructor)
     logger.info('Fitted transformer domain is %s' % str(np.array(fitted_trans_domain).tolist()))
 
     def _transformer_emd(_trans, _true_density):
@@ -418,7 +532,7 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
         return _X_emd, _U_emd
 
     temp = np.array([
-        _transformer_emd(trans, true_density)
+        _transformer_emd(destructor, true_density)
         for _ in range(k)
     ]).transpose()
     X_emd_vec = temp[0]
@@ -458,8 +572,8 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
             n_samples = 1000
             X_true = true_density.sample(n_samples, random_state=rng)
             U_true = rng.rand(n_samples, n_features)
-            X_trans = trans.inverse_transform(U_true)
-            U_trans = trans.transform(X_true)
+            X_trans = destructor.inverse_transform(U_true)
+            U_trans = destructor.transform(X_true)
 
             # noinspection PyPackageRequirements
             import matplotlib.pyplot as plt
@@ -482,34 +596,29 @@ def check_uniformability(trans, fitted_density=None, random_state=0):
             err_msg % ('transform', 'original (assumed)', 'uniform', avg_p_threshold,
                        'transform')
         )
-    logger.info(_success('check_uniformability'))
+    logger.info(_success('_check_uniformability'))
     return True
 
 
 @_ignore_boundary_warnings
-def check_invertibility(trans, random_state=0):
-    """Simple numerical check for invertiblity by applying the
-    transformation and then applying the inverse transformation, and
-    vice versa to see if the original data is recovered.
-    """
-
+def _check_invertibility(destructor, random_state=0):
     # Sample and fit transformer
-    trans = clone(trans)
+    destructor = clone(destructor)
     rng = check_random_state(random_state)
-    domain = get_domain_or_default(trans, warn=True)
+    domain = get_domain_or_default(destructor, warn=True)
     n = 100
     d = _get_support_n_features(domain)
     X_train = _sample_demo(domain, n, d, random_state=rng)
-    trans.fit(X_train)
+    destructor.fit(X_train)
 
     # Get demo samples and transform or inverse transform in both directions
     X_orig = _sample_demo(domain, n, d, random_state=rng)
-    U_trans = trans.transform(X_orig)
-    X_back = trans.inverse_transform(U_trans)
+    U_trans = destructor.transform(X_orig)
+    X_back = destructor.inverse_transform(U_trans)
 
     U_orig = rng.rand(n, d)
-    X_trans = trans.inverse_transform(U_orig)
-    U_back = trans.transform(X_trans)
+    X_trans = destructor.inverse_transform(U_orig)
+    U_back = destructor.transform(X_trans)
 
     # Check that the original and back transformed are nearly (numerically) the same
     def _check_nearly_equal(orig, back, middle):
@@ -527,10 +636,10 @@ def check_invertibility(trans, random_state=0):
                 # noinspection PyPackageRequirements
                 import matplotlib.pyplot as plt
                 n_samples = 1000
-                X_true = trans.sample(n_samples=n_samples)
+                X_true = destructor.sample(n_samples=n_samples)
                 U_true = rng.rand(n_samples, d)
-                _X_trans = trans.inverse_transform(U_true)
-                _U_trans = trans.transform(X_true)
+                _X_trans = destructor.inverse_transform(U_true)
+                _U_trans = destructor.transform(X_true)
 
                 axes = plt.subplots(2, 2)[1]
                 for ax, title, X in zip(axes.ravel(),
@@ -557,28 +666,17 @@ def check_invertibility(trans, random_state=0):
 
     _check_nearly_equal(X_orig, X_back, U_trans)
     _check_nearly_equal(U_orig, U_back, X_trans)
-    logger.info(_success('check_invertibility'))
+    logger.info(_success('_check_invertibility'))
     return True
 
 
 @_ignore_boundary_warnings
-def check_canonical_domain(trans, random_state=0):
-    """[Placeholder].
-
-    Parameters
-    ----------
-    trans :
-    random_state :
-
-    Returns
-    -------
-
-    """
+def _check_canonical_domain(destructor, random_state=0):
     # Setup functions to test
     rng = check_random_state(random_state)
-    fitted = clone(trans).fit(np.array([[0], [1], [0], [1], [0], [1]]))
+    fitted = clone(destructor).fit(np.array([[0], [1], [0], [1], [0], [1]]))
 
-    _assert_unit_domain(rng, clone(trans).fit)
+    _assert_unit_domain(rng, clone(destructor).fit)
     _assert_unit_domain(rng, fitted.transform)
 
     if has_method(fitted, 'score', warn=False):
@@ -586,41 +684,25 @@ def check_canonical_domain(trans, random_state=0):
     if has_method(fitted, 'score_samples', warn=False):
         _assert_unit_domain(rng, fitted.score_samples)
 
-    logger.info(_success('check_canonical_domain'))
+    logger.info(_success('_check_canonical_domain'))
     return True
 
 
 @_ignore_boundary_warnings
-def check_identity_element(trans, random_state=0):
-    """Numerical approximation for checking if the destructor class
-    includes an identity element.
-
-    Note this check trains the destructor on uniform samples and then
-    check whether the learned transformation is the identity. Thus, if
-    the test fails, there can be *two* possible causes:
-      1) The fitting procedure overfitted the uniform samples such that
-            the implied density is far from uniform.
-      2) The transformation does not appropriately produce an identity
-            transformation.
-
-    This is a bit stricter than the official property since we train on
-    uniform samples. However, this is probably a better check because we
-    want the destructor to fit an identity transformation if the
-    distribution is truly uniform.
-    """
+def _check_identity_element(destructor, random_state=0):
     # Setup
     rng = check_random_state(random_state)
-    domain = get_domain_or_default(trans, warn=True)
+    domain = get_domain_or_default(destructor, warn=True)
     n = 1000
     d = _get_support_n_features(domain)
 
     # Sample uniform samples in order to fit destructor
     X_train = rng.rand(n, d)
-    trans.fit(X_train)
+    destructor.fit(X_train)
 
     # Transform data
     X = rng.rand(n, d)
-    U = trans.transform(X)
+    U = destructor.transform(X)
 
     diff = _relative_diff(X, U)
     if diff > 0.02:  # 2% movement of particles on average
@@ -633,7 +715,7 @@ def check_identity_element(trans, random_state=0):
                                     'diff = %g' % diff)
     logger.info('Relative difference after fitting and then transforming uniform samples (shape '
                 '%s) = %g' % (str(X_train.shape), diff))
-    logger.info(_success('check_identity_element'))
+    logger.info(_success('_check_identity_element'))
     return True
 
 

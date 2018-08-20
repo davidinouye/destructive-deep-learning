@@ -36,3 +36,4 @@ Removed
 ^^^^^^^
 
 - Removed :class:`ddl.base.AutoregressiveMixin` because it was not needed.
+- Removed (by making them private) the validation functions :func:`ddl.validation.check_destructor_interface`, :func:`ddl.validation.check_uniformability`, :func:`ddl.validation.check_invertibility`, :func:`ddl.validation.check_canonical_domain`, :func:`ddl.validation.check_identity_element`, because these are already called in :func:`ddl.validation.check_destructor` and :param:`properties_to_skip` can be used to check only one property if needed.
