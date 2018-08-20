@@ -13,7 +13,7 @@ from ddl.independent import IndependentDensity, IndependentDestructor
 from ddl.linear import LinearProjector, RandomOrthogonalEstimator
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
 from ddl.univariate import HistogramUnivariateDensity
-from ddl.validation import check_density, check_destructor
+from ddl.validation import check_destructor
 
 
 def test_inverse_canonical_destructor():
@@ -49,22 +49,6 @@ def test_independent_destructor():
 
 def test_tree_destructor():
     assert check_destructor(TreeDestructor())
-
-
-def test_histogram_univariate_density():
-    density = HistogramUnivariateDensity(
-        bins=10, alpha=10, bounds=[0, 1]
-    )
-    assert check_density(density)
-
-
-def test_histogram_multivariate_density():
-    density = IndependentDensity(
-        univariate_estimators=HistogramUnivariateDensity(
-            bins=10, alpha=10, bounds=[0, 1]
-        )
-    )
-    assert check_density(density)
 
 
 def test_histogram_univariate_destructor():
