@@ -161,7 +161,7 @@ def check_density(density, random_state=0):
 @_ignore_boundary_warnings
 def check_destructor(destructor, fitted_density=None, is_canonical=True, properties_to_skip=None,
                      random_state=0):
-    """Check for the required interface and properties of a destructor.
+    r"""Check for the required interface and properties of a destructor.
 
     First, check the interface of the destructor (see below) and then check
     the 4 properties of a destructor (see Inouye & Ravikumar 2018 paper). A
@@ -287,7 +287,6 @@ def check_destructor(destructor, fitted_density=None, is_canonical=True, propert
     Conference on Machine Learning (ICML), 2018.
 
     """
-
     def _check_property(p):
         if p in properties_to_skip:
             warnings.warn(SkipTestWarning('Skipping checks for property "%s" because '
@@ -720,27 +719,22 @@ def _check_identity_element(destructor, random_state=0):
 
 
 class _DestructorError(RuntimeError):
-    """Destructor property error."""
     pass
 
 
 class _UniformabilityError(_DestructorError):
-    """Uniformability property error."""
     pass
 
 
 class _InvertibilityError(_DestructorError):
-    """Invertibility property error."""
     pass
 
 
 class _CanonicalDomainError(_DestructorError):
-    """Canonical domain property error."""
     pass
 
 
 class _IdentityElementError(_DestructorError):
-    """Identity element property error."""
     pass
 
 
@@ -774,9 +768,11 @@ def _sample_demo(support, n_samples, n_features, random_state=None):
 
 
 def _emd_sample(density, n_samples, n_emd_samples, random_state=None):
-    """Computes samples of earth-mover distance (emd) between independent same-size
-    samples of given density. Useful for statistically estimating whether a sample
-    comes from the given density or not.
+    """Compute emd distances between independent samples from density.
+
+    Sample the earth-mover distance (emd) between independent same-size
+    samples of given density. Useful for statistically estimating whether a sample comes from the
+    given density or not.
     """
     rng = check_random_state(random_state)
     X_arr = []
@@ -852,7 +848,7 @@ def _check_support(support):
 
 
 def _get_support_n_features(support, default_n_features=2):
-    """Gets the n_features based on support or returns the default"""
+    """Get the number of features based on support or return the default."""
     support = _check_support(support)
     if len(support.shape) == 1:
         return default_n_features
@@ -869,9 +865,9 @@ def _relative_diff(orig, back):
 
 
 def _clean_warning_registry():
-    """
+    """Safe way to reset warnings.
+
     (Copied from module `sklearn.utils.testing` (v. 0.19.1).)
-    Safe way to reset warnings.
     """
     warnings.resetwarnings()
     reg = "__warningregistry__"
@@ -883,9 +879,9 @@ def _clean_warning_registry():
 
 
 def _assert_no_warnings(func, *args, allow_these_warnings=None, **kw):
-    """
+    """Assert that no warnings are issued when calling function `func`.
+
     (Edited from module `sklearn.utils.testing` (v. 0.19.1).)
-    Asserts that no warnings are issued when calling function `func`.
     """
     if allow_these_warnings is None:
         allow_these_warnings = [BoundaryWarning, _ShouldOnlyBeInTestWarning]
@@ -904,9 +900,10 @@ def _assert_no_warnings(func, *args, allow_these_warnings=None, **kw):
 
 
 def _assert_warns(warning_class, func, *args, **kw):
-    """
+    """Test that a certain warning occurs.
+
     (Edited from module `sklearn.utils.testing` (v. 0.19.1).)
-    Test that a certain warning occurs.
+
     Parameters
     ----------
     warning_class : the warning class
@@ -915,9 +912,11 @@ def _assert_warns(warning_class, func, *args, **kw):
         Calable object to trigger warnings.
     *args : the positional arguments to `func`.
     **kw : the keyword arguments to `func`
+
     Returns
     -------
     result : the return value of `func`
+
     """
     # very important to avoid uncontrolled state propagation
     _clean_warning_registry()
