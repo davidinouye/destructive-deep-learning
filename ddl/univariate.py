@@ -385,25 +385,32 @@ class HistogramUnivariateDensity(ScipyUnivariateDensity):
         entire range, including the empty portions. For visualisation,
         using the 'auto' option is suggested. Weighted data is not
         supported for automated bin size selection.
+
         'auto'
             Maximum of the 'sturges' and 'fd' estimators. Provides good
             all around performance.
+
         'fd' (Freedman Diaconis Estimator)
             Robust (resilient to outliers) estimator that takes into
             account data variability and data size.
+
         'doane'
             An improved version of Sturges' estimator that works better
             with non-normal datasets.
+
         'scott'
             Less robust estimator that that takes into account data
             variability and data size.
+
         'rice'
             Estimator does not take variability into account, only data
             size. Commonly overestimates number of bins required.
+
         'sturges'
             R's default method, only accounts for data size. Only
             optimal for gaussian data and underestimates number of bins
             for large non-gaussian datasets.
+
         'sqrt'
             Square root (of data size) estimator, used by Excel and
             other programs for its speed and simplicity.

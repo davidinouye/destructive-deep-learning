@@ -51,18 +51,19 @@ def _ignore_boundary_warnings(func):
 
 @_ignore_boundary_warnings
 def check_density(dens, random_state=0):
-    """
-    Checks that the estimator implements primary density methods.
+    """Check that estimator implements density methods correctly.
 
-      Required methods (error if fails or does not exist):
+    Required methods (error if fails or does not exist):
         `fit`
-      Optional methods (warn if does not exist):
+
+    Optional methods (warn if does not exist):
         Primary (error if fails)
-          `sample`
-          `score_samples`
+            `sample`
+            `score_samples`
         Secondary (warn if fails)
-          `score` (mixin)
-          `get_support` (required to pass tests if support is not real-valued unbounded)
+            `score` (mixin)
+            `get_support` (required to pass tests if support is not real-valued unbounded)
+
     """
     # Standard check
     rng = check_random_state(random_state)

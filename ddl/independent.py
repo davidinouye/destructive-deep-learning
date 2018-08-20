@@ -151,17 +151,16 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
     Parameters
     ----------
     univariate_estimators : estimator or array-like of shape (n_features,)
-        Univariate estimator(s) for this independent density. Should be one of
-        the following:
+        Univariate estimator(s) for this independent density. Default
+        assumes univariate Gaussian densities for all features. Should be
+        one of the following:
 
-            #. None (default, assumes independent Gaussian density).
-            #. univariate density estimator (assumes all features have
-            the same density class, but the fitted parameters can be
-            different---e.g. the means of features 1 and 2 could be
-            different even though they are both Gaussian estimators.).
-            #. array-like of univariate density estimators for each feature.
-
-        Default assumes univariate Gaussian densities for all features.
+        1. None (default, assumes independent Gaussian density).
+        2. Univariate density estimator (assumes all features have \
+        the same density class, but the fitted parameters can be \
+        different, e.g. the means of features 1 and 2 could be \
+        different even though they are both Gaussian estimators.).
+        3. Array-like of univariate density estimators for each feature.
 
     Attributes
     ----------

@@ -29,6 +29,7 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
     covariance_type : {'full', 'tied', 'diag', 'spherical'}, default='full'
         String describing the type of covariance parameters to use.
         Must be one of::
+
             'full' (each component has its own general covariance matrix),
             'tied' (all components share the same general covariance matrix),
             'diag' (each component has its own diagonal covariance matrix),
@@ -46,6 +47,7 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
     covariance_ : array-like or float
         The covariance matrix of the Gaussian. The shape depends on
         `covariance_type`::
+
             float                           if 'spherical',
             (n_features, n_features)        if 'tied',
             (n_features,)                   if 'diag',
@@ -59,6 +61,7 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
         matrix instead of the covariance matrices makes it more efficient to
         compute the log-likelihood of new samples at test time. The shape
         depends on `covariance_type`::
+
             float                           if 'spherical',
             (n_features, n_features)        if 'tied',
             (n_features,)                   if 'diag',
@@ -72,6 +75,7 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
         precision matrix instead of the covariance matrix makes it more
         efficient to compute the log-likelihood of new samples at test time.
         The shape depends on `covariance_type`::
+
             float                           if 'spherical',
             (n_features, n_features)        if 'tied',
             (n_features,)                   if 'diag',
@@ -81,7 +85,6 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
     --------
     sklearn.mixture.GaussianMixture
     ddl.mixture.GaussianMixtureDensity
-    ddl.mixture.BayesianGaussianMixtureDensit
     ddl.autoregressive.AutoregressiveDestructor
 
     """

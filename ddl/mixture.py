@@ -419,7 +419,7 @@ class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMix
 
 class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture,
                                       _MixtureMixin):
-    """Gaussian mixture density that can be used with AutoregressiveDestructor.
+    """Bayesian Gaussian mixture, useful for AutoregressiveDestructor.
 
     This subclasses off of :class:`sklearn.mixture.BayesianGaussianMixture`.
     It overrides several methods such as :func:`sample` and :func:`score` to
@@ -644,6 +644,7 @@ class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):
     covariance_type : {'full', 'tied', 'diag', 'spherical'}, default='full'
         String describing the type of covariance parameters to use.
         Must be one of::
+
             'full' (each component has its own general covariance matrix),
             'tied' (all components share the same general covariance matrix),
             'diag' (each component has its own diagonal covariance matrix),
