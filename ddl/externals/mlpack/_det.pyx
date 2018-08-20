@@ -3,7 +3,6 @@ from . cimport _arma_numpy as arma_numpy
 #from cli cimport CLI
 #from cli cimport SetParam, SetParamPtr, SetParamWithInfo, GetParamPtr
 #from cli cimport EnableVerbose, DisableVerbose, DisableBacktrace, ResetTimers, EnableTimers
-from ._matrix_utils import to_matrix, to_matrix_with_info
 from sklearn.utils import check_array
 from ._serialization cimport SerializeIn, SerializeOut
 
