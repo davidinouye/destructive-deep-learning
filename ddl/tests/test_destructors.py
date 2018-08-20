@@ -10,7 +10,7 @@ from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canoni
 from ddl.deep import DeepDestructor, DeepDestructorCV
 from ddl.gaussian import GaussianDensity
 from ddl.independent import IndependentDensity, IndependentDestructor
-from ddl.linear import LinearProjector
+from ddl.linear import LinearProjector, RandomOrthogonalEstimator
 from ddl.tree import RandomTreeEstimator, TreeDensity, TreeDestructor
 from ddl.univariate import HistogramUnivariateDensity
 from ddl.validation import check_density, check_destructor
@@ -114,6 +114,20 @@ def test_tree_destructor_with_node_destructor():
             )
         )
         assert check_destructor(destructor)
+
+
+def test_random_linear_householder_destructor():
+    destructor = CompositeDestructor(
+        destructors=[
+            LinearProjector(
+                # Since n_components=1, a Householder matrix will be used
+                linear_estimator=RandomOrthogonalEstimator(n_components=1),
+                orthogonal=False,
+            ),
+            IndependentDestructor(),
+        ],
+    )
+    assert check_destructor(destructor, is_canonical=False)
 
 
 def test_pca_destructor():
