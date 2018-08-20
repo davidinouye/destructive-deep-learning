@@ -304,6 +304,7 @@ class _GaussianMixtureMixin(object):
 
         """
         super(_GaussianMixtureMixin, self).fit(X, y)
+        X = self._check_X(X)
         self.n_features_ = X.shape[1]
         return self
 

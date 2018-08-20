@@ -109,6 +109,12 @@ jobs:
             make test
 
       - run:
+          name: Run autoregressive mixture test (slow)
+          command: |
+            . venv/bin/activate
+            make test/mixture
+
+      - run:
           name: Run ICML MNIST experiment test
           command: |
             . venv/bin/activate

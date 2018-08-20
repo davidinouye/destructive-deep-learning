@@ -12,9 +12,11 @@ test:
 	isort --recursive --check-only
 	flake8
 	-pydocstyle $(PYDOCSTYLE_FLAGS) $(PYDOCSTYLE_FILES)
-	pytest $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
+	pytest --ignore=ddl/tests/test_mixture.py $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py
 pydocstyle:
 	pydocstyle $(PYDOCSTYLE_FLAGS) $(PYDOCSTYLE_FILES)
+test/mixture:
+	pytest --cov-append $(PYTEST_FLAGS) ddl/tests/test_mixture.py
 test/mlpack:
 	pytest -k test_mlpack $(PYTEST_FLAGS) ddl
 test/other:
@@ -27,7 +29,7 @@ test/experiments/mnist:
 codecov:
 	codecov
 test/special:
-	echo -e "from ddl.tests.test_all import *\ntest_adversarial_tree_destructor()" | python
+	echo -e "from ddl.tests.test_destructors import *\ntest_autoregressive_mixture_destructor()" | python
 data/mnist: scripts/maf_data.py
 	python scripts/maf_data.py mnist
 data/cifar10: scripts/maf_data.py
