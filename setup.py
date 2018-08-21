@@ -59,7 +59,7 @@ if __name__ == '__main__':
     metadata = dict(
         name='ddl',
         packages=['ddl'],
-        version='0.0.1',
+        version='0.0.2',
         description='Destructive deep learning estimators and functions. Estimators are compatible '
                     'with scikit-learn.',
         url='https://github.com/davidinouye/destructive-deep-learning',
