@@ -47,3 +47,7 @@ add-blank-line-docstrings:
 profile:
 	#pprofile --exclude /Users/dinouye/ --exclude "<frozen" --exclude "<string" --include /Users/dinouye/research/destructive-deep-learning/ddl -o profile.out test_mixture.py
 	pprofile -o profile.out test_mixture.py
+push/release:
+	git push -u public public_release:release
+push/master:
+	git push -u public public_master:master
