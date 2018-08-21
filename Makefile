@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
 PYTEST_FLAGS=--cov=ddl --maxfail=1 --ignore=ddl/externals/mlpack/mlpack-mlpack-3.0.2/ --doctest-modules --pyargs
 PYDOCSTYLE_FILES=ddl
-PYDOCSTYLE_FLAGS=--add-ignore D103,D102,D107
+PYDOCSTYLE_FLAGS=--add-ignore D107
 
 all:
 	python setup.py build_ext --inplace
