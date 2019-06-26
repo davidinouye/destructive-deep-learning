@@ -245,6 +245,7 @@ def _get_copula_destructor(hist_kwargs=None):
             BestLinearReconstructionDestructor(
                 linear_estimator=PCA(),
                 destructor=IndependentDestructor(),
+                linear_projector_kwargs=dict(fit_bias=False),
             )
         ],
         random_state=0,

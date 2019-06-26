@@ -125,9 +125,9 @@ class GaussianDensity(BaseEstimator, ScoreMixin):
                 self.covariance_ = np.cov(X, rowvar=False).reshape((n_features, n_features))
             self.covariance_.flat[::len(self.covariance_) + 1] += self.reg_covar
         elif self.covariance_type == 'diag':
-            self.covariance_ = np.var(X, axis=0)
+            self.covariance_ = np.var(X, axis=0) + self.reg_covar
         elif self.covariance_type == 'spherical':
-            self.covariance_ = np.var(X)
+            self.covariance_ = np.var(X) + self.reg_covar
         else:
             raise ValueError('covariance_type of %s not recognized' % str(self.covariance_type))
 

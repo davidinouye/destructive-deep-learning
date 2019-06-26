@@ -13,7 +13,24 @@ adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__.
 Added
 ^^^^^
 
-- Placeholder.
+- Added ``create_fitted`` class method to many densities and destructors to make manual creation
+  of fitted estimators simpler and more uniform.
+- Added ``ddl.base.create_inverse_transformer`` to create inverse transformations that may not be
+  destructors (e.g., an inverse of a ``ddl.linear.LinearProjector``).
+- Added bias/shift term to ``ddl.linear.LinearProjector``
+
+Changed
+^^^^^^^
+
+- Fixed bug in ``ddl.univariate.HistogramUnivariateDensity`` when bin widths were not uniform.
+  Scipy histogram do not normalize for bin widths so that is needed before calling Scipy histogram.
+- Updated implementation of ``ddl.base.create_implicit_destructor`` 
+  and ``ddl.base.create_inverse_canonical_destructor``
+- Renamed ``ddl.base.get_implicit_density`` to ``ddl.base.create_implicit_destructor``
+  and renamed ``ddl.base.get_inverse_canonical_destructor`` to 
+  ``ddl.base.create_inverse_canonical_destructor``
+  (with previous names kept for backwards compatability but will issue a ``DeprecationWarning``).
+- Fixed various small bugs.
 
 
 [0.0.2] - 2018-08-21

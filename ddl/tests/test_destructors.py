@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.utils import check_random_state
 
 from ddl.autoregressive import AutoregressiveDestructor
-from ddl.base import CompositeDestructor, IdentityDestructor, get_inverse_canonical_destructor
+from ddl.base import CompositeDestructor, IdentityDestructor, create_inverse_canonical_destructor
 from ddl.deep import DeepDestructor, DeepDestructorCV
 from ddl.gaussian import GaussianDensity
 from ddl.independent import IndependentDensity, IndependentDestructor
@@ -19,14 +19,14 @@ from ddl.validation import check_destructor
 def test_inverse_canonical_destructor():
     rng = check_random_state(0)
     fitted_canonical_destructor = IdentityDestructor().fit(rng.rand(10, 2))
-    destructor = get_inverse_canonical_destructor(fitted_canonical_destructor)
+    destructor = create_inverse_canonical_destructor(fitted_canonical_destructor)
     assert check_destructor(destructor)
 
     # Alpha must be high to pass the identity test
-    fitted_canonical_destructor = get_inverse_canonical_destructor(
+    fitted_canonical_destructor = create_inverse_canonical_destructor(
         TreeDestructor(TreeDensity(uniform_weight=0.99)).fit(rng.rand(10, 2))
     )
-    destructor = get_inverse_canonical_destructor(fitted_canonical_destructor)
+    destructor = create_inverse_canonical_destructor(fitted_canonical_destructor)
     assert check_destructor(destructor)
 
     # Alpha must be high to pass the identity test
@@ -35,7 +35,7 @@ def test_inverse_canonical_destructor():
             univariate_estimators=HistogramUnivariateDensity(bins=10, alpha=1000, bounds=[0, 1])
         )
     ).fit(rng.rand(10, 2))
-    destructor = get_inverse_canonical_destructor(fitted_canonical_destructor)
+    destructor = create_inverse_canonical_destructor(fitted_canonical_destructor)
     assert check_destructor(destructor)
 
 

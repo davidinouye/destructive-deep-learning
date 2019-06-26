@@ -4,6 +4,7 @@ from __future__ import division, print_function
 import logging
 import warnings
 from abc import abstractmethod
+from builtins import super
 from copy import deepcopy
 from functools import wraps
 
@@ -14,7 +15,8 @@ from sklearn.utils import check_array, check_random_state
 from sklearn.utils.validation import check_is_fitted
 
 # noinspection PyProtectedMember
-from .utils import _UNIT_SPACE, check_X_in_interval, get_domain_or_default, get_support_or_default
+from .utils import (_INF_SPACE, _UNIT_SPACE, check_X_in_interval, get_domain_or_default,
+                    get_support_or_default)
 
 logger = logging.getLogger(__name__)
 
@@ -322,6 +324,12 @@ class IdentityDestructor(BaseDensityDestructor):
 
     """
 
+    @classmethod
+    def create_fitted(cls, n_features):
+        destructor = cls()
+        destructor.density_ = UniformDensity.create_fitted(n_features)
+        return destructor
+
     def _get_density_estimator(self):
         """Get the *unfitted* density associated with this destructor.
 
@@ -448,6 +456,12 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         self.n_features_ = X.shape[1]
         return self
 
+    @classmethod
+    def create_fitted(cls, n_features):
+        density = cls()
+        density.n_features_ = n_features
+        return density
+
     def sample(self, n_samples=1, random_state=None):
         """Generate random samples from this density/destructor.
 
@@ -515,8 +529,8 @@ class UniformDensity(BaseEstimator, ScoreMixin):
         check_is_fitted(self, ['n_features_'])
 
 
-def get_implicit_density(fitted_destructor, copy=False):
-    """Return the implicit density associated with a fitted destructor.
+def create_implicit_density(fitted_destructor, copy=False):
+    """Create the implicit density associated with a fitted destructor.
 
     Extracting the *implicit* density associated with an already-fitted
     destructor must be handled carefully to enable proper ``sklearn``
@@ -541,11 +555,45 @@ def get_implicit_density(fitted_destructor, copy=False):
     """
     return _ImplicitDensity(
         destructor=fitted_destructor
-    ).fit(None, y=None, copy=copy, destructor_already_fitted=True)
+    ).fit(None, y=None, copy=copy, transformer_already_fitted=True)
 
 
-def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
-    """Return the inverse destructor of a fitted *canonical* destructor.
+def get_implicit_density(*args, **kwargs):
+    warnings.warn(DeprecationWarning(
+        'Should use `create_implicit_density` instead'
+    ))
+    return create_implicit_density(*args, **kwargs)
+
+
+def create_inverse_transformer(fitted_transformer, copy=False):
+    """Create inverse transformer from fitted transformer.
+
+    Note that only a canonical transformer has an inverse which is also a
+    transformer. See ``get_inverse_canonical_transformer``.
+
+    Parameters
+    ----------
+    fitted_transformer : estimator
+        A fitted transformer from which to construct the implicit
+        inverse transformer.
+
+    copy : bool
+        If ``copy=True``, the new transformer will create a deep copy of the
+        fitted transformer rather than just copying a reference to it.
+
+
+    Returns
+    -------
+    transformer : _InverseDestructor
+
+    """
+    return _InverseTransformer(
+        transformer=fitted_transformer
+    ).fit(None, y=None, copy=copy, transformer_already_fitted=True)
+
+
+def create_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
+    """Create inverse destructor of a fitted *canonical* destructor.
 
     Note that only a canonical destructor has an inverse which is also a
     destructor.
@@ -573,26 +621,29 @@ def get_inverse_canonical_destructor(fitted_canonical_destructor, copy=False):
 
     """
     return _InverseCanonicalDestructor(
-        canonical_destructor=fitted_canonical_destructor
-    ).fit(None, y=None, copy=copy, destructor_already_fitted=True)
+        transformer=fitted_canonical_destructor, output_space=_UNIT_SPACE
+    ).fit(None, y=None, copy=copy, transformer_already_fitted=True)
 
 
-class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
-    """An inverse canonical destructor which is also a destructor.
+def get_inverse_canonical_destructor(*args, **kwargs):
+    warnings.warn(DeprecationWarning(
+        'Should use `create_inverse_canonical_destructor` instead'
+    ))
+    return create_inverse_canonical_destructor(*args, **kwargs)
 
-    There is a slight technical condition that the canonical destructor
-    must uniquely map every point of the unit hypercube (or similarly
-    that the associated density has support everywhere in the hypercube).
-    """
 
-    def __init__(self, canonical_destructor=None):
-        self.canonical_destructor = canonical_destructor
+class _InverseTransformer(BaseEstimator, ScoreMixin, TransformerMixin):
+    """An inverse of a transformer (might not be transformer)."""
 
-    def _get_destructor(self):
-        check_is_fitted(self, ['fitted_canonical_destructor_'])
-        return self.fitted_canonical_destructor_
+    def __init__(self, transformer=None, output_space=None):
+        self.transformer = transformer
+        self.output_space = output_space
 
-    def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
+    def _get_transformer(self):
+        check_is_fitted(self, ['fitted_transformer_'])
+        return self.fitted_transformer_
+
+    def fit(self, X, y=None, copy=False, transformer_already_fitted=False):
         """[Placeholder].
 
         Parameters
@@ -600,39 +651,27 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
         X :
         y :
         copy :
-        destructor_already_fitted :
+        transformer_already_fitted :
 
         Returns
         -------
         obj : object
 
         """
-        if destructor_already_fitted:
-            self.fitted_canonical_destructor_ = self.canonical_destructor
+        if transformer_already_fitted:
+            self.fitted_transformer_ = self.transformer
             if copy:
-                self.fitted_canonical_destructor_ = deepcopy(self.fitted_canonical_destructor_)
+                self.fitted_transformer_ = deepcopy(self.fitted_transformer_)
         else:
-            self.fitted_canonical_destructor_ = clone(self.canonical_destructor).fit(X, y)
+            self.fitted_transformer_ = clone(self.transformer).fit(X, y)
 
-        self.n_features_ = get_n_features(self.fitted_canonical_destructor_)
-        self.density_ = get_implicit_density(
-            self, copy=False)  # Copy has already occurred above if needed
+        if self.output_space is not None:
+            self.domain_ = self.output_space
+        else:
+            self.domain_ = _INF_SPACE
+
+        self.n_features_ = get_n_features(self.fitted_transformer_)
         return self
-
-    def get_domain(self):
-        """Get the domain of this destructor.
-
-        Returns
-        -------
-        domain : array-like, shape (2,) or shape (n_features, 2)
-            If shape is (2, ), then ``domain[0]`` is the minimum and
-            ``domain[1]`` is the maximum for all features. If shape is
-            (`n_features`, 2), then each feature's domain (which could
-            be different for each feature) is given similar to the first
-            case.
-
-        """
-        return _UNIT_SPACE
 
     def transform(self, X, y=None):
         """Apply destructive transformation to X.
@@ -652,7 +691,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
             Transformed data.
 
         """
-        return self._get_destructor().inverse_transform(X, y)
+        return self._get_transformer().inverse_transform(X, y)
 
     def inverse_transform(self, X, y=None):
         """Apply inverse destructive transformation to X.
@@ -672,7 +711,7 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
             Transformed data.
 
         """
-        return self._get_destructor().transform(X, y)
+        return self._get_transformer().transform(X, y)
 
     def score_samples(self, X, y=None):
         """Compute log-likelihood (or log(det(Jacobian))) for each sample.
@@ -692,8 +731,58 @@ class _InverseCanonicalDestructor(BaseEstimator, DestructorMixin):
             Log likelihood of each data point in X.
 
         """
-        d = self._get_destructor()
+        d = self._get_transformer()
         return -d.score_samples(d.inverse_transform(X, y))
+
+    def get_domain(self):
+        """Get the domain of this destructor.
+
+        Returns
+        -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
+
+        """
+        if hasattr(self, 'domain_'):
+            return self.domain_
+        else:
+            return _INF_SPACE
+
+
+class _InverseCanonicalDestructor(_InverseTransformer, DestructorMixin):
+    """An inverse canonical destructor, which is also a destructor.
+
+    There is a slight technical condition that the canonical destructor
+    must uniquely map every point of the unit hypercube (or similarly
+    that the associated density has support everywhere in the hypercube).
+
+    """
+
+    def fit(self, X, y=None, **kwargs):
+        super().fit(X, y=y, **kwargs)
+        self.density_ = create_implicit_density(
+            self, copy=False)  # Copy has already occurred above if needed
+        self.domain_ = _UNIT_SPACE
+        return self
+
+    def get_domain(self):
+        """Get the domain of this destructor.
+
+        Returns
+        -------
+        domain : array-like, shape (2,) or shape (n_features, 2)
+            If shape is (2, ), then ``domain[0]`` is the minimum and
+            ``domain[1]`` is the maximum for all features. If shape is
+            (`n_features`, 2), then each feature's domain (which could
+            be different for each feature) is given similar to the first
+            case.
+
+        """
+        return _UNIT_SPACE
 
 
 class _ImplicitDensity(BaseEstimator, ScoreMixin):
@@ -706,7 +795,7 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         check_is_fitted(self, ['fitted_destructor_'])
         return self.fitted_destructor_
 
-    def fit(self, X, y=None, copy=False, destructor_already_fitted=False):
+    def fit(self, X, y=None, copy=False, transformer_already_fitted=False):
         """[Placeholder].
 
         Parameters
@@ -714,14 +803,14 @@ class _ImplicitDensity(BaseEstimator, ScoreMixin):
         X :
         y :
         copy :
-        destructor_already_fitted :
+        transformer_already_fitted :
 
         Returns
         -------
         obj : object
 
         """
-        if destructor_already_fitted:
+        if transformer_already_fitted:
             self.fitted_destructor_ = self.destructor
             if copy:
                 self.fitted_destructor_ = deepcopy(self.fitted_destructor_)
@@ -928,14 +1017,39 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
                 raise RuntimeError('Need to check')
 
         self.fitted_destructors_ = np.array(destructors)
-        self.density_ = get_implicit_density(self)
+        self.density_ = create_implicit_density(self)
         return Z
+
+    @classmethod
+    def create_fitted(cls, fitted_destructors, **kwargs):
+        """Create fitted destructor.
+
+        Parameters
+        ----------
+        fitted_destructors : array-like of Destructor
+            Fitted destructors.
+
+        **kwargs
+            Other parameters to pass to constructor.
+
+        Returns
+        -------
+        fitted_transformer : Transformer
+            Fitted transformer.
+
+        """
+        destructor = cls(**kwargs)
+        destructor.fitted_destructors_ = np.array(fitted_destructors)
+        destructor.density_ = create_implicit_density(destructor)
+        return destructor
 
     def _single_fit_transform(self, d, Z, y):
         if y is not None:
-            warnings.warn('y is not None but this is not an adversarial composite/deep destructor. '
-                          'Did you mean to use an adversarial version of this destructor?')
-        return d.fit_transform(Z, y)
+            pass
+            # warnings.warn('y is not None but this is not an adversarial composite/deep'
+            #               'destructor. '
+            #               'Did you mean to use an adversarial version of this destructor?')
+        return d.fit(Z, y).transform(Z, y)
 
     def transform(self, X, y=None, partial_idx=None):
         """Apply destructive transformation to X.
@@ -1001,7 +1115,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
             Z = d.inverse_transform(Z, y)
         return Z
 
-    def sample(self, n_samples=1, random_state=None):
+    def sample(self, n_samples=1, y=None, random_state=None):
         """Sample from composite destructor.
 
         Nearly the same as ``DestructorMixin.sample`` but the number of
@@ -1011,7 +1125,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         rng = check_random_state(random_state)
         n_features = get_n_features(self.fitted_destructors_[-1])
         U = rng.rand(n_samples, n_features)
-        X = self.inverse_transform(U)
+        X = self.inverse_transform(U, y)
         return X
 
     def score_samples(self, X, y=None, partial_idx=None):
@@ -1060,7 +1174,7 @@ class CompositeDestructor(BaseEstimator, DestructorMixin):
         fitted_destructors = self._get_partial_destructors(partial_idx)
         log_likelihood_layers = np.zeros((X.shape[0], len(fitted_destructors)))
         for i, d in enumerate(fitted_destructors):
-            log_likelihood_layers[:, i] = d.score_samples(X)
+            log_likelihood_layers[:, i] = d.score_samples(X, y)
             # Don't transform for the last destructor
             if i < len(fitted_destructors) - 1:
                 X = d.transform(X, y)

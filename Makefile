@@ -9,7 +9,7 @@ cleanmlpack:
 	rm -rf ddl/externals/mlpack/mlpack-mlpack-3.0.2
 	rm ddl/externals/mlpack/mlpack-3.0.2.tar.gz
 test:
-	isort --recursive --check-only
+	isort --recursive --diff --check-only
 	flake8
 	-pydocstyle $(PYDOCSTYLE_FLAGS) $(PYDOCSTYLE_FILES)
 	pytest --ignore=ddl/tests/test_mixture.py $(PYTEST_FLAGS) ddl scripts/test_toy_experiment.py

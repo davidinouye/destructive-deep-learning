@@ -29,11 +29,11 @@ def _check_univariate_X(X, support, inverse=False):
     if X.shape[1] > 1:
         warnings.warn(DataConversionWarning(
             'Input should be column vector with shape (n, 1) but found matrix. Converting to '
-            'column vector via `array.ravel().reshape((-1, 1))`. '
+            'column vector via `np.mean(X, axis=1).reshape((-1, 1))`. '
             'Ideally, this would raise an error but in order to pass the checks in '
             '`sklearn.utils.check_estimator`, we convert the data rather than raise an error. '
         ))
-        X = np.ravel(X).reshape((-1, 1))
+        X = np.mean(X, axis=1).reshape((-1, 1))
 
     # Check that values are within support or range(inverse)
     if inverse:
@@ -109,9 +109,10 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
         """
         def _check_scipy_kwargs(kwargs, _scipy_rv):
             if kwargs is None:
-                if self._is_special(SCIPY_RV_UNIT_SUPPORT):
+                if self._is_special(_scipy_rv, SCIPY_RV_UNIT_SUPPORT):
                     return dict(floc=0, fscale=1)
-                elif self._is_special(SCIPY_RV_NON_NEGATIVE + SCIPY_RV_STRICLTY_POSITIVE):
+                elif self._is_special(_scipy_rv,
+                                      SCIPY_RV_NON_NEGATIVE + SCIPY_RV_STRICLTY_POSITIVE):
                     return dict(floc=0)
                 else:
                     return {}
@@ -134,8 +135,8 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
             except RuntimeError as e:
                 warnings.warn('Unable to fit to data using scipy_rv so attempting to use default '
                               'parameters for the distribution. Original error:\n%s' % str(e))
-                params = self._get_default_params()
-            except ValueError as e:
+                params = self._get_default_params(scipy_rv)
+            except ValueError:
                 # warnings.warn(
                 #     'Trying to use fixed parameters instead. Original error:\n%s' % str(e))
                 # try to extract fixed parameters in a certain order
@@ -161,22 +162,64 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
         # Check for a fit error in the domain of the parameters
         try:
             self.rv_.rvs(1)
-        except ValueError as e:
+        except ValueError:
             warnings.warn('Parameters discovered by fit are not in the domain of the '
                           'parameters so attempting to use default parameters for the '
                           'distribution.')
-            self.rv_ = scipy_rv(*self._get_default_params())
+            self.rv_ = scipy_rv(*self._get_default_params(scipy_rv))
         return self
 
-    def _get_default_params(self):
-        if self._is_special(['beta']):
+    @classmethod
+    def create_fitted(cls, scipy_rv_params=None, **kwargs):
+        """Create fitted density.
+
+        Parameters
+        ----------
+        scipy_rv : object or None, default=None
+            Default random variable is a Gaussian (i.e.
+            :class:`scipy.stats.norm`) if `scipy_rv=None`. Other examples include
+            :class:`scipy.stats.gamma` or :class:`scipy.stats.beta`.
+
+        scipy_rv_params : dict, optional
+            Parameters to pass to scipy_rv when creating frozen random variable.
+            Default parameters have been set for various distributions.
+
+        **kwargs
+            Other parameters to pass to object constructor.
+
+        Returns
+        -------
+        fitted_density : Density
+            Fitted density.
+
+        """
+        density = cls(**kwargs)
+
+        # Get default if scipy_rv=None
+        scipy_rv = density._get_scipy_rv_or_default()
+        # Fit scipy random variable
+        if scipy_rv_params is None:
+            try:
+                params = cls._get_default_params(scipy_rv)
+            except NotImplementedError:
+                params = []
+            rv = scipy_rv(*params)
+        else:
+            rv = scipy_rv(**scipy_rv_params)
+
+        density.rv_ = rv
+        return density
+
+    @classmethod
+    def _get_default_params(cls, scipy_rv):
+        if cls._is_special(scipy_rv, ['beta']):
             return [1, 1]
-        elif self._is_special(['uniform', 'norm', 'expon', 'lognorm']):
+        elif cls._is_special(scipy_rv, ['uniform', 'norm', 'expon', 'lognorm']):
             return []  # Empty since no parameters needed
         else:
             raise NotImplementedError('The distribution given by the `scipy_rv = %s` does not '
                                       'have any associated default parameters.'
-                                      % str(self._get_scipy_rv_or_default()))
+                                      % str(scipy_rv))
 
     def sample(self, n_samples=1, random_state=None):
         """Generate random samples from this density/destructor.
@@ -301,6 +344,7 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
     def _check_X(self, X, inverse=False):
         # Check that X is univariate or warn otherwise
         X = _check_univariate_X(X, self.get_support(), inverse=inverse)
+        scipy_rv = self._get_scipy_rv_or_default()
 
         # Move away from support/domain boundaries if necessary
         if inverse and (np.any(X <= 0) or np.any(X >= 1)):
@@ -309,13 +353,13 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
                 'values away from 0 or 1 to avoid infinities in output.  For example, the inverse '
                 'cdf of a Gaussian at 0 will yield `-np.inf`.'))
             X = make_interior_probability(X)
-        if self._is_special(SCIPY_RV_UNIT_SUPPORT) and (np.any(X <= 0) or np.any(X >= 1)):
+        if self._is_special(scipy_rv, SCIPY_RV_UNIT_SUPPORT) and (np.any(X <= 0) or np.any(X >= 1)):
             warnings.warn(BoundaryWarning(
                 'Input to random variable function has at least one value either 0 or 1 '
                 'but all input should be in (0,1) exclusive. Bounding values away from 0 or 1 by '
                 'eps=%g'))
             X = make_interior_probability(X)
-        if self._is_special(SCIPY_RV_STRICLTY_POSITIVE) and np.any(X <= 0):
+        if self._is_special(scipy_rv, SCIPY_RV_STRICLTY_POSITIVE) and np.any(X <= 0):
             warnings.warn(BoundaryWarning(
                 'Input to random variable function has at least one value less than or equal to '
                 'zero but all input should be strictly positive. Making all input greater than or '
@@ -338,8 +382,8 @@ class ScipyUnivariateDensity(BaseEstimator, ScoreMixin):
     def _get_default_scipy_rv():
         return scipy.stats.norm
 
-    def _is_special(self, scipy_str_set):
-        scipy_rv = self._get_scipy_rv_or_default()
+    @staticmethod
+    def _is_special(scipy_rv, scipy_str_set):
         # Modify string set for special case of rv_histogram
         scipy_str_set = [
             '.' + dstr + '_gen' if dstr != 'rv_histogram' else '.' + dstr
@@ -473,6 +517,9 @@ class HistogramUnivariateDensity(ScipyUnivariateDensity):
                              'but not both.')
         if histogram_params is not None:
             hist, bin_edges = histogram_params
+            warnings.warn(DeprecationWarning('Class factory method `create_fitted` should '
+                                             'be used instead of passing histogram_params '
+                                             'to fit.'))
         else:
             X = self._check_X(X)
             # Get percent extension but do not modify bounds
@@ -484,8 +531,42 @@ class HistogramUnivariateDensity(ScipyUnivariateDensity):
             hist = np.array(hist, dtype=float)  # Make float so we can add non-integer alpha
             hist += self.alpha  # Smooth histogram by alpha so no areas have 0 probability
 
-        self.rv_ = scipy.stats.rv_histogram((hist, bin_edges))
+        # Normalize bins by bin_edges
+        rv = self._hist_params_to_rv(hist, bin_edges)
+        self.rv_ = rv
         return self
+
+    @staticmethod
+    def _hist_params_to_rv(hist, bin_edges):
+        hist = np.array(hist)
+        bin_edges = np.array(bin_edges)
+        hist = hist / (bin_edges[1:] - bin_edges[:-1])
+        rv = scipy.stats.rv_histogram((hist, bin_edges))
+        return rv
+
+    @classmethod
+    def create_fitted(cls, hist, bin_edges, **kwargs):
+        """Create fitted density.
+
+        Parameters
+        ----------
+        hist : counts
+        fitted_univariate_densities : array-like of Density, shape (n_features,)
+            Fitted univariate densities.
+
+        **kwargs
+            Other parameters to pass to object constructor.
+
+        Returns
+        -------
+        fitted_density : Density
+            Fitted density.
+
+        """
+        density = cls(**kwargs)
+        rv = cls._hist_params_to_rv(hist, bin_edges)
+        density.rv_ = rv
+        return density
 
     def get_support(self):
         """Get the support of this density (i.e. the positive density region).

@@ -137,7 +137,7 @@ def check_X_in_interval(X, interval):
         shifting/scaling data as necessary to fit within specified interval.
 
     """
-    msg_suffix = ('Thus, the original values will be shifted and scaled to the given domain: '
+    msg_suffix = ('Thus, the original values will be clipped to the given domain: '
                   '%s.\n(Ideally, this would be an exception instead of a warning but the '
                   'current implementation of `sklearn.utils.check_estimator` (sklearn version '
                   '0.19.1) will fail if an exception is raised while calling fit, transform, '
@@ -165,13 +165,8 @@ def check_X_in_interval(X, interval):
             if not copied:
                 X = X.copy()
                 copied = True
-            if high == low:  # Constant values
-                # Use halfway between high and low of domain
-                X[:, i] = (high_domain+low_domain)/2.0
-            else:
-                # Scale and shift as necessary into the proper domain
-                u = (X[:, i] - low)/(high-low)
-                X[:, i] = (high_domain - low_domain)*u + low_domain
+            # Clip to high and low domain values
+            X[:, i] = np.minimum(high, np.maximum(low, X[:, i]))
     return X
 
 

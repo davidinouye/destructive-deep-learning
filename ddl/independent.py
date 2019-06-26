@@ -3,6 +3,7 @@ from __future__ import division, print_function
 
 import itertools
 import logging
+import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -69,6 +70,28 @@ class IndependentDestructor(BaseDensityDestructor):
             return IndependentDensity()
         else:
             return clone(self.independent_density)
+
+    @classmethod
+    def create_fitted(cls, fitted_density, **kwargs):
+        """Create fitted density destructor.
+
+        Parameters
+        ----------
+        fitted_density : Density
+            Fitted density.
+
+        **kwargs
+            Other parameters to pass to Destructor constructor.
+
+        Returns
+        -------
+        fitted_transformer : Transformer
+            Fitted transformer.
+
+        """
+        destructor = cls(**kwargs)
+        destructor.density_ = fitted_density
+        return destructor
 
     def transform(self, X, y=None):
         """Apply destructive transformation to X.
@@ -229,6 +252,43 @@ class IndependentDensity(BaseEstimator, ScoreMixin):
         ])
         self.n_features_ = len(self.univariate_densities_)
         return self
+
+    @classmethod
+    def create_fitted(cls, fitted_univariate_densities, n_features=None, **kwargs):
+        """Create fitted density.
+
+        Parameters
+        ----------
+        fitted_univariate_densities : array-like of Density or Density, shape (n_features,)
+            Fitted univariate densities. If a single fitted density then `n_features`
+            parameter must be provided to appropriately expand to an array.
+
+        n_features : int, optional
+            Number of features. If not supplied, will be inferred from
+            `fitted_univariate_densities`.
+
+        **kwargs
+            Other parameters to pass to object constructor.
+
+        Returns
+        -------
+        fitted_density : Density
+            Fitted density.
+
+        """
+        if len(np.array(fitted_univariate_densities).shape) == 0:
+            if n_features is None:
+                raise ValueError('Must supply either array-like of fitted_univariate_densities '
+                                 'or a single fitted and n_features')
+            fitted_univariate_densities = [fitted_univariate_densities
+                                           for _ in range(n_features)]
+        elif n_features is not None:
+            assert len(fitted_univariate_densities) == n_features
+
+        density = cls(**kwargs)
+        density.univariate_densities_ = np.array(fitted_univariate_densities)
+        density.n_features_ = len(fitted_univariate_densities)
+        return density
 
     def sample(self, n_samples=1, random_state=None):
         """Generate random samples from this density/destructor.
@@ -457,12 +517,37 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
             Returns the instance itself.
 
         """
+        warnings.warn(DeprecationWarning('Class factory method `create_fitted` '
+                                         'should be used instead.'))
         X = check_array(X)
 
         # Mainly just get default and make array of densities if needed
         dens_arr = self._get_densities_or_default(fitted_densities, X.shape[1])
         self.fitted_densities_ = dens_arr
         return self
+
+    @classmethod
+    def create_fitted(cls, n_features, fitted_densities=None, **kwargs):
+        """Create fitted transformer.
+
+        Parameters
+        ----------
+        fitted_density : Density
+            Fitted density.
+
+        **kwargs
+            Other parameters to pass to constructor.
+
+        Returns
+        -------
+        fitted_transformer : Transformer
+            Fitted transformer.
+
+        """
+        destructor = cls(**kwargs)
+        dens_arr = cls._get_densities_or_default(fitted_densities, n_features)
+        destructor.fitted_densities_ = dens_arr
+        return destructor
 
     def score_samples(self, X, y=None):
         """Compute log-likelihood (or log(det(Jacobian))) for each sample.
@@ -588,7 +673,8 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
             for d in self.fitted_densities_
         ])
 
-    def _get_densities_or_default(self, fitted_densities, n_features):
+    @staticmethod
+    def _get_densities_or_default(fitted_densities, n_features):
         if fitted_densities is None:
             return np.array([STANDARD_NORMAL_DENSITY for _ in range(n_features)])
         elif len(np.array(fitted_densities).shape) == 0:

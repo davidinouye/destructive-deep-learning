@@ -9,11 +9,11 @@ from itertools import cycle, islice
 import numpy as np
 from sklearn.base import clone
 from sklearn.model_selection import check_cv
-from sklearn.utils.validation import check_array
+from sklearn.utils.validation import check_array, check_X_y
 
 # noinspection PyProtectedMember
 from .base import (CompositeDestructor, IdentityDestructor, _check_global_random_state,
-                   get_implicit_density)
+                   create_implicit_density)
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ class DeepDestructorCV(DeepDestructor):
         increase likelihood. If `n_extend` is 1, then the optimization will
         stop as soon as the test log likelihood decreases.
 
-    refit : bool, default=False
+    refit : bool, default=True
         Whether to refit the entire deep destructor with the selected number
         of layers or just extract the fit from the first fold.
 
@@ -225,7 +225,7 @@ class DeepDestructorCV(DeepDestructor):
         self.random_state = random_state
 
     @_check_global_random_state
-    def fit(self, X, y=None, X_test=None, **fit_params):
+    def fit(self, X, y=None, X_test=None, first_score_zero=False, **fit_params):
         """[Placeholder].
 
         Parameters
@@ -234,6 +234,9 @@ class DeepDestructorCV(DeepDestructor):
         y :
         X_test :
         fit_params :
+        first_score_zero : bool
+            Hack so that init destructor is not taken into account for
+            determining when to stop for classifier destructors.
 
         Returns
         -------
@@ -243,7 +246,10 @@ class DeepDestructorCV(DeepDestructor):
         # Setup parameters
         if self.n_extend < 1:
             raise ValueError('n_extend should be greater than or equal to 1')
-        X = check_array(X)
+        if y is not None:
+            X, y = check_X_y(X, y)
+        else:
+            X = check_array(X)
         cv = check_cv(self.cv)
         splits = list(cv.split(X))
 
@@ -251,7 +257,8 @@ class DeepDestructorCV(DeepDestructor):
         cv_destructors_arr = [[] for _ in splits]
         scores_arr = [[] for _ in splits]
         cv_destructors_arr, scores_arr, splits = self._fit_cv_destructors(
-            X, cv_destructors_arr, scores_arr, splits, X_test=X_test)
+            X, y, cv_destructors_arr, scores_arr, splits, X_test=X_test,
+            first_score_zero=first_score_zero)
 
         # Add layers as needed up to max # of layers of all splits
         if not self.silent:
@@ -259,8 +266,9 @@ class DeepDestructorCV(DeepDestructor):
         best_n_layers_over_folds = np.max([
             len(cv_destructors) for cv_destructors in cv_destructors_arr])
         cv_destructors_arr, scores_arr, splits = self._fit_cv_destructors(
-            X, cv_destructors_arr, scores_arr, splits, X_test=X_test,
-            selected_n_layers=best_n_layers_over_folds)
+            X, y, cv_destructors_arr, scores_arr, splits, X_test=X_test,
+            selected_n_layers=best_n_layers_over_folds,
+            first_score_zero=first_score_zero)
 
         # Determine best number of layers
         scores_mat = np.array(scores_arr)
@@ -279,9 +287,11 @@ class DeepDestructorCV(DeepDestructor):
             destructors = []
             Z = X.copy()
             for i, d in enumerate(islice(iter(self._get_destructor_iterable()), best_n_layers)):
-                d.fit(Z)
-                score = d.score(Z)
-                Z = d.transform(Z)
+                d.fit(Z, y)
+                score = d.score(Z, y)
+                if first_score_zero:
+                    score = 0
+                Z = d.transform(Z, y)
                 destructors.append(d)
                 if not self.silent:
                     logger.debug(self.log_prefix + '(Final fit layer=%d) local layer score=%g'
@@ -294,7 +304,7 @@ class DeepDestructorCV(DeepDestructor):
             destructors = np.array(cv_destructors_arr[0])[:best_n_layers]
 
         self.fitted_destructors_ = np.array(destructors)
-        self.density_ = get_implicit_density(self)
+        self.density_ = create_implicit_density(self)
         self.cv_train_scores_ = scores_mat[:, :, 0].transpose()
         self.cv_test_scores_ = scores_mat[:, :, 1].transpose()
         self.best_n_layers_ = best_n_layers
@@ -324,14 +334,20 @@ class DeepDestructorCV(DeepDestructor):
         self.fit(X, y, **fit_params)
         return self.transform(X, y)
 
-    def _fit_cv_destructors(self, X, cv_destructors_arr, scores_arr, splits, X_test=None,
-                            selected_n_layers=None):
+    def _fit_cv_destructors(self, X, y, cv_destructors_arr, scores_arr, splits, X_test=None,
+                            y_test=None, selected_n_layers=None, first_score_zero=False):
         compute_test = X_test is not None
         for i, (cv_destructors, scores, (train, validation)) in enumerate(
                 zip(cv_destructors_arr, scores_arr, splits)):
-
             Z_train = X[train, :].copy()
             Z_validation = X[validation, :].copy()
+            if y is not None:
+                y_train = y[train]
+                y_validation = y[validation]
+            else:
+                y_train = None
+                y_validation = None
+
             if compute_test:
                 Z_test = X_test.copy()
             else:
@@ -351,26 +367,31 @@ class DeepDestructorCV(DeepDestructor):
                 # Pop off destructors that were already fit from the destructor iterator
                 _consume(destructor_iterator, len(cv_destructors))
                 for d in cv_destructors:
-                    Z_train = d.transform(Z_train)
-                    Z_validation = d.transform(Z_validation)
+                    Z_train = d.transform(Z_train, y_train)
+                    Z_validation = d.transform(Z_validation, y_validation)
                     if compute_test:
-                        Z_test = d.transform(Z_test)
+                        Z_test = d.transform(Z_test, y_test)
 
             stop = False
             cum_test_score = 0
             while not stop:  # Add layers until all are ready to stop
                 # Fit only on training data
                 destructor = next(destructor_iterator)
-                destructor.fit(Z_train)
+                destructor.fit(Z_train, y_train)
 
                 # Score and then transform data
-                train_score = destructor.score(Z_train)
-                validation_score = destructor.score(Z_validation)
-                Z_train = destructor.transform(Z_train)
-                Z_validation = destructor.transform(Z_validation)
+                train_score = destructor.score(Z_train, y_train)
+                validation_score = destructor.score(Z_validation, y_validation)
+                if first_score_zero and len(cv_destructors) == 0:
+                    train_score = 0
+                    validation_score = 0
+                Z_train = destructor.transform(Z_train, y_train)
+                Z_validation = destructor.transform(Z_validation, y_validation)
                 if compute_test:
-                    test_score = destructor.score(Z_test)
-                    Z_test = destructor.transform(Z_test)
+                    test_score = destructor.score(Z_test, y_test)
+                    if first_score_zero and len(cv_destructors) == 0:
+                        test_score = 0
+                    Z_test = destructor.transform(Z_test, y_test)
                     cum_test_score += test_score
                     test_score_str = ' test=%g, cum_test=%g' % (test_score, cum_test_score)
                 else:

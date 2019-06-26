@@ -147,7 +147,7 @@ def _get_maf_cifar10():
 def _get_mnist_raw():
     def _download_from_other_source():
         # Attempt to download mnist data from another source
-        url = 'http://www.cs.cmu.edu/~dinouye/data/mnist-original.mat'
+        url = 'https://dl.dropboxusercontent.com/s/b1kph20d20ybjk6/mnist-original.mat'
         warnings.warn('Could not download from mldata.org, attempting '
                       'to download from <%s>.' % url)
         file_name = os.path.join(_DOWNLOAD_DIR, 'mldata/mnist-original.mat')

@@ -11,7 +11,8 @@ from sklearn.decomposition import PCA
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_array, check_is_fitted
 
-from .base import CompositeDestructor, ScoreMixin, get_implicit_density
+from .base import (CompositeDestructor, ScoreMixin, create_implicit_density,
+                   create_inverse_transformer)
 from .independent import IndependentDensity, IndependentDestructor, IndependentInverseCdf
 from .univariate import ScipyUnivariateDensity
 # noinspection PyProtectedMember
@@ -44,6 +45,10 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
     orthogonal : bool, default=False
         Whether to issue a warning if the matrix is not orthogonal.
 
+    fit_bias : bool, default=True
+        Whether to fit the bias term, i.e., the b of the linear transform
+        y = Ax + b.
+
     Attributes
     ----------
     A_ : object
@@ -62,11 +67,12 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
     """
 
-    def __init__(self, linear_estimator=None, orthogonal=False):
+    def __init__(self, linear_estimator=None, orthogonal=False, fit_bias=True):
         self.linear_estimator = linear_estimator
         self.orthogonal = orthogonal
+        self.fit_bias = fit_bias
 
-    def fit(self, X, y=None, lin_est_fit_params=None):
+    def fit(self, X, y=None, lin_est_fit_params=None, fitted_lin_est=None):
         """[Placeholder].
 
         Parameters
@@ -74,6 +80,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         X :
         y :
         lin_est_fit_params :
+        fitted_lin_est :
 
         Returns
         -------
@@ -81,80 +88,118 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
         """
         # Find linear projection, project X (implicitly checks X)
-        if lin_est_fit_params is None:
-            lin_est_fit_params = {}
-        if not isinstance(self.orthogonal, bool):
-            raise ValueError('Parameter `orthogonal` should be a boolean value either ``True`` or '
-                             '``False``.')
-        lin_est = (self.linear_estimator if self.linear_estimator is not None
-                   else IdentityLinearEstimator())
-        # noinspection PyArgumentList
-        try:
-            lin_est.fit(X, y, **lin_est_fit_params)
-        except ValueError as e:
-            # If univariate give default if fitting fails (e.g. FastICA)
-            if np.array(X).shape[1] == 1:
-                lin_est.coef_ = [1]
-            else:
-                raise e
-
-        # Attempt to extract linear model
-        try:
-            # For sklearn.linear_model estimators such as LinearRegression, LogisticRegression, etc.
-            coef = lin_est.coef_
-        except AttributeError:
-            try:
-                # For PCA, ICA and possibly other decomposition methods
-                # shape is (n_components, n_features)
-                coef = lin_est.components_
-            except AttributeError:
-                raise ValueError('After fitting, the linear estimator does not have attribute '
-                                 'coef_ or components_')
-        # logger.debug(coef)
-
-        # Create matrix object for projections
-        # shape is (n_features,) or (n_components, n_features) or
-        coef = np.array(coef)
-        if len(coef.shape) == 1 or coef.shape[0] == 1:
-            w = coef.ravel()  # Make vector
-            w_norm = np.linalg.norm(w)
-            if w.shape[0] == 1 or np.all(w == np.eye(len(w), 1).ravel()):
-                # Univariate case or w = e_1 (i.e. undefined reflection vector)
-                A = _IdentityWithScaling(scale=w_norm)
-            else:
-                # Compute w - e_1
-                #  (i.e. difference between target vector and standard basis [1,0,0,...])
-                #  u = w - norm(w)*e_1
-                #  u = u/norm(u)
-                u = w.copy()
-                u[0] -= w_norm
-                u_norm = np.linalg.norm(u)
-                # Normalize v to be unit vector
-                u /= u_norm
-                if self.orthogonal:
-                    scale = 1
-                else:
-                    scale = w_norm
-                A = _HouseholderWithScaling(u, scale=scale, copy=False)
-        elif coef.shape[0] != coef.shape[1]:
-            raise NotImplementedError(
-                'Projectors not implemented for 1 < n_components < n_features. '
-                'Probably a series of Householder reflectors would be '
-                'computationally the best.')
+        if fitted_lin_est is not None:
+            lin_est = fitted_lin_est
+            warnings.warn(DeprecationWarning('Class factory method `create_fitted` '
+                                             'should be used instead.'))
         else:
-            if self.orthogonal:
-                # Check to make sure provided matrix is orthogonal
-                _, logdet = np.linalg.slogdet(coef)
-                if logdet > 1e-12:
-                    warnings.warn(
-                        'Provided matrix does not seem to be orthogonal but orthogonal=True. '
-                        'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g'
-                        % logdet)
-            A = _SimpleMatrix(coef)
+            if lin_est_fit_params is None:
+                lin_est_fit_params = {}
+            if not isinstance(self.orthogonal, bool):
+                raise ValueError('Parameter `orthogonal` should be a boolean value either '
+                                 '``True`` or ``False``.')
+            lin_est = (self.linear_estimator if self.linear_estimator is not None
+                       else IdentityLinearEstimator())
+            # noinspection PyArgumentList
+            try:
+                lin_est.fit(X, y, **lin_est_fit_params)
+            except ValueError as e:
+                # If univariate give default if fitting fails (e.g. FastICA)
+                if np.array(X).shape[1] == 1:
+                    lin_est.coef_ = np.array([1])
+                    lin_est.intercept_ = np.array([0])
+                else:
+                    raise e
+
+        # Extract from estimator and create matrix
+        A, b = self._estimator_to_A_b(lin_est, self.orthogonal)
+        if not self.fit_bias:
+            b = np.zeros_like(b)
+
         self.A_ = A
         self.A_inv_ = A.inv(copy=False)
-
+        self.b_ = b
+        self.n_features_ = A.shape[0]
         return self
+
+    @classmethod
+    def create_fitted(cls, A=None, b=None, coef=None, intercept=None,
+                      fitted_linear_estimator=None, **kwargs):
+        """Create fitted linear projector.
+
+        Must provide (`A` and `b`) OR (`coef` and `intercept`)
+        OR (`fitted_linear_estimator`) but only one combination
+        should be provided.
+
+        Parameters
+        ----------
+        A : array-like, shape (n_features, n_features), optional
+            Matrix for projection.
+
+        b : array-like, shape (n_features,), optional
+            Shift vector for linear projection.
+
+        coef : array-like, shape (n_features,), optional
+            Vector of coefficents, will form scaled Householder reflector.
+
+        intercept : float, optional
+            Intecept for 1D linear projection.
+
+        fitted_linear_estimator : fitted estimator, optional
+            Must be a linear estimator that has `coef_` or `components_`
+            fitted parameters.
+
+        **kwargs
+            Other parameters to pass to constructor.
+
+        Returns
+        -------
+        fitted_transformer : Transformer
+            Fitted transformer.
+
+        """
+        opt1 = A is not None and b is not None
+        opt2 = coef is not None and intercept is not None
+        opt3 = fitted_linear_estimator is not None
+        if not (opt1 or opt2 or opt3):
+            raise ValueError('Must supply one valid combination of fitted '
+                             'parameters.')
+        if np.sum([opt1, opt2, opt3]) > 1:
+            raise ValueError('Cannot provide more than one combination of '
+                             'fitted parameters.')
+
+        projector = cls(**kwargs)
+
+        if opt1:
+            A, b = np.array(A), np.array(b)
+            assert A.shape[0] == A.shape[1], 'Only square A are allowed currently.'
+            assert b.ndim == 1 and b.shape[0] == A.shape[0], 'b should be (n_features,)'
+            A = cls._coef_to_A(A, projector.orthogonal)
+            b = b
+        elif opt2:
+            assert np.array(coef).ndim == 1, 'coef should be one dimensional array-like'
+            intercept = np.array(intercept)
+            if intercept.ndim > 1:
+                raise ValueError('intercept should be scalar or 1 dimensional')
+            elif intercept.ndim == 1:
+                assert intercept.shape[0] == 1, 'intercept must be shape (1,) or scalar'
+                intercept = intercept[0]
+            A = cls._coef_to_A(coef, projector.orthogonal)
+            n_features = len(coef)
+            b = np.zeros(n_features)
+            b[0] = intercept
+        elif opt3:
+            A, b = cls._estimator_to_A_b(fitted_linear_estimator, projector.orthogonal)
+        else:
+            raise RuntimeError('This should not be reached since checks '
+                               'should raise error before')
+
+        # Convert vector or matrix to matrix
+        projector.A_ = A
+        projector.A_inv_ = A.inv(copy=False)
+        projector.b_ = b
+        projector.n_features_ = A.shape[0]
+        return projector
 
     def score_samples(self, X, y=None):
         """Compute log(det(Jacobian)) for each sample.
@@ -202,7 +247,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         """
         self._check_is_fitted()
         X = check_array(X)
-        return self.A_.dot(X.transpose()).transpose()
+        return self.A_.dot(X.T).T + self.b_
 
     def inverse_transform(self, X, y=None):
         """Apply inverse destructive transformation to X.
@@ -224,7 +269,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         """
         self._check_is_fitted()
         X = check_array(X)
-        return self.A_inv_.dot(X.transpose()).transpose()
+        return self.A_inv_.dot((X - self.b_).T).T
 
     def get_domain(self):
         """Get the domain of this destructor.
@@ -242,7 +287,85 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         return _INF_SPACE
 
     def _check_is_fitted(self):
-        check_is_fitted(self, ['A_', 'A_inv_'])
+        check_is_fitted(self, ['A_', 'A_inv_', 'b_'])
+
+    @staticmethod
+    def _coef_to_A(coef, orthogonal=False):
+        # Create matrix object for projections
+        # shape is (n_features,) or (n_components, n_features)
+        coef = np.array(coef)
+
+        if len(coef.shape) == 1 or coef.shape[0] == 1:
+            w = np.array(coef.ravel(), dtype=np.float)  # Make vector
+            w_norm = np.linalg.norm(w)
+            if orthogonal:
+                scale = 1
+            else:
+                scale = w_norm
+            if w.shape[0] == 1:
+                # Univariate case
+                A = _IdentityWithScaling(n_features=1, scale=scale)
+            elif np.all(w == np.eye(len(w), 1).ravel()):
+                # Special case when w = e_1 (i.e. undefined reflection vector)
+                A = _IdentityWithScaling(n_features=len(w), scale=scale)
+            else:
+                # Compute w - e_1
+                #  (i.e. difference between target vector and standard basis [1,0,0,...])
+                #  u = w - norm(w)*e_1
+                #  u = u/norm(u)
+                u = w.copy()
+                u[0] -= w_norm
+                u_norm = np.linalg.norm(u)
+                u /= u_norm
+                A = _HouseholderWithScaling(u, scale=scale, copy=False)
+        elif coef.shape[0] != coef.shape[1]:
+            raise NotImplementedError(
+                'Projectors not implemented for 1 < n_components < n_features. '
+                'Probably a series of Householder reflectors would be '
+                'computationally the best.')
+        else:
+            if orthogonal:
+                # Check to make sure provided matrix is orthogonal
+                _, logdet = np.linalg.slogdet(coef)
+                if logdet > 1e-12:
+                    warnings.warn(
+                        'Provided matrix does not seem to be orthogonal but orthogonal=True. '
+                        'Non-orthogonal matrices are not converted automatically. abs(logdet)=%g'
+                        % logdet)
+            A = _SimpleMatrix(coef)
+        return A
+
+    @staticmethod
+    def _estimator_to_A_b(lin_est, orthogonal=False):
+        # Extract A
+        try:
+            # For sklearn.linear_model estimators such as LinearRegression, LogisticRegression, etc.
+            coef = lin_est.coef_
+        except AttributeError:
+            try:
+                # For PCA, ICA and possibly other decomposition methods
+                # shape is (n_components, n_features)
+                coef = lin_est.components_
+            except AttributeError:
+                raise ValueError('After fitting, the linear estimator does not have attribute '
+                                 'coef_ or components_')
+        A = LinearProjector._coef_to_A(coef, orthogonal)
+
+        # Extract b
+        try:
+            intercept = lin_est.intercept_
+        except AttributeError:
+            try:
+                b = lin_est.mean_  # For PCA
+            except AttributeError:
+                b = np.zeros(np.array(coef).shape[0])
+        else:
+            b = np.zeros(np.array(coef).shape[0])
+            assert len(intercept) == 1, 'intercept should have shape (1,)'
+            b[0] = intercept[0]
+        b = np.array(b)
+
+        return A, b
 
 
 class BestLinearReconstructionDestructor(CompositeDestructor):
@@ -264,6 +387,10 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
     destructor : estimator
         Density destructor to use in between linear projections.
 
+    linear_projector_kwargs : dict
+        Keyword arguments to pass when constructing
+        ``ddl.linear.LinearProjector``.
+
     Attributes
     ----------
     fitted_destructors_ : list
@@ -276,10 +403,11 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
 
     """
 
-    def __init__(self, linear_estimator=None, destructor=None):
+    def __init__(self, linear_estimator=None, destructor=None, linear_projector_kwargs=None):
         super(BestLinearReconstructionDestructor, self).__init__()
         self.linear_estimator = linear_estimator
         self.destructor = destructor
+        self.linear_projector_kwargs = linear_projector_kwargs
 
     def fit_transform(self, X, y=None, **kwargs):
         """[Placeholder].
@@ -296,7 +424,16 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
 
         """
         lin_est, destructor = self._get_estimators_or_default()
-        lin_proj = LinearProjector(linear_estimator=lin_est, orthogonal=True)
+        if self.linear_projector_kwargs is None:
+            projector_kwargs = dict()
+        else:
+            projector_kwargs = self.linear_projector_kwargs
+        if 'orthogonal' in projector_kwargs and not projector_kwargs['orthogonal']:
+            warnings.warn(UserWarning('Overriding orthogonal to be True.'))
+        projector_kwargs['orthogonal'] = True
+        assert 'linear_estimator' not in projector_kwargs, ('`linear_estimator` should not be '
+                                                            'set via `linear_projector_kwargs`')
+        lin_proj = LinearProjector(linear_estimator=lin_est, **projector_kwargs)
 
         # Note only these two need to be fit, the others are fixed or related to these
         X = check_array(X, copy=True)
@@ -304,9 +441,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
         destructor.fit(X_proj, y)
 
         # Copy linear but fit as inverse
-        lin_proj_inv = clone(lin_proj)
-        lin_proj_inv.A_ = lin_proj.A_inv_
-        lin_proj_inv.A_inv_ = lin_proj.A_
+        lin_proj_inv = create_inverse_transformer(lin_proj)
 
         # Fit an independent inverse cdf
         ind_inverse_cdf = IndependentInverseCdf().fit(X, y)
@@ -327,7 +462,7 @@ class BestLinearReconstructionDestructor(CompositeDestructor):
             lin_proj_inv,
             standard_normal,
         ]
-        self.density_ = get_implicit_density(self)
+        self.density_ = create_implicit_density(self)
 
         # Transform original X now
         Z = self.transform(X, y)
@@ -377,6 +512,8 @@ class IdentityLinearEstimator(BaseEstimator):
         X = check_array(X)
         # This will become the identity matrix in LinearProjector
         self.coef_ = np.eye(X.shape[1], 1).ravel()
+        # Added so that it is compatible with more functions
+        self.intercept_ = np.zeros(1)
         return self
 
 
@@ -506,11 +643,16 @@ class _SimpleMatrix(object):
         """
         return self.A.copy()
 
+    @property
+    def shape(self):
+        return self.A.shape
+
 
 class _IdentityWithScaling(object):
-    def __init__(self, scale=1):
+    def __init__(self, n_features, scale=1):
         if not np.isscalar(scale):
             raise ValueError('Parameter `scale` should be a scalar value.')
+        self.n_features = n_features
         self.scale = scale
 
     def dot(self, X):
@@ -558,12 +700,15 @@ class _IdentityWithScaling(object):
         """
         # Just in case there is rounding error
         inv_scale = 1.0 / self.scale if self.scale != 1 else 1
-        return _IdentityWithScaling(scale=inv_scale)
+        return _IdentityWithScaling(self.n_features, scale=inv_scale)
 
     def toarray(self):
         """Convert to array, but not implemented yet."""
-        raise NotImplementedError('This identity matrix does not have the number of dimensions '
-                                  'associated with it so we cannot make an equivalent array.')
+        return np.eye(self.n_features)
+
+    @property
+    def shape(self):
+        return (self.n_features, self.n_features)
 
 
 class _HouseholderWithScaling(_IdentityWithScaling):
@@ -574,7 +719,7 @@ class _HouseholderWithScaling(_IdentityWithScaling):
     """
 
     def __init__(self, u, scale=1, copy=True):
-        super(_HouseholderWithScaling, self).__init__(scale)
+        super(_HouseholderWithScaling, self).__init__(len(u), scale=scale)
 
         u = np.array(u, dtype=np.float)
         if np.abs(u.dot(u) - 1) > u.shape[0] * np.finfo(u.dtype).eps:

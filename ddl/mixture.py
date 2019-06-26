@@ -317,6 +317,13 @@ class _GaussianMixtureMixin(object):
         self.random_state = old_random_state
         return X
 
+    def sample_joint(self, n_samples=1, random_state=None):
+        old_random_state = self.random_state
+        self.random_state = random_state
+        X, y = super(_GaussianMixtureMixin, self).sample(n_samples)
+        self.random_state = old_random_state
+        return X, y
+
     def _get_component_densities(self):
         n_components, _ = self.means_.shape
         # noinspection PyProtectedMember
@@ -389,6 +396,51 @@ class _GaussianMixtureMixin(object):
         return X
 
 
+def _create_fitted_mixture(cls, means, covariances, weights=None,
+                           covariance_type='spherical', **kwargs):
+    means = check_array(means)
+    n_components, n_features = means.shape
+    if weights is None:
+        weights = np.ones(n_components) / n_components
+    weights = np.array(weights)
+    assert len(weights) == n_components
+
+    covariances = np.array(covariances)
+    if covariance_type == 'full':
+        assert np.all(covariances.shape == (n_components, n_features, n_features))
+        precisions = np.array([np.linalg.inv(c) for c in covariances])
+        precisions_cholesky = np.array([np.linalg.cholesky(p) for p in precisions])
+    elif covariance_type == 'tied':
+        assert np.all(covariances.shape == (n_features, n_features))
+        precisions = np.linalg.inv(covariances)
+        precisions_cholesky = np.linalg.cholesky(precisions)
+    elif covariance_type == 'diag':
+        assert np.all(covariances.shape == (n_components, n_features))
+        precisions = 1/covariances
+        precisions_cholesky = np.sqrt(precisions)
+    elif covariance_type == 'spherical':
+        assert np.all(covariances.shape == (n_components,))
+        precisions = 1/covariances
+        precisions_cholesky = np.sqrt(precisions)
+    else:
+        raise RuntimeError('covariance type "%s" not recognized' % covariance_type)
+
+    if 'n_components' in kwargs:
+        assert kwargs['n_components'] == n_components
+    else:
+        kwargs['n_components'] = n_components
+    mixture = cls(covariance_type=covariance_type, **kwargs)
+    mixture.weights_ = weights
+    mixture.means_ = means
+    mixture.covariances_ = covariances
+    mixture.precisions_ = precisions
+    mixture.precisions_cholesky_ = precisions_cholesky
+    mixture.converged_ = False
+    mixture.n_iter_ = 0
+    mixture.lower_bound_ = np.NaN
+    return mixture
+
+
 class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMixin):
     """Gaussian mixture density that can be used with AutoregressiveDestructor.
 
@@ -412,6 +464,10 @@ class GaussianMixtureDensity(_GaussianMixtureMixin, GaussianMixture, _MixtureMix
     BayesianGaussianMixtureDensity
 
     """
+
+    @classmethod
+    def create_fitted(*args, **kwargs):
+        return _create_fitted_mixture(*args, **kwargs)
 
 
 class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMixture,
@@ -438,6 +494,10 @@ class _BayesianGaussianMixtureDensity(_GaussianMixtureMixin, BayesianGaussianMix
     GaussianMixtureDensity
 
     """
+
+    @classmethod
+    def create_fitted(*args, **kwargs):
+        return _create_fitted_mixture(*args, **kwargs)
 
 
 class FirstFixedGaussianMixtureDensity(GaussianMixtureDensity):

@@ -12,7 +12,7 @@ from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from .base import (BaseDensityDestructor, BoundaryWarning, IdentityDestructor, ScoreMixin,
-                   get_inverse_canonical_destructor)
+                   create_inverse_canonical_destructor)
 # noinspection PyProtectedMember
 from .utils import _UNIT_SPACE, check_X_in_interval, get_support_or_default
 
@@ -67,6 +67,12 @@ class TreeDestructor(BaseDensityDestructor):
             return TreeDensity()
         else:
             return clone(self.tree_density)
+
+    @classmethod
+    def create_fitted(cls, fitted_density, **kwargs):
+        destructor = cls(**kwargs)
+        destructor.density_ = fitted_density
+        return destructor
 
     def transform(self, X, y=None):
         """Apply destructive transformation to X.
@@ -214,6 +220,13 @@ class TreeDensity(BaseEstimator, ScoreMixin):
         self.tree_ = tree
         self.n_features_ = X.shape[1]
         return self
+
+    @classmethod
+    def create_fitted(cls, tree, n_features, **kwargs):
+        density = cls(**kwargs)
+        density.tree_ = tree
+        density.n_features_ = n_features
+        return density
 
     def _get_tree_estimator(self):
         """Supplies default tree, can be overriden in subclasses."""
@@ -896,7 +909,7 @@ def _get_inverse_tree(tree):
         if node_in.is_leaf():
             if node_in.destructor is not None:
                 # Create view of the inverse destructor
-                node_out.destructor = get_inverse_canonical_destructor(
+                node_out.destructor = create_inverse_canonical_destructor(
                     node_out.destructor, copy=False)  # Destructor already deep copied
         else:
 
