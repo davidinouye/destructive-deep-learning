@@ -49,6 +49,10 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         Whether to fit the bias term, i.e., the b of the linear transform
         y = Ax + b.
 
+    save_linear_estimator : bool, default=False
+        Whether to save the fitted linear estimator or not (mainly used
+        for debugging).
+
     Attributes
     ----------
     A_ : object
@@ -67,10 +71,12 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
 
     """
 
-    def __init__(self, linear_estimator=None, orthogonal=False, fit_bias=True):
+    def __init__(self, linear_estimator=None, orthogonal=False, fit_bias=True,
+                 save_linear_estimator=False):
         self.linear_estimator = linear_estimator
         self.orthogonal = orthogonal
         self.fit_bias = fit_bias
+        self.save_linear_estimator = save_linear_estimator
 
     def fit(self, X, y=None, lin_est_fit_params=None, fitted_lin_est=None):
         """[Placeholder].
@@ -116,6 +122,8 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
         if not self.fit_bias:
             b = np.zeros_like(b)
 
+        if self.save_linear_estimator:
+            self.fitted_linear_estimator_ = lin_est
         self.A_ = A
         self.A_inv_ = A.inv(copy=False)
         self.b_ = b
@@ -143,7 +151,7 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
             Vector of coefficents, will form scaled Householder reflector.
 
         intercept : float, optional
-            Intecept for 1D linear projection.
+            Intercept for 1D linear projection.
 
         fitted_linear_estimator : fitted estimator, optional
             Must be a linear estimator that has `coef_` or `components_`
@@ -358,9 +366,9 @@ class LinearProjector(BaseEstimator, ScoreMixin, TransformerMixin):
             try:
                 b = lin_est.mean_  # For PCA
             except AttributeError:
-                b = np.zeros(np.array(coef).shape[0])
+                b = np.zeros(A.shape[0])
         else:
-            b = np.zeros(np.array(coef).shape[0])
+            b = np.zeros(A.shape[0])
             assert len(intercept) == 1, 'intercept should have shape (1,)'
             b[0] = intercept[0]
         b = np.array(b)
@@ -786,3 +794,9 @@ class _HouseholderWithScaling(_IdentityWithScaling):
         A = np.eye(len(self.u)) - np.outer(2 * self.u, self.u)
         A[0, :] *= self.scale
         return A
+
+
+    @property
+    def shape(self):
+        n_features = len(self.u)
+        return (n_features, n_features)

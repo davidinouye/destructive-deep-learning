@@ -522,8 +522,10 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         X = check_array(X)
 
         # Mainly just get default and make array of densities if needed
-        dens_arr = self._get_densities_or_default(fitted_densities, X.shape[1])
+        n_features = X.shape[1]
+        dens_arr = self._get_densities_or_default(fitted_densities, n_features)
         self.fitted_densities_ = dens_arr
+        self.n_features_ = n_features
         return self
 
     @classmethod
@@ -532,7 +534,7 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
 
         Parameters
         ----------
-        fitted_density : Density
+        fitted_densities : Density or array_like of Density
             Fitted density.
 
         **kwargs
@@ -547,6 +549,7 @@ class IndependentInverseCdf(BaseEstimator, ScoreMixin, TransformerMixin):
         destructor = cls(**kwargs)
         dens_arr = cls._get_densities_or_default(fitted_densities, n_features)
         destructor.fitted_densities_ = dens_arr
+        destructor.n_features_ = n_features
         return destructor
 
     def score_samples(self, X, y=None):
